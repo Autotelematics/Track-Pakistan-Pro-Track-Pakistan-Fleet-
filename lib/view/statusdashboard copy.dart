@@ -204,7 +204,7 @@ class _StatusDashboardSecondState extends State<StatusDashboardSecond> {
         decoration: AppColors.appScreenBackgroundImage,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          // appBar: AppBar(
+          // appBar: AppBar(Ï
           //   title: Text(
           //     'Status Dashboard',
           //     style: AppColors.appTitleTextStyle,

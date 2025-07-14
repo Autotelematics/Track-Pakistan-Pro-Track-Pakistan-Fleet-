@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:getwidget/getwidget.dart';
 
 class AppColors {
-  static const Color buttonColor = Color(0xff2690df); //ffb400
+  static const Color buttonColor = Color(0xff36b56a); //ffb400
   static const Color buttonTextColor = Color(0xffFFFFFF); //ffb400
   static const GFTypographyType deviceOnMapSligePanelHeading =
       GFTypographyType.typo5;

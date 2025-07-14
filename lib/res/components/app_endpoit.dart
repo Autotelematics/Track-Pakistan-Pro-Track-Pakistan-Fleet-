@@ -1,7 +1,7 @@
 class AppUrl {
   // New Server
-  static var baseURL = 'https://platform.linktrack.pk/api';
-  static var baseImgURL = 'https://platform.linktrack.pk/';
+  static var baseURL = 'https://world.autotel.pk/api';
+  static var baseImgURL = 'https://world.autotel.pk/';
   //Old Server
   // static var baseURL = 'https://login.aitrack.pk/api';
   // static var baseImgURL = 'https://login.aitrack.pk/';
