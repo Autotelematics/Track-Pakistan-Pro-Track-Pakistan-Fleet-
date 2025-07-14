@@ -1448,36 +1448,36 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Card(
-                //   shape: AppColors.cardBorderShape,
-                //   margin:
-                //       const EdgeInsets.only(left: 15, right: 15, bottom: 10),
-                //   child: Padding(
-                //     padding: const EdgeInsets.symmetric(
-                //         vertical: 10, horizontal: 10),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         _controller.value.isInitialized
-                //             ? Center(
-                //                 child: ClipRRect(
-                //                   borderRadius: BorderRadius.circular(10.0),
-                //                   child: SizedBox(
-                //                     width:
-                //                         MediaQuery.of(context).size.width * .85,
-                //                     child: AspectRatio(
-                //                       aspectRatio:
-                //                           _controller.value.aspectRatio,
-                //                       child: VideoPlayer(_controller),
-                //                     ),
-                //                   ),
-                //                 ),
-                //               )
-                //             : const CircularProgressIndicator(),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+                Card(
+                  shape: AppColors.cardBorderShape,
+                  margin:
+                      const EdgeInsets.only(left: 15, right: 15, bottom: 10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _controller.value.isInitialized
+                            ? Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * .85,
+                                    child: AspectRatio(
+                                      aspectRatio:
+                                          _controller.value.aspectRatio,
+                                      child: VideoPlayer(_controller),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+                ),
                 Card(
                   shape: AppColors.cardBorderShape,
                   margin: const EdgeInsets.symmetric(

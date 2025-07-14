@@ -17,7 +17,7 @@ android {
         "29.0.13599879"
     }
 
-    namespace = "com.bestcartracker.android"
+    namespace = "com.autotelnew.android"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.bestcartracker.android"
+        applicationId = "com.autotelnew.android"
         minSdk = 21
         targetSdk = 35
         versionCode = System.getenv("FLUTTER_VERSION_CODE")?.toIntOrNull() ?: 1

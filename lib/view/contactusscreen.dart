@@ -82,7 +82,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     InkWell(
-                      onTap: () => _launchURLBrowser('tel:+923307770117'),
+                      onTap: () => _launchURLBrowser('tel:+92051-2751486'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -94,7 +94,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('mailto:info@bestcartracker.pk'),
+                      onTap: () => _launchURLBrowser('mailto:info@linktrack.pk'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -107,7 +107,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('www.bestcartracker.pk'),
+                      onTap: () => _launchURLBrowser('https://linktrack.pk/'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -128,7 +128,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   children: [
                     InkWell(
                       onTap: () => _launchURLBrowser(
-                          'https://wa.me/923111144668?text=I need information on tracker services'),
+                          'https://wa.me/923175882299?text=I need information on tracker services'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -141,7 +141,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                     InkWell(
                       onTap: () => _launchURLBrowser(
-                          'https://www.facebook.com/profile.php?id=61554860224018#'),
+                          'https://www.facebook.com/share/12L7xjrndgu/?mibextid=wwXIfr'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -154,14 +154,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                     InkWell(
                       onTap: () {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text("No Account Found"),
-                        //   ),
-                        // );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("No Account Found"),
+                          ),
+                        );
 
-                        _launchURLBrowser(
-                            'https://www.instagram.com/bestcartracker/#');
+                        // _launchURLBrowser(
+                        //     'https://instagram.com/autotelematics?igshid=YmMyMTA2M2Y=');
                       },
                       child: CircleAvatar(
                         radius: 30,
@@ -184,7 +184,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () =>
-                            _launchURLBrowser('https://bestcartracker.pk/about-us/'),
+                            _launchURLBrowser('https://linktrack.pk/contact#'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(
@@ -205,7 +205,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () => _launchURLBrowser(
-                            'https://bestcartracker.pk/about-us/'),
+                            'https://linktrack.pk/contact#'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(
@@ -226,7 +226,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () =>
-                            _launchURLBrowser('https://bestcartracker.pk/ultimate-vehicle-tracking-solutions-in-pakistan-best-car-tracker/'),
+                            _launchURLBrowser('https://linktrack.pk/'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(
@@ -252,7 +252,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   padding: EdgeInsets.all(10.0),
                   child: Text(
                     textAlign: TextAlign.center,
-                    'Hamdan heights ghauri town phase 5 Islamabad ',
+                    'Office #3 janjua plaza I-9 markaz Islamabad',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
