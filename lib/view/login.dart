@@ -202,7 +202,7 @@ class _LoginState extends State<Login> {
                 children: [
                   Text('Dont have an account? '),
                   GestureDetector(
-                    onTap: () => _launchURLBrowser('mailto:mail@autotel.pk'),
+                    onTap: () => _launchURLBrowser('mailto:info@bestcartracker.pk'),
                     child: Text(
                       'Contact Us',
                       style: TextStyle(

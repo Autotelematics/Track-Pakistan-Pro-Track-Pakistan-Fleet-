@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:getwidget/getwidget.dart';
 
 class AppColors {
-  static const Color buttonColor = Color(0xff2690df); //ffb400
+  static const Color buttonColor = Color(0xff37b669); //ffb400
   static const Color buttonTextColor = Color(0xffFFFFFF); //ffb400
   static const GFTypographyType deviceOnMapSligePanelHeading =
       GFTypographyType.typo5;
@@ -26,5 +26,5 @@ class AppColors {
   );
   static const String errorMessage =
       'trying to load data.Please check internet connection';
-  static const String logoPath = 'assets/images/splashsceen.png';
+  static const String logoPath = 'assets/images/splashscreen.png';
 }
