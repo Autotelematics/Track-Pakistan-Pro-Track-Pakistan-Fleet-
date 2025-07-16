@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:trackerapp/data/response/status.dart';
 import 'package:trackerapp/models/event_on_map_model.dart';
 import 'package:trackerapp/res/colors.dart';
-import 'package:trackerapp/utils/routes/custom_page_route.dart'; // Import the custom page route
 import 'package:trackerapp/view_model/osmaddress_view_view_model.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 class EventsOnMap extends StatefulWidget {
   final EventOnMapDataModel eventOnMapDataModel;
@@ -39,6 +40,7 @@ class _EventsOnMapState extends State<EventsOnMap> {
           double.parse(widget.eventOnMapDataModel.intiallng.toString())),
       infoWindow: InfoWindow(title: widget.eventOnMapDataModel.vehiclename),
       icon: BitmapDescriptor.defaultMarker,
+      //rotation: direction,
     ));
     print(widget.eventOnMapDataModel.vehiclename);
 
@@ -47,8 +49,7 @@ class _EventsOnMapState extends State<EventsOnMap> {
         onWillPop: () async {
           await Future.delayed(const Duration(milliseconds: 300));
           print('I am exiting..');
-          Navigator.of(context).pop();
-          return false;
+          return true;
         },
         child: Scaffold(
           body: Stack(
@@ -80,7 +81,9 @@ class _EventsOnMapState extends State<EventsOnMap> {
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(220, 212, 2, 2),
                       borderRadius: BorderRadius.circular(15.0),
+                      //border: Border.all(width: 6, color: Colors.red),
                     ),
+                    //height: 70,
                     padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: Row(
                       children: [
@@ -143,7 +146,7 @@ class _EventsOnMapState extends State<EventsOnMap> {
                                   builder: (addresscontext, value, child) {
                                     if (value.osmAddressResponse.status ==
                                         null) {
-                                      return Container();
+                                      return Container(); // or handle this case as you see fit
                                     }
                                     switch (value.osmAddressResponse.status) {
                                       case Status.LOADING:
@@ -178,8 +181,8 @@ class _EventsOnMapState extends State<EventsOnMap> {
                                           ],
                                         );
                                       default:
-                                        return Container();
                                     }
+                                    return Container();
                                   },
                                 ),
                               ),
@@ -221,7 +224,8 @@ class _EventsOnMapState extends State<EventsOnMap> {
             mini: true,
             backgroundColor: AppColors.buttonColor,
             onPressed: () async {
-              Navigator.of(context).pop();
+              await Future.delayed(const Duration(milliseconds: 300));
+              Navigator.of(context)..pop();
             },
             child: const Icon(Icons.arrow_back),
           ),
@@ -229,13 +233,4 @@ class _EventsOnMapState extends State<EventsOnMap> {
       ),
     );
   }
-}
-
-// Navigate to EventsOnMap using FadePageRoute
-void navigateToEventsOnMap(
-    BuildContext context, EventOnMapDataModel eventOnMapDataModel) {
-  Navigator.push(
-    context,
-    FadePageRoute(page: EventsOnMap(eventOnMapDataModel)),
-  );
 }

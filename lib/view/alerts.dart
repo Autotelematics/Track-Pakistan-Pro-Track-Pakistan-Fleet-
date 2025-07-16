@@ -1,4 +1,4 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trackerapp/data/response/status.dart';
 import 'package:trackerapp/models/event_modle.dart';
@@ -14,9 +14,6 @@ class EventsAlertsPage extends StatefulWidget {
   final EventsInitialData eventsInitialData;
   const EventsAlertsPage(
     this.eventsInitialData, {
-
-
-
     super.key,
   });
 
@@ -26,8 +23,6 @@ class EventsAlertsPage extends StatefulWidget {
 
 class _EventsAlertsPageState extends State<EventsAlertsPage> {
   EventViewModel eventViewModel = EventViewModel();
-
-
   late List<Data> alertsList = [];
   late ScrollController _controller = ScrollController();
   bool isSearchResult = false;

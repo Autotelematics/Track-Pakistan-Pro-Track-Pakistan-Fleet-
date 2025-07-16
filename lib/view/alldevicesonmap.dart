@@ -10,7 +10,7 @@ import 'package:trackerapp/res/colors.dart';
 import 'package:trackerapp/res/components/app_endpoit.dart';
 import 'package:trackerapp/res/helper/map_helper.dart';
 import 'package:trackerapp/res/helper/map_marker.dart';
-import 'package:trackerapp/res/helper/map_marker_design.dart';
+import 'package:trackerapp/res/helper/map_marker_design.dart' show MapMarkerMaker;
 import 'package:trackerapp/utils/utils.dart';
 import 'package:trackerapp/view_model/device_view_viewmodel.dart';
 
@@ -84,15 +84,15 @@ class _DevicesOnMapState extends State<DevicesOnMap> {
 
     for (Marker marker in markerList) {
       final BitmapDescriptor markerImage =
-          await MapHelper.getMarkerImageFromUrl(
-              AppUrl.baseImgURL + marker.infoWindow.snippet.toString());
+      await MapHelper.getMarkerImageFromUrl(
+          AppUrl.baseImgURL + marker.infoWindow.snippet.toString());
       BitmapDescriptor markerImageWithTitle =
-          await MapMarkerMaker.getMarkerIcon(
-              AppUrl.baseImgURL + marker.infoWindow.snippet.toString(),
-              marker.infoWindow.title.toString(),
-              Colors.red,
-              marker.rotation,
-              true);
+      await MapMarkerMaker.getMarkerIcon(
+          AppUrl.baseImgURL + marker.infoWindow.snippet.toString(),
+          marker.infoWindow.title.toString(),
+          Colors.red,
+          marker.rotation,
+          true);
 
       markers.add(
         MapMarker(
@@ -157,7 +157,7 @@ class _DevicesOnMapState extends State<DevicesOnMap> {
                             children: const [
                               Image(
                                   image:
-                                      AssetImage('assets/images/loading.gif'),
+                                  AssetImage('assets/images/loading.gif'),
                                   width: 100,
                                   height: 100),
                               SizedBox(
@@ -176,7 +176,7 @@ class _DevicesOnMapState extends State<DevicesOnMap> {
                             children: const [
                               Image(
                                   image:
-                                      AssetImage('assets/images/loading.gif'),
+                                  AssetImage('assets/images/loading.gif'),
                                   width: 100,
                                   height: 100),
                               SizedBox(
@@ -223,20 +223,20 @@ class _DevicesOnMapState extends State<DevicesOnMap> {
                                 searchQueryBuilder: (query, list) {
                                   return list
                                       .where((item) => item!.infoWindow.title
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(query.toLowerCase()))
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(query.toLowerCase()))
                                       .toList();
                                 },
                                 overlaySearchListHeight:
-                                    MediaQuery.of(context).size.height * 0.60,
+                                MediaQuery.of(context).size.height * 0.60,
                                 noItemsFoundWidget: const ListTile(
                                     title: Text(
                                         'No Vehicle found...Please search again')),
                                 overlaySearchListItemBuilder: (item) {
                                   return ListTile(
                                     title:
-                                        Text(item!.infoWindow.title.toString()),
+                                    Text(item!.infoWindow.title.toString()),
                                     trailing: const Icon(Icons.arrow_forward),
                                     leading: const Icon(Icons.directions_car),
                                   );
@@ -267,9 +267,9 @@ class _DevicesOnMapState extends State<DevicesOnMap> {
                                         onPressed: () {
                                           setState(() {
                                             currentMapType =
-                                                currentMapType == MapType.normal
-                                                    ? MapType.hybrid
-                                                    : MapType.normal;
+                                            currentMapType == MapType.normal
+                                                ? MapType.hybrid
+                                                : MapType.normal;
                                           });
                                         },
                                         child: const Icon(

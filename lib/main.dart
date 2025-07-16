@@ -1,42 +1,45 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:notification_permissions/notification_permissions.dart';
+
 import 'package:trackerapp/utils/routes/routes.dart';
 import 'package:trackerapp/utils/routes/routes_name.dart';
 import 'package:trackerapp/view_model/auth_view_model.dart';
-import 'package:trackerapp/view_model/device_commands_view_model.dart';
+import 'package:trackerapp/view_model/services/localnotification.dart';
+import 'package:trackerapp/view_model/userlogin_view_model.dart';
 import 'package:trackerapp/view_model/event_view_model.dart';
 import 'package:trackerapp/view_model/expnese_record_view_model.dart';
+import 'package:trackerapp/view_model/device_commands_view_model.dart';
 import 'package:trackerapp/view_model/services/playsounds.dart';
-import 'package:trackerapp/view_model/userlogin_view_model.dart';
 
 @pragma('vm:entry-point')
 Future<void> backGroundHandler(RemoteMessage event) async {
   await Firebase.initializeApp();
 
-  //LocalNotificationServices.showNotifiationForground(event);
   if (event.notification != null) {
     final SharedPreferences sp = await SharedPreferences.getInstance();
-    if (sp.getBool('playAlertSounds')!) {
+    if (sp.getBool('playAlertSounds') ?? false) {
       PlaySounds.playAnnoucment(event);
     }
 
-    // LocalNotificationServices.showNotifiationForground(event);
+    // Show local notification
+    LocalNotificationServices.showNotifiationForground(event);
   }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   FirebaseOptions firebaseOptions = const FirebaseOptions(
     apiKey: '',
     appId: '',
     messagingSenderId: '',
     projectId: '',
   );
+
   if (Platform.isAndroid) {
     firebaseOptions = const FirebaseOptions(
       apiKey: "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU",
@@ -53,32 +56,23 @@ void main() async {
     );
   }
 
-  await Firebase.initializeApp(
-    options: firebaseOptions,
+  await Firebase.initializeApp(options: firebaseOptions);
+
+  // Request notification permissions
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    announcement: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
   );
 
-  FirebaseMessaging.instance.requestPermission();
-  // FirebaseMessaging messaging = FirebaseMessaging.instance;
-  // await messaging.requestPermission(
-  //   alert: true,
-  //   announcement: false,
-  //   badge: true,
-  //   carPlay: false,
-  //   criticalAlert: true,
-  //   provisional: true,
-  //   sound: true,
-  // );
+  // Initialize local notifications
+  LocalNotificationServices.initilize();
 
-  // NotificationSettings settings = await messaging.requestPermission(
-  //   alert: true,
-  //   announcement: false,
-  //   badge: true,
-  //   carPlay: false,
-  //   criticalAlert: true,
-  //   provisional: true,
-  //   sound: true,
-  // );
-  //FirebaseMessaging.onBackgroundMessage(backGroundHandler);
+  // Background handler
   FirebaseMessaging.onBackgroundMessage(backGroundHandler);
 
   runApp(const MyApp());
@@ -86,7 +80,6 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -96,24 +89,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => UserLoginViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => EventViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ExpenseRecordViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ExpenseRecordViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => DeviceCommandsViewModel(),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => UserLoginViewModel()),
+        ChangeNotifierProvider(create: (_) => EventViewModel()),
+        ChangeNotifierProvider(create: (_) => ExpenseRecordViewModel()),
+        ChangeNotifierProvider(create: (_) => DeviceCommandsViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

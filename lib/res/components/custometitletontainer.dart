@@ -11,7 +11,7 @@ class CustomTitleContainer extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.amber[700],
+          color: Colors.orange[500],
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(7.0),
           border: Border.all(

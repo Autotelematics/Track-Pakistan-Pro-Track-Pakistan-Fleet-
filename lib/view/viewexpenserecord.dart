@@ -95,7 +95,7 @@ class _ExpenseRecordsTableState extends State<ExpenseRecordsTable> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.green,
+                      backgroundColor: Colors.green,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -115,7 +115,7 @@ class _ExpenseRecordsTableState extends State<ExpenseRecordsTable> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.red,
+                      backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

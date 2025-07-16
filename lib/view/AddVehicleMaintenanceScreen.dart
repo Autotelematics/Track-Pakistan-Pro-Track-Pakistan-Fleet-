@@ -7,7 +7,7 @@ import 'package:trackerapp/models/vehicle_maintancne_model.dart';
 import 'package:trackerapp/res/colors.dart';
 import 'package:trackerapp/view_model/vehicle_maintenance_view_model.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class AddVehicleMaintenanceScreen extends StatefulWidget {
   const AddVehicleMaintenanceScreen({super.key});
@@ -20,26 +20,17 @@ class AddVehicleMaintenanceScreen extends StatefulWidget {
 class _AddVehicleMaintenanceScreenState
     extends State<AddVehicleMaintenanceScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _maintenanceDateController = TextEditingController();
   final _maintenanceTimeController = TextEditingController();
   final _maintenanceTypeController = TextEditingController();
   final _maintenanceDescriptionController = TextEditingController();
   final _maintenanceVehicleNameController = TextEditingController();
   VehicleMaintenanceViewModel vehicleMaintenanceViewModel =
-      VehicleMaintenanceViewModel();
+  VehicleMaintenanceViewModel();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-
-  @override
-  void dispose() {
-    _maintenanceDateController.dispose();
-    _maintenanceTimeController.dispose();
-    _maintenanceTypeController.dispose();
-    _maintenanceDescriptionController.dispose();
-    _maintenanceVehicleNameController.dispose();
-    super.dispose();
-  }
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
 
   String? selectedMaintenanceOption;
   String? selectedVehicleOption;
@@ -53,27 +44,44 @@ class _AddVehicleMaintenanceScreenState
     'Other',
   ];
 
-  Future<void> _scheduleNotification(
-    DateTime scheduledDateTime,
-    String vehicleName,
-    String description,
-  ) async {
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotifications();
+  }
 
-    // 🔹 Initialize timezone support
+  Future<void> _initializeNotifications() async {
     tz.initializeTimeZones();
+    const initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initializationSettingsIOS = DarwinInitializationSettings();
+    const initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
-    // 🔹 Convert scheduledDateTime to a timezone-aware format
-    final tz.TZDateTime notificationTime = tz.TZDateTime.from(
-        scheduledDateTime.subtract(const Duration(minutes: 5)), tz.local);
+  Future<void> _scheduleNotification(
+      DateTime scheduledDateTime,
+      String vehicleName,
+      String description,
+      )
+  async {
+    // Calculate the notification time 5 minutes before the given time
+    final notificationTime =
+    scheduledDateTime.subtract(const Duration(minutes: 5));
 
     // Create the notification details
     const androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'channel_id',
       'channel_name',
+      channelDescription: 'This channel is used for maintenance notifications',
       importance: Importance.high,
       priority: Priority.high,
+      fullScreenIntent: true,
     );
+
     const iOSPlatformChannelSpecifics = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
@@ -84,74 +92,25 @@ class _AddVehicleMaintenanceScreenState
       iOS: iOSPlatformChannelSpecifics,
     );
 
+    // Show immediate confirmation notification
     await flutterLocalNotificationsPlugin.show(
       12345,
-      "IOS Local Notifications",
+      "Maintenance Scheduled",
       "Maintenance schedule has been set",
       platformChannelSpecifics,
       payload: 'data',
     );
 
-    // 🔹 Replaced `schedule` with `zonedSchedule`
+    // Schedule the reminder notification
     await flutterLocalNotificationsPlugin.zonedSchedule(
       0,
       'Maintenance Reminder',
       'Vehicle: $vehicleName\nDescription: $description\nTime: ${scheduledDateTime.toString()}',
-      notificationTime,
+      tz.TZDateTime.from(notificationTime, tz.local),
       platformChannelSpecifics,
-      // androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, uiLocalNotificationDateInterpretation:UILocalNotificationDateInterpretation.wallClockTime ,
     );
   }
-
-
-  // Future<void> _scheduleNotification(
-  //   DateTime scheduledDateTime,
-  //   String vehicleName,
-  //   String description,
-  // ) async {
-  //   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  //   // Calculate the notification time 5 minutes before the given time
-  //   final notificationTime =
-  //       scheduledDateTime.subtract(const Duration(minutes: 5));
-
-  //   // Create the notification details
-  //   const androidPlatformChannelSpecifics = AndroidNotificationDetails(
-  //     'channel_id',
-  //     'channel_name',
-  //     importance: Importance.high,
-  //     priority: Priority.high,
-  //   );
-  //   const iOSPlatformChannelSpecifics = DarwinNotificationDetails(
-  //     presentAlert: true,
-  //     presentBadge: true,
-  //     presentSound: true,
-  //   );
-  //   const platformChannelSpecifics = NotificationDetails(
-  //     android: androidPlatformChannelSpecifics,
-  //     iOS: iOSPlatformChannelSpecifics,
-  //   );
-  //   await flutterLocalNotificationsPlugin.show(
-  //     12345,
-  //     "IOS Local Notifications",
-  //     "Maintenance schudule has been set",
-  //     platformChannelSpecifics,
-  //     payload: 'data',
-  //   );
-
-  //   // Schedule the notification
-  //   await flutterLocalNotificationsPlugin.schedule(
-  //     0,
-  //     'Maintenance Reminder',
-  //     'Vehicle: $vehicleName\nDescription: $description\nTime: ${scheduledDateTime.toString()}',
-  //     notificationTime,
-  //     platformChannelSpecifics,
-  //     androidAllowWhileIdle: true,
-  //   );
-  // }
 
   Future<void> _selectDate() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -218,10 +177,13 @@ class _AddVehicleMaintenanceScreenState
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-
-    super.initState();
+  void dispose() {
+    _maintenanceDateController.dispose();
+    _maintenanceTimeController.dispose();
+    _maintenanceTypeController.dispose();
+    _maintenanceDescriptionController.dispose();
+    _maintenanceVehicleNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -319,7 +281,7 @@ class _AddVehicleMaintenanceScreenState
                         });
                       },
                       decoration: const InputDecoration(
-                        labelText: 'Select Vechicle',
+                        labelText: 'Select Vehicle',
                       ),
                     ),
                     const SizedBox(height: 16.0),

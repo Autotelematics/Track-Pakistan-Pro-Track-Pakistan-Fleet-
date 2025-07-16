@@ -209,7 +209,6 @@ class _DashboardState extends State<Dashboard> {
     _controller =
         VideoPlayerController.network('http://103.31.82.31/images/appvideo.mp4')
           ..initialize().then((_) {
-            // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
             setState(() {
               _controller.setLooping(true);
               _controller.play();
@@ -342,8 +341,7 @@ class _DashboardState extends State<Dashboard> {
                                 setDevicesStatusCounterss(devicesList);
                                 saveDefaultFuelAverageForVehicle(
                                     vehiclesNamesIdMap);
-                                print('Vehicle map length is ' +
-                                    vehiclesNamesIdMap.length.toString());
+                                print('Vehicle map length is ${vehiclesNamesIdMap.length}');
                                 vehicleStatusCountdata.clear();
                                 vehicleStatusCountdata.add(_ChartData(
                                     'Running', runningCount.toInt()));
@@ -1478,35 +1476,36 @@ class _DashboardState extends State<Dashboard> {
                 //     ),
                 //   ),
                 // ),
-                Card(
-                  shape: AppColors.cardBorderShape,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      // ignore: sized_box_for_whitespace
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.90,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: const [
-                              Text(
-                                '!انتباہ',
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Divider(height: 5),
-                              Text(
-                                  'ٹریکر ڈیوائس موٹر انشورنس کے متبادل نہیں ہے اور نا ہی چوری کو روکنے کا آلہ ہے، کمپنی گاڑی چوری کی صورت میں زمہ دار نہیں ہوگی۔',
-                                  textAlign: TextAlign.center),
-                            ],
-                          ),
-                        ),
-                      )),
+              Card(
+                shape: AppColors.cardBorderShape,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 15,
                 ),
+                child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    // ignore: sized_box_for_whitespace
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.90,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: const [
+                            Text(
+                              '!انتباہ',
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Divider(height: 5),
+                            Text(
+                                'ٹریکر ڈیوائس موٹر انشورنس کے متبادل نہیں ہے اور نا ہی چوری کو روکنے کا آلہ ہے، کمپنی گاڑی چوری کی صورت میں زمہ دار نہیں ہوگی۔',
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
+                    )),
+              ),
+                SizedBox(height: 10,),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

@@ -22,25 +22,19 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  UserSessionData userSessionData = UserSessionData();
-  UserLoginViewModel userLoginViewModel = UserLoginViewModel();
-  VehicleMaintenanceViewModel vehicleMaintenanceViewModel =
-      VehicleMaintenanceViewModel();
-  ExpenseRecordViewModel expenseRecordViewModel = ExpenseRecordViewModel();
-
   FlutterTts ftts = FlutterTts();
   SharedPreferences? sp;
   bool currentCheckBoxValue = false;
-  bool? alertsNotifications = false;
   double? fuelprice = 200;
   String? userID = 'User ID';
+  bool _hasFetched = false;
+
   Future<bool> getSharedPreferenceInstance() async {
     sp = await SharedPreferences.getInstance();
-    currentCheckBoxValue = sp!.getBool('playAlertSounds')!;
+    currentCheckBoxValue = sp!.getBool('playAlertSounds') ?? false;
     userID = sp!.getString('userid');
     fuelprice = sp!.getDouble('fuelPrice');
-
-    return Future.value(currentCheckBoxValue);
+    return currentCheckBoxValue;
   }
 
   Future<void> setFuelPrice(BuildContext context) {
@@ -66,12 +60,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         InkWell(
                           child: const Icon(Icons.close),
                           onTap: () => Navigator.pop(context),
-                        )
+                        ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: fuelPriceController,
                       focusNode: fuelFocusNode,
@@ -92,7 +84,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         fillColor: Color(0xfff2f2f3),
                         isDense: false,
                         contentPadding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         prefixIcon: Icon(
                           Icons.price_change_outlined,
                           color: Color(0xff212435),
@@ -100,9 +92,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     SubmitButton(
                       title: 'Set Fuel Price',
                       onPresse: () async {
@@ -115,16 +105,14 @@ class _SettingScreenState extends State<SettingScreen> {
                           return;
                         }
                         final SharedPreferences sp =
-                            await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                         sp.setDouble('fuelPrice',
                             double.parse(fuelPriceController.text));
-                        print(fuelPriceController.text);
-                        getSharedPreferenceInstance();
-                        setState(() {
-                          Navigator.pop(context);
-                        });
+                        await getSharedPreferenceInstance();
+                        setState(() {});
+                        Navigator.pop(context);
                       },
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -140,9 +128,8 @@ class _SettingScreenState extends State<SettingScreen> {
     final confirmPasswordController = TextEditingController();
     FocusNode passwordFocusNode = FocusNode();
 
-    UserLoginViewModel userLoginViewModel = UserLoginViewModel();
-    ChangePasswordRepository changePasswordRepository =
-        ChangePasswordRepository();
+    final userLoginViewModel = Provider.of<UserLoginViewModel>(context, listen: false);
+    final changePasswordRepository = ChangePasswordRepository();
     Future<String> userApiKey = userLoginViewModel.getUserApiHashString();
 
     return showDialog(
@@ -164,9 +151,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         const Text('Change Password'),
                         InkWell(
                           child: const Icon(Icons.close),
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
+                          onTap: () => Navigator.pop(context),
                         ),
                       ],
                     ),
@@ -189,7 +174,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         fillColor: Color(0xfff2f2f3),
                         isDense: false,
                         contentPadding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         prefixIcon: Icon(
                           Icons.price_change_outlined,
                           color: Color(0xff212435),
@@ -197,9 +182,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: confirmPasswordController,
                       autofocus: true,
@@ -218,7 +201,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         fillColor: Color(0xfff2f2f3),
                         isDense: false,
                         contentPadding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         prefixIcon: Icon(
                           Icons.price_change_outlined,
                           color: Color(0xff212435),
@@ -226,14 +209,11 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     SubmitButton(
                       title: 'Change Password',
                       onPresse: () async {
                         String userApiKeyString = await userApiKey;
-
                         if (passwordController.text.isEmpty ||
                             confirmPasswordController.text.isEmpty) {
                           Utils.flushBarErrorMessage(
@@ -251,18 +231,19 @@ class _SettingScreenState extends State<SettingScreen> {
                         }
                         changePasswordRepository
                             .changePasswordFromApi(
-                                userApiKeyString, passwordController.text)
+                            userApiKeyString, passwordController.text)
                             .then((value) {
                           if (value.status == 1) {
                             Utils.toastMessage('Password has been changed');
                             Future.delayed(
                               const Duration(seconds: 1),
-                              () {
+                                  () {
                                 navBarIndex = 0;
                                 userLoginViewModel
                                     .userSessionRemove()
                                     .then((value) {
-                                  userSessionData.checkusersession(context);
+                                  Provider.of<UserSessionData>(context, listen: false)
+                                      .checkusersession(context);
                                 });
                               },
                             );
@@ -275,12 +256,9 @@ class _SettingScreenState extends State<SettingScreen> {
                               'Password cannot be changed at this moment',
                               context);
                         });
-
-                        // setState(() {
-                        //   Navigator.pop(context);
-                        // });
+                        Navigator.pop(context);
                       },
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -293,527 +271,447 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
-    expenseRecordViewModel.fetchExpenseRecordsForVehicle('');
-    vehicleMaintenanceViewModel.fetchVehicleMaintenanceList('');
-    getSharedPreferenceInstance().then((value) {
-      currentCheckBoxValue = value;
-      setState(() {});
-    });
     super.initState();
+    // Removed Provider.of calls from initState to avoid ProviderNotFoundException
+    getSharedPreferenceInstance().then((value) {
+      setState(() {
+        currentCheckBoxValue = value;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    //getSharedPreferenceInstance();
-    return SafeArea(
-      child: DecoratedBox(
-        decoration: AppColors.appScreenBackgroundImage,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            title: Text(
-              'Settings',
-              style: AppColors.appTitleTextStyle,
-            ),
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            centerTitle: false,
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                const SizedBox(
-                  height: 0,
+    return MultiProvider(
+      providers: [
+        Provider(create: (_) => UserSessionData()),
+        ChangeNotifierProvider(create: (_) => UserLoginViewModel()),
+        ChangeNotifierProvider(create: (_) => VehicleMaintenanceViewModel()),
+        ChangeNotifierProvider(create: (_) => ExpenseRecordViewModel()),
+      ],
+      child: SafeArea(
+        child: Consumer2<VehicleMaintenanceViewModel, ExpenseRecordViewModel>(
+          builder: (context, vehicleMaintenanceViewModel, expenseRecordViewModel, child) {
+            // Fetch data only once after providers are available
+            if (!_hasFetched) {
+              _hasFetched = true;
+              expenseRecordViewModel.fetchExpenseRecordsForVehicle('');
+              vehicleMaintenanceViewModel.fetchVehicleMaintenanceList('');
+            }
+            return DecoratedBox(
+              decoration: AppColors.appScreenBackgroundImage,
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                appBar: AppBar(
+                  title: Text(
+                    'Settings',
+                    style: AppColors.appTitleTextStyle,
+                  ),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  centerTitle: false,
                 ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 30,
-                      width: MediaQuery.of(context).size.width,
-                      color: AppColors.buttonColor,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.person,color: AppColors.buttonTextColor,),
-                              //VerticalDivider(),
-                              Text(
-                                'Profile',
-                                style: TextStyle(
-                                  color: AppColors.buttonTextColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      // height: 30,
-                      width: MediaQuery.of(context).size.width - 10,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                body: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const SizedBox(height: 0),
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Row(
-                          //   children: [
-                          //     Expanded(
-                          //       child: Column(
-                          //         children: [
-                          //           Row(
-                          //             children: [
-                          //               Text('aghabro@gmail.com'),
-                          //             ],
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     Expanded(
-                          //       child: Column(
-                          //         children: [
-                          //           Text('aghabro@gmail.com'),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor:
-                                    Color.fromARGB(247, 6, 84, 117),
-                                radius: 16,
-                                child: Icon(
-                                  size: 18,
-                                  Icons.person,
-                                  color: AppColors.buttonTextColor,
-                                ),
-                              ),
-                              title: Text(
-                                userID.toString(),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              trailing: Container(
-                                child: GFButton(
-                                  onPressed: () {
-                                    navBarIndex = 0;
-                                    userLoginViewModel
-                                        .userSessionRemove()
-                                        .then((value) {
-                                      userSessionData.checkusersession(context);
-                                    });
-                                  },
-                                  text: "Logout",
-                                  textStyle:
-                                      AppColors.settingPageButtonTextStyle.copyWith(color: AppColors.buttonTextColor),
-                                  color: AppColors.buttonColor,
-                                  shape: GFButtonShape.pills,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor:
-                                    Color.fromARGB(247, 11, 105, 6),
-                                radius: 16,
-                                child: Icon(
-                                  size: 18,
-                                  Icons.key,
-                                ),
-                              ),
-                              title: const Text(
-                                'Password',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              trailing: GFButton(
-                                onPressed: () async {
-                                  // changePassword(context);
-                                },
-                                text: 'Change',
-                                textStyle: AppColors.settingPageButtonTextStyle.copyWith(color: AppColors.buttonTextColor),
-                                color: AppColors.buttonColor,
-                                shape: GFButtonShape.pills,
-                                size: 20,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      //height: 30,
-                      width: MediaQuery.of(context).size.width,
-                      color: AppColors.buttonColor,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Row(
-                              children: const [
-                                Icon(Icons.settings,color: AppColors.buttonTextColor,),
-                                //  VerticalDivider(),
-                                Text(
-                                  'Tools',
-                                  style: TextStyle(
-                                    color: AppColors.buttonTextColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14),
+                          Container(
+                            height: 30,
+                            width: MediaQuery.of(context).size.width,
+                            color: AppColors.buttonColor,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: const [
+                                    Icon(Icons.person),
+                                    Text(
+                                      'Profile',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      // height: 30,
-                      width: MediaQuery.of(context).size.width - 10,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Row(
-                          //   children: [
-                          //     Expanded(
-                          //       child: Column(
-                          //         children: [
-                          //           Row(
-                          //             children: [
-                          //               Text('aghabro@gmail.com'),
-                          //             ],
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     Expanded(
-                          //       child: Column(
-                          //         children: [
-                          //           Text('aghabro@gmail.com'),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, RoutesName.geoFenceList);
-                              },
-                              child: ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor:
-                                      Color.fromARGB(247, 5, 93, 152),
-                                  radius: 16,
-                                  child: Icon(
-                                    size: 18,
-                                    Icons.fence,
+                          Container(
+                            width: MediaQuery.of(context).size.width - 10,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: ListTile(
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                    leading: const CircleAvatar(
+                                      backgroundColor:
+                                      Color.fromARGB(247, 6, 84, 117),
+                                      radius: 16,
+                                      child: Icon(size: 18, Icons.person),
+                                    ),
+                                    title: Text(
+                                      userID.toString(),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                    trailing: Container(
+                                      child: GFButton(
+                                        onPressed: () {
+                                          navBarIndex = 0;
+                                          Provider.of<UserLoginViewModel>(context, listen: false)
+                                              .userSessionRemove()
+                                              .then((value) {
+                                            Provider.of<UserSessionData>(context, listen: false)
+                                                .checkusersession(context);
+                                          });
+                                        },
+                                        text: "Logout",
+                                        textStyle:
+                                        AppColors.settingPageButtonTextStyle,
+                                        color: AppColors.buttonColor,
+                                        shape: GFButtonShape.pills,
+                                        size: 20,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                title: Text(
-                                  'Geofecne Settings',
-                                  style: AppColors.settingTextstyle,
-                                ),
-                                trailing: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(Icons.arrow_forward),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, RoutesName.alertsTypeList);
-                              },
-                              child: ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor:
-                                      Color.fromARGB(247, 91, 4, 153),
-                                  radius: 16,
-                                  child: Icon(
-                                    size: 18,
-                                    Icons.notifications,
+                                const SizedBox(height: 5),
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: ListTile(
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                    leading: const CircleAvatar(
+                                      backgroundColor:
+                                      Color.fromARGB(247, 11, 105, 6),
+                                      radius: 16,
+                                      child: Icon(size: 18, Icons.key),
+                                    ),
+                                    title: const Text(
+                                      'Password',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                    trailing: GFButton(
+                                      onPressed: () => changePassword(context),
+                                      text: 'Change',
+                                      textStyle:
+                                      AppColors.settingPageButtonTextStyle,
+                                      color: AppColors.buttonColor,
+                                      shape: GFButtonShape.pills,
+                                      size: 20,
+                                    ),
                                   ),
                                 ),
-                                title: Text(
-                                  'Alerts Settings',
-                                  style: AppColors.settingTextstyle,
-                                ),
-                                trailing: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(Icons.arrow_forward),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor:
-                                    Color.fromARGB(247, 144, 6, 132),
-                                radius: 16,
-                                child: Icon(
-                                  size: 18,
-                                  Icons.speaker,
-                                ),
-                              ),
-                              title: Text(
-                                'Play Alerts Announcement',
-                                style: AppColors.settingTextstyle,
-                              ),
-                              trailing: SizedBox(
-                                // height: 25,
-                                width: 50,
-                                child: GFCheckbox(
-                                    size: GFSize.SMALL,
-                                    activeBgColor: AppColors.buttonColor,
-                                    onChanged: (checkboxvalue) async {
-                                      if (checkboxvalue) {
-                                        currentCheckBoxValue = true;
-                                        sp!.setBool('playAlertSounds',
-                                            currentCheckBoxValue);
-                                        setState(() {});
-                                      } else {
-                                        currentCheckBoxValue = false;
-                                        sp!.setBool('playAlertSounds',
-                                            currentCheckBoxValue);
-                                        setState(() {});
-                                      }
-                                    },
-                                    value: currentCheckBoxValue),
-                              ),
-                            ),
-                          ),
-                          Card(
-                            shape: AppColors.cardBorderShape,
-                            child: ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor:
-                                    Color.fromARGB(247, 182, 63, 8),
-                                radius: 16,
-                                child: Icon(
-                                  size: 18,
-                                  Icons.gas_meter_outlined,
-                                ),
-                              ),
-                              title: Text(
-                                'Fuel Cost : Rs.$fuelprice/l',
-                                style: AppColors.settingTextstyle,
-                              ),
-                              trailing: GFButton(
-                                onPressed: () {
-                                  setFuelPrice(context);
-                                },
-                                text: "Set Price",
-                                textStyle: AppColors.settingPageButtonTextStyle.copyWith(color: AppColors.buttonTextColor),
-                                color: AppColors.buttonColor,
-                                shape: GFButtonShape.pills,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-
-                          InkWell(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                  context, RoutesName.viewExpenseScreen,
-                                  arguments: {'vehicleId': ''});
-                            },
-                            child: Card(
-                              shape: AppColors.cardBorderShape,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const CircleAvatar(
-                                          maxRadius: 16,
-                                          backgroundColor: Colors.blueAccent,
-                                          child: Icon(
-                                              Icons.attach_money_outlined,
-                                              size: 18),
-                                        ),
-                                        const VerticalDivider(
-                                          width: 24,
-                                        ),
-                                        Text(
-                                          'Vehicle Expenses',
-                                          style: AppColors.settingTextstyle,
-                                        )
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        ChangeNotifierProvider.value(
-                                          value: expenseRecordViewModel,
-                                          child:
-                                              Consumer<ExpenseRecordViewModel>(
-                                            builder: (context, viewModel, _) {
-                                              double totalAmount = viewModel
-                                                  .calculateTotalAmount();
-                                              return Text('Rs.$totalAmount');
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                RoutesName.viewMaintenanceSchedule,
-                              );
-                            },
-                            child: Card(
-                              shape: AppColors.cardBorderShape,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CircleAvatar(
-                                          maxRadius: 16,
-                                          backgroundColor: Colors.red[800],
-                                          child: const Icon(
-                                            Icons.car_repair,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        const VerticalDivider(
-                                          width: 24,
-                                        ),
-                                        Text(
-                                          'Maintenance',
-                                          style: AppColors.settingTextstyle,
-                                        )
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              maxRadius: 16,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value:
-                                                    vehicleMaintenanceViewModel,
-                                                child: Consumer<
-                                                    VehicleMaintenanceViewModel>(
-                                                  builder:
-                                                      (context, viewModel, _) {
-                                                    return Text(viewModel
-                                                        .maintenanceList.length
-                                                        .toString());
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 3),
-                                            InkWell(
-                                                onTap: () => Navigator.pushNamed(
-                                                    context,
-                                                    RoutesName
-                                                        .addVehicleMaintenanceScreen),
-                                                child: const CircleAvatar(
-                                                    maxRadius: 16,
-                                                    child: Text('+'))),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            color: AppColors.buttonColor,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.settings),
+                                      Text(
+                                        'Tools',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width - 10,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, RoutesName.geoFenceList);
+                                    },
+                                    child: ListTile(
+                                      contentPadding:
+                                      const EdgeInsets.symmetric(horizontal: 8.0),
+                                      leading: const CircleAvatar(
+                                        backgroundColor:
+                                        Color.fromARGB(247, 5, 93, 152),
+                                        radius: 16,
+                                        child: Icon(size: 18, Icons.fence),
+                                      ),
+                                      title: Text(
+                                        'Geofecne Settings', // Typo retained from old version
+                                        style: AppColors.settingTextstyle,
+                                      ),
+                                      trailing: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Icon(Icons.arrow_forward),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, RoutesName.alertsTypeList);
+                                    },
+                                    child: ListTile(
+                                      contentPadding:
+                                      const EdgeInsets.symmetric(horizontal: 8.0),
+                                      leading: const CircleAvatar(
+                                        backgroundColor:
+                                        Color.fromARGB(247, 91, 4, 153),
+                                        radius: 16,
+                                        child: Icon(size: 18, Icons.notifications),
+                                      ),
+                                      title: Text(
+                                        'Alerts Settings',
+                                        style: AppColors.settingTextstyle,
+                                      ),
+                                      trailing: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Icon(Icons.arrow_forward),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: ListTile(
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                    leading: const CircleAvatar(
+                                      backgroundColor:
+                                      Color.fromARGB(247, 144, 6, 132),
+                                      radius: 16,
+                                      child: Icon(size: 18, Icons.speaker),
+                                    ),
+                                    title: Text(
+                                      'Play Alerts Announcement',
+                                      style: AppColors.settingTextstyle,
+                                    ),
+                                    trailing: SizedBox(
+                                      width: 50,
+                                      child: Checkbox(
+                                        activeColor: AppColors.buttonColor,
+                                        onChanged: (checkboxValue) async {
+                                          setState(() {
+                                            currentCheckBoxValue = checkboxValue ?? false;
+                                          });
+                                          sp!.setBool('playAlertSounds', currentCheckBoxValue);
+                                        },
+                                        value: currentCheckBoxValue,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Card(
+                                  shape: AppColors.cardBorderShape,
+                                  child: ListTile(
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                    leading: const CircleAvatar(
+                                      backgroundColor:
+                                      Color.fromARGB(247, 182, 63, 8),
+                                      radius: 16,
+                                      child: Icon(size: 18, Icons.gas_meter_outlined),
+                                    ),
+                                    title: Text(
+                                      'Fuel Cost : Rs.$fuelprice/l',
+                                      style: AppColors.settingTextstyle,
+                                    ),
+                                    trailing: GFButton(
+                                      onPressed: () => setFuelPrice(context),
+                                      text: "Set Price",
+                                      textStyle:
+                                      AppColors.settingPageButtonTextStyle,
+                                      color: AppColors.buttonColor,
+                                      shape: GFButtonShape.pills,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                        context, RoutesName.viewExpenseScreen,
+                                        arguments: {'vehicleId': ''});
+                                  },
+                                  child: Card(
+                                    shape: AppColors.cardBorderShape,
+                                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const CircleAvatar(
+                                                maxRadius: 16,
+                                                backgroundColor: Colors.blueAccent,
+                                                child: Icon(
+                                                    Icons.attach_money_outlined,
+                                                    size: 18),
+                                              ),
+                                              const VerticalDivider(width: 24),
+                                              Text(
+                                                'Vehicle Expenses',
+                                                style: AppColors.settingTextstyle,
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Consumer<ExpenseRecordViewModel>(
+                                                builder: (context, viewModel, _) {
+                                                  double totalAmount =
+                                                  viewModel.calculateTotalAmount();
+                                                  return Text('Rs.$totalAmount');
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                        context, RoutesName.viewMaintenanceSchedule);
+                                  },
+                                  child: Card(
+                                    shape: AppColors.cardBorderShape,
+                                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CircleAvatar(
+                                                maxRadius: 16,
+                                                backgroundColor: Colors.red[800],
+                                                child: const Icon(
+                                                  Icons.car_repair,
+                                                  size: 18,
+                                                ),
+                                              ),
+                                              const VerticalDivider(width: 24),
+                                              Text(
+                                                'Maintenance',
+                                                style: AppColors.settingTextstyle,
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    maxRadius: 16,
+                                                    child: Consumer<
+                                                        VehicleMaintenanceViewModel>(
+                                                      builder:
+                                                          (context, viewModel, _) {
+                                                        return Text(viewModel
+                                                            .maintenanceList.length
+                                                            .toString());
+                                                      },
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  InkWell(
+                                                    onTap: () => Navigator.pushNamed(
+                                                        context,
+                                                        RoutesName
+                                                            .addVehicleMaintenanceScreen),
+                                                    child: const CircleAvatar(
+                                                        maxRadius: 16,
+                                                        child: Text('+')),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: SubmitButton(
+                                    title: 'Play',
+                                    onPresse: () async {
+                                      await ftts.setLanguage("en-US");
+                                      await ftts.setSpeechRate(0.6);
+                                      await ftts.setVolume(1.0);
+                                      await ftts.setPitch(1);
+                                      var result = await ftts.speak("Vehicle-Ignition-Turned-Off");
+                                      if (result == 1) {
+                                        // speaking
+                                      } else {
+                                        // not speaking
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.all(15.0),
-                //   child: SubmitButton(
-                //     title: 'Play ',
-                //     onPresse: () async {
-                //       await ftts.setLanguage("en-US");
-                //       await ftts.setSpeechRate(0.6); //speed of speech
-                //       await ftts.setVolume(1.0); //volume of speech
-                //       await ftts.setPitch(1); //pitc of sound
-                //       var result = await ftts.speak("Vehicle-Ignition-Turned-Off");
-                //       if (result == 1) {
-                //         //speaking
-                //       } else {
-                //         //not speaking
-                //       }
-                //     },
-                //   ),
-                // ),
-                //
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -865,33 +865,40 @@ class _StatusDashboardSecondState extends State<StatusDashboardSecond> {
                               }
                               return InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    RoutesName.singledevicemap,
-                                    arguments: DeviceOnMapintialData(
-                                      groupID: deviceDataListResult[deviceIndex]
-                                          .groupid,
-                                      itemID: deviceDataListResult[deviceIndex]
-                                          .deviceIndexInGroup,
-                                      intialLat: double.parse(
-                                          deviceDataListResult[deviceIndex]
-                                              .devicedata['lat']
-                                              .toString()),
-                                      intiallng: double.parse(
-                                          deviceDataListResult[deviceIndex]
-                                              .devicedata['lng']
-                                              .toString()),
-                                      deviceId: int.parse(
-                                          deviceDataListResult[deviceIndex]
-                                              .devicedata['id']
-                                              .toString()),
-                                      markerImage: markerImages[deviceIndex],
-                                      intialdirection: double.parse(
-                                          deviceDataListResult[deviceIndex]
-                                              .devicedata['course']
-                                              .toString()),
-                                    ),
-                                  );
+                                  if(
+                                  deviceDataListResult[deviceIndex]
+                                      .devicedata['time'].toString().toLowerCase()=='expired'){
+                                    showVehicleExpiredPopup(context);
+                                  }else{
+                                    Navigator.pushNamed(
+                                      context,
+                                      RoutesName.singledevicemap,
+                                      arguments: DeviceOnMapintialData(
+                                        groupID: deviceDataListResult[deviceIndex]
+                                            .groupid,
+                                        itemID: deviceDataListResult[deviceIndex]
+                                            .deviceIndexInGroup,
+                                        intialLat: double.parse(
+                                            deviceDataListResult[deviceIndex]
+                                                .devicedata['lat']
+                                                .toString()),
+                                        intiallng: double.parse(
+                                            deviceDataListResult[deviceIndex]
+                                                .devicedata['lng']
+                                                .toString()),
+                                        deviceId: int.parse(
+                                            deviceDataListResult[deviceIndex]
+                                                .devicedata['id']
+                                                .toString()),
+                                        markerImage: markerImages[deviceIndex],
+                                        intialdirection: double.parse(
+                                            deviceDataListResult[deviceIndex]
+                                                .devicedata['course']
+                                                .toString()),
+                                      ),
+                                    );
+                                  }
+
                                 },
                                 child: Padding(
                                   padding:
@@ -1379,6 +1386,80 @@ class _StatusDashboardSecondState extends State<StatusDashboardSecond> {
           ),
         ),
       ),
+    );
+  }
+  Future<void> showVehicleExpiredPopup(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 8,
+          backgroundColor: Colors.white,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Warning Icon
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFF3E0),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFFF57C00),
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Title
+                const Text(
+                  'Vehicle Subscription Expired',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF212121),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                // Description
+                const Text(
+                  'Your vehicle subscription has expired. Please renew to continue tracking and accessing all features.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF757575),
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                // Action Button
+                const SizedBox(height: 12),
+                // Cancel Button
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF757575),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

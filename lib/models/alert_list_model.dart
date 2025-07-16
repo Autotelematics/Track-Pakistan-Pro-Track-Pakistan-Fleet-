@@ -1,14 +1,18 @@
+
 class AlertsListModel {
   AlertsListModel({
     required this.status,
     required this.items,
   });
-  late final dynamic status;
-  late final Items items;
 
-  AlertsListModel.fromJson(Map<dynamic, dynamic> json) {
-    status = json['status'];
-    items = Items.fromJson(json['items']);
+  final dynamic status;
+  final Items items;
+
+  factory AlertsListModel.fromJson(Map<dynamic, dynamic> json) {
+    return AlertsListModel(
+      status: json['status'] ?? 0, // Fallback to 0 if null
+      items: Items.fromJson(json['items'] ?? {}), // Fallback to empty map
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -23,10 +27,15 @@ class Items {
   Items({
     required this.alerts,
   });
-  late final List<Alerts> alerts;
 
-  Items.fromJson(Map<dynamic, dynamic> json) {
-    alerts = List.from(json['alerts']).map((e) => Alerts.fromJson(e)).toList();
+  final List<Alerts> alerts;
+
+  factory Items.fromJson(Map<dynamic, dynamic> json) {
+    return Items(
+      alerts: json['alerts'] != null
+          ? List.from(json['alerts']).map((e) => Alerts.fromJson(e)).toList()
+          : [], // Fallback to empty list
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -55,40 +64,43 @@ class Alerts {
     required this.geofences,
     required this.eventsCustom,
   });
-  late final dynamic id;
-  late final dynamic userId;
-  late final dynamic active;
-  late final dynamic name;
-  late final dynamic type;
-  late final dynamic schedules;
-  late final Notifications notifications;
-  late final dynamic createdAt;
-  late final dynamic updatedAt;
-  late final dynamic zone;
-  late final dynamic schedule;
-  late final Command command;
-  late final List<dynamic> devices;
-  late final List<dynamic> drivers;
-  late final List<dynamic> geofences;
-  late final List<dynamic> eventsCustom;
 
-  Alerts.fromJson(Map<dynamic, dynamic> json) {
-    id = json['id'];
-    userId = json['user_id'];
-    active = json['active'];
-    name = json['name'];
-    type = json['type'];
-    schedules = null;
-    notifications = Notifications.fromJson(json['notifications']);
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    zone = json['zone'];
-    schedule = json['schedule'];
-    command = Command.fromJson(json['command']);
-    devices = List.castFrom<dynamic, dynamic>(json['devices']);
-    drivers = List.castFrom<dynamic, dynamic>(json['drivers']);
-    geofences = List.castFrom<dynamic, dynamic>(json['geofences']);
-    //  eventsCustom = List.castFrom<dynamic, dynamic>(json['events_custom']);
+  final dynamic id;
+  final dynamic userId;
+  final dynamic active;
+  final dynamic name;
+  final dynamic type;
+  final dynamic schedules;
+  final Notifications notifications;
+  final dynamic createdAt;
+  final dynamic updatedAt;
+  final dynamic zone;
+  final dynamic schedule;
+  final Command command;
+  final List<dynamic> devices;
+  final List<dynamic> drivers;
+  final List<dynamic> geofences;
+  final List<dynamic> eventsCustom;
+
+  factory Alerts.fromJson(Map<dynamic, dynamic> json) {
+    return Alerts(
+      id: json['id'] ?? 0, // Fallback to 0
+      userId: json['user_id'] ?? 0, // Fallback to 0
+      active: json['active'] ?? 0, // Fallback to 0
+      name: json['name'] ?? '', // Fallback to empty string
+      type: json['type'] ?? '', // Fallback to empty string
+      schedules: json['schedules'], // Can be null
+      notifications: Notifications.fromJson(json['notifications'] ?? {}), // Fallback to empty map
+      createdAt: json['created_at'] ?? '', // Fallback to empty string
+      updatedAt: json['updated_at'] ?? '', // Fallback to empty string
+      zone: json['zone'] ?? 0, // Fallback to 0
+      schedule: json['schedule'] ?? 0, // Fallback to 0
+      command: Command.fromJson(json['command'] ?? {}), // Fallback to empty map
+      devices: json['devices'] != null ? List.castFrom<dynamic, dynamic>(json['devices']) : [], // Fallback to empty list
+      drivers: json['drivers'] != null ? List.castFrom<dynamic, dynamic>(json['drivers']) : [], // Fallback to empty list
+      geofences: json['geofences'] != null ? List.castFrom<dynamic, dynamic>(json['geofences']) : [], // Fallback to empty list
+      eventsCustom: json['events_custom'] != null ? List.castFrom<dynamic, dynamic>(json['events_custom']) : [], // Fallback to empty list
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -122,20 +134,23 @@ class Notifications {
     required this.webhook,
     required this.sharingEmail,
   });
-  late final Sound sound;
-  late final AutoHide autoHide;
-  late final Push push;
-  late final Email email;
-  late final Webhook webhook;
-  late final SharingEmail sharingEmail;
 
-  Notifications.fromJson(Map<dynamic, dynamic> json) {
-    sound = Sound.fromJson(json['sound']);
-    autoHide = AutoHide.fromJson(json['auto_hide']);
-    push = Push.fromJson(json['push']);
-    email = Email.fromJson(json['email']);
-    webhook = Webhook.fromJson(json['webhook']);
-    sharingEmail = SharingEmail.fromJson(json['sharing_email']);
+  final Sound sound;
+  final AutoHide autoHide;
+  final Push push;
+  final Email email;
+  final Webhook webhook;
+  final SharingEmail sharingEmail;
+
+  factory Notifications.fromJson(Map<dynamic, dynamic> json) {
+    return Notifications(
+      sound: Sound.fromJson(json['sound'] ?? {'active': '0'}), // Fallback
+      autoHide: AutoHide.fromJson(json['auto_hide'] ?? {'active': '0'}), // Fallback
+      push: Push.fromJson(json['push'] ?? {'active': '0'}), // Fallback
+      email: Email.fromJson(json['email'] ?? {'active': '0', 'input': ''}), // Fallback
+      webhook: Webhook.fromJson(json['webhook'] ?? {'active': '0', 'input': ''}), // Fallback
+      sharingEmail: SharingEmail.fromJson(json['sharing_email'] ?? {'active': '0', 'input': ''}), // Fallback
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -154,10 +169,13 @@ class Sound {
   Sound({
     required this.active,
   });
-  late final dynamic active;
 
-  Sound.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
+  final dynamic active;
+
+  factory Sound.fromJson(Map<dynamic, dynamic> json) {
+    return Sound(
+      active: json['active'] ?? '0', // Fallback to '0'
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -171,10 +189,13 @@ class AutoHide {
   AutoHide({
     required this.active,
   });
-  late final dynamic active;
 
-  AutoHide.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
+  final dynamic active;
+
+  factory AutoHide.fromJson(Map<dynamic, dynamic> json) {
+    return AutoHide(
+      active: json['active'] ?? '0', // Fallback to '0'
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -188,10 +209,13 @@ class Push {
   Push({
     required this.active,
   });
-  late final dynamic active;
 
-  Push.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
+  final dynamic active;
+
+  factory Push.fromJson(Map<dynamic, dynamic> json) {
+    return Push(
+      active: json['active'] ?? '0', // Fallback to '0'
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -206,12 +230,15 @@ class Email {
     required this.active,
     required this.input,
   });
-  late final dynamic active;
-  late final dynamic input;
 
-  Email.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
-    input = json['input'];
+  final dynamic active;
+  final dynamic input;
+
+  factory Email.fromJson(Map<dynamic, dynamic> json) {
+    return Email(
+      active: json['active'] ?? '0', // Fallback to '0'
+      input: json['input'] ?? '', // Fallback to empty string
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -227,12 +254,15 @@ class Webhook {
     required this.active,
     required this.input,
   });
-  late final dynamic active;
-  late final dynamic input;
 
-  Webhook.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
-    input = json['input'];
+  final dynamic active;
+  final dynamic input;
+
+  factory Webhook.fromJson(Map<dynamic, dynamic> json) {
+    return Webhook(
+      active: json['active'] ?? '0', // Fallback to '0'
+      input: json['input'] ?? '', // Fallback to empty string
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -248,12 +278,15 @@ class SharingEmail {
     required this.active,
     required this.input,
   });
-  late final dynamic active;
-  late final dynamic input;
 
-  SharingEmail.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
-    input = json['input'];
+  final dynamic active;
+  final dynamic input;
+
+  factory SharingEmail.fromJson(Map<dynamic, dynamic> json) {
+    return SharingEmail(
+      active: json['active'] ?? '0', // Fallback to '0'
+      input: json['input'] ?? '', // Fallback to empty string
+    );
   }
 
   Map<dynamic, dynamic> toJson() {
@@ -269,12 +302,15 @@ class Command {
     required this.active,
     required this.type,
   });
-  late final dynamic active;
-  late final dynamic type;
 
-  Command.fromJson(Map<dynamic, dynamic> json) {
-    active = json['active'];
-    type = json['type'];
+  final dynamic active;
+  final dynamic type;
+
+  factory Command.fromJson(Map<dynamic, dynamic> json) {
+    return Command(
+      active: json['active'] ?? '0', // Fallback to '0'
+      type: json['type'] ?? 'custom', // Fallback to 'custom'
+    );
   }
 
   Map<dynamic, dynamic> toJson() {

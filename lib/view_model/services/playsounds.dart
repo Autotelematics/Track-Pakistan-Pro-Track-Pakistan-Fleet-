@@ -36,30 +36,30 @@ class PlaySounds {
     await ftts.speak('$vehicleNumber $notificationAnnoucementString');
   }
 
-  // void playAnnoucments(RemoteMessage message) async {
-  //   FlutterTts ftts = FlutterTts();
-  //   List<String> notificationArray = message.notification!.title!.split(' ');
-  //   List<String> notificationStringList = [];
-  //   late String notificationAnnoucementString;
-  //   for (var i = 1; i < notificationArray.length; i++) {
-  //     notificationStringList.add(notificationArray[i]);
-  //   }
-  //   notificationAnnoucementString = notificationStringList.join(' ');
+  void playAnnoucments(RemoteMessage message) async {
+    FlutterTts ftts = FlutterTts();
+    List<String> notificationArray = message.notification!.title!.split(' ');
+    List<String> notificationStringList = [];
+    late String notificationAnnoucementString;
+    for (var i = 1; i < notificationArray.length; i++) {
+      notificationStringList.add(notificationArray[i]);
+    }
+    notificationAnnoucementString = notificationStringList.join(' ');
 
-  //   List<String> vehicleNumberr = notificationArray[0].split('');
-  //   String vehicleNumber = 'Alert! ';
-  //   for (var element in vehicleNumberr) {
-  //     vehicleNumber = "$vehicleNumber $element";
-  //   }
-  //   vehicleNumber = '$vehicleNumber .';
-  //   print(vehicleNumber);
+    List<String> vehicleNumberr = notificationArray[0].split('');
+    String vehicleNumber = 'Alert! ';
+    for (var element in vehicleNumberr) {
+      vehicleNumber = "$vehicleNumber $element";
+    }
+    vehicleNumber = '$vehicleNumber .';
+    print(vehicleNumber);
 
-  //   await ftts.speak('$vehicleNumber $notificationAnnoucementString');
-  // }
+    await ftts.speak('$vehicleNumber $notificationAnnoucementString');
+  }
 
-  // static void playStringAnnoucment(String message) async {
-  //   FlutterTts ftts = FlutterTts();
+  static void playStringAnnoucment(String message) async {
+    FlutterTts ftts = FlutterTts();
 
-  //   await ftts.speak(message);
-  // }
+    await ftts.speak(message);
+  }
 }

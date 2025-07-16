@@ -50,31 +50,6 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                   ],
                 ),
-                // Container(
-                //   //height: 30,
-                //   width: MediaQuery.of(context).size.width,
-                //   color: AppColors.buttonColor,
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Padding(
-                //         padding: const EdgeInsets.all(5.0),
-                //         child: Row(
-                //           children: const [
-                //             Icon(Icons.contact_phone),
-                //             VerticalDivider(),
-                //             Text(
-                //               'Contact Us',
-                //               style: TextStyle(
-                //                   fontWeight: FontWeight.bold, fontSize: 14),
-                //             ),
-                //           ],
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
                 const SizedBox(
                   height: 0,
                 ),
@@ -94,20 +69,21 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('mailto:info@bestcartracker.pk'),
+                      onTap: () =>
+                          _launchURLBrowser('mailto:info@bestcartracker.pk'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
                         child: const Image(
                           image:
-                              AssetImage('assets/images/Send Email_96px.png'),
+                          AssetImage('assets/images/Send Email_96px.png'),
                           width: 40,
                           height: 40,
                         ),
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('www.bestcartracker.pk'),
+                      onTap: () => _launchURLBrowser('https://bestcartracker.pk'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -128,7 +104,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   children: [
                     InkWell(
                       onTap: () => _launchURLBrowser(
-                          'https://wa.me/923111144668?text=I need information on tracker services'),
+                          'https://wa.me/92311144668?text=I need information on tracker services'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -141,7 +117,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                     InkWell(
                       onTap: () => _launchURLBrowser(
-                          'https://www.facebook.com/profile.php?id=61554860224018#'),
+                          'https://www.facebook.com/profile.php?id=61554860224018'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -153,16 +129,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text("No Account Found"),
-                        //   ),
-                        // );
-
-                         _launchURLBrowser(
-                            'https://www.instagram.com/bestcartracker/#');
-                      },
+                      onTap: () => _launchURLBrowser('https://www.instagram.com/bestcartracker/'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -249,15 +216,22 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
                   child: Text(
                     textAlign: TextAlign.center,
-                    'Hamdan heights ghauri town phase 5 Islamabad',
+                    'Hamdan Heights Ghauri Town Phase 5 Islamabad',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: Colors.black54),
                   ),
+                ),
+                const Text(
+                  'Powered By Auto Telematics Pvt. Ltd.',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: AppColors.buttonColor),
                 ),
               ],
             ),

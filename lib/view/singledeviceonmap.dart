@@ -27,7 +27,6 @@ import 'package:trackerapp/view_model/device_history_view_model.dart';
 import 'package:trackerapp/view_model/device_view_viewmodel.dart';
 import 'package:trackerapp/view_model/event_view_model.dart';
 import 'package:trackerapp/view_model/osmaddress_view_view_model.dart';
-import 'package:google_map_marker_animation/widgets/animarker.dart';
 import 'package:trackerapp/view_model/send_command_model_view.dart';
 
 late Color keyColor;
@@ -52,19 +51,19 @@ const kLocations = [];
 
 class SingleDeviceOnMap extends StatefulWidget {
   final DeviceOnMapintialData? intialData;
-  const SingleDeviceOnMap(
-    this.intialData, {
-    super.key,
-  });
+  const SingleDeviceOnMap(this.intialData, {super.key});
 
   int groupID() {
+    if (intialData == null || intialData!.groupID == null) {
+      throw Exception('groupID is not available');
+      // OR return a default value: return 0;
+    }
     return intialData!.groupID!.toInt();
   }
 
   @override
   State<SingleDeviceOnMap> createState() => _SingleDeviceOnMapState();
 }
-
 class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
   final animationMarkers = <MarkerId, Marker>{};
   final animationController = Completer<GoogleMapController>();
@@ -130,27 +129,6 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
     BitmapDescriptor myIcon = BitmapDescriptor.defaultMarker;
     BitmapDescriptor markerImage = BitmapDescriptor.defaultMarker;
     markerImage = await MapHelper.getMarkerImageFromUrl(_markerImageUrl);
-    // MarkerIcon.pictureAssetWithCenterText(
-    //         assetPath: iconImage, text: vehiclename, size: Size(200, 100))
-    //     .then((value) async {
-    //   _markers.clear();
-
-    //   _markers.add(Marker(
-    //     markerId: const MarkerId('1'),
-    //     position: LatLng(lat, lng),
-    //     infoWindow: InfoWindow(title: vehiclename),
-    //     icon: value,
-    //     rotation: direction,
-    //   ));
-    //   CameraPosition myCameraPosition =
-    //       CameraPosition(target: LatLng(lat, lng), zoom: 17);
-    //   myController = await _completer.future;
-
-    //   myController.animateCamera(
-    //     CameraUpdate.newCameraPosition(myCameraPosition),
-    //   );
-    // });
-
     BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(50, 100)),
       iconImage,
@@ -165,14 +143,6 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
         rotation: direction,
       ));
 
-      // CameraPosition myCameraPosition =
-      //     CameraPosition(target: LatLng(lat, lng), zoom: currentZoom);
-
-      // myController = await _completer.future;
-
-      // myController.animateCamera(
-      //   CameraUpdate.newCameraPosition(myCameraPosition),
-      // );
     });
   }
 
@@ -202,7 +172,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
   Future<void> getVehicleFuelAveragePerKm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     vehicleFuelAveragePerKm =
-        prefs.getDouble('fuelAverage_${widget.intialData!.deviceId}')!;
+    prefs.getDouble('fuelAverage_${widget.intialData!.deviceId}')!;
     currentFuelCost = prefs.getDouble('fuelPrice');
   }
 
@@ -232,22 +202,6 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
     ).then((value) {
       carIcon = value;
     });
-    // MapHelper.getMarkerImageFromUrl(_markerImageUrl).then((neworkIcon) {
-    //   //carIcon = neworkIcon;
-    //   _markers.add(
-    //     Marker(
-    //       rotation: vehicleDirection,
-    //       markerId: const MarkerId('1'),
-    //       position: LatLng(widget.intialData!.intialLat!.toDouble(),
-    //           widget.intialData!.intiallng!.toDouble()),
-    //       infoWindow: const InfoWindow(title: 'Vehicle'),
-    //       // icon: carIcon,
-    //       //icon: value,
-    //     ),
-    //   );
-    // });
-
-    // int refreshTime = 1;
     BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(),
       iconImage,
@@ -272,15 +226,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
       anchor: const Offset(0.5, .05),
       rotation: vehicleDirection,
     );
-    // newLocationUpdate(
-    //     LatLng(widget.intialData!.intialLat!.toDouble(),
-    //         widget.intialData!.intiallng!.toDouble()),
-    //     vehicleDirection,
-    //     '/device_icons/63bd67980d27a6.70730526_ack.png');
-
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // refreshTime = 10;
-      //print('Timer tick is ' + timer.tick.toString());
       deviceonmapViewViewModel.getDeviceDataListFromApi();
 
       eventViewModel.fetchEventsAlertsFromApi(
@@ -366,7 +312,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                 ),
                               );
                             case Status.COMPLETED:
-                              // _poluLatLng.clear();
+                            // _poluLatLng.clear();
 
                               groupId = widget.intialData!.groupID!.toInt();
                               itemId = widget.intialData!.itemID!.toInt();
@@ -378,59 +324,59 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                   for (var element in sensorsData!) {
                                     //print(element['name']);
                                     if (element['type']
-                                            .toString()
-                                            .toLowerCase() ==
+                                        .toString()
+                                        .toLowerCase() ==
                                         'battery') {
                                       batteryVoltage = element['value'];
                                     }
                                     if (element['name']
-                                            .toString()
-                                            .toLowerCase() ==
+                                        .toString()
+                                        .toLowerCase() ==
                                         'charging') {
                                       if (element['value']
-                                              .toString()
-                                              .toLowerCase() ==
+                                          .toString()
+                                          .toLowerCase() ==
                                           'on') {
                                         batteruChargingColor = Colors.green;
                                       } else if (element['value']
-                                              .toString()
-                                              .toLowerCase() ==
+                                          .toString()
+                                          .toLowerCase() ==
                                           'off') {
                                         batteruChargingColor = Colors.red;
                                       } else if (element['value']
-                                                  .toString()
-                                                  .toLowerCase() ==
-                                              '' ||
+                                          .toString()
+                                          .toLowerCase() ==
+                                          '' ||
                                           element['value']
-                                                  .toString()
-                                                  // ignore: unnecessary_null_comparison
-                                                  .toLowerCase() ==
+                                              .toString()
+                                          // ignore: unnecessary_null_comparison
+                                              .toLowerCase() ==
                                               null) {
                                         batteruChargingColor = Colors.grey;
                                       }
                                     }
                                     if (element['name'].toString().trim() ==
-                                            'Immobiliser' ||
+                                        'Immobiliser' ||
                                         element['name'].toString().trim() ==
                                             'Immobilizer') {
                                       //  print(element['name'] + ' ' + element['value']);
                                       if (element['value']
-                                              .toString()
-                                              .toLowerCase() ==
+                                          .toString()
+                                          .toLowerCase() ==
                                           'off') {
                                         immobilizerValue = false;
                                         immobilizerStatus =
-                                            'Immobiliser is off';
+                                        'Immobiliser is off';
                                       } else if (element['value']
-                                              .toString()
-                                              .toLowerCase() ==
+                                          .toString()
+                                          .toLowerCase() ==
                                           'on') {
                                         immobilizerValue = true;
                                         immobilizerStatus = 'Immobiliser is on';
                                       } else {
                                         immobilizerValue = false;
                                         immobilizerStatus =
-                                            'Immobiliser is N/A';
+                                        'Immobiliser is N/A';
                                       }
                                     }
 
@@ -476,12 +422,12 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                   .data![groupId].items![itemId]['speed']
                                   .toString();
                               latestLat = value.getDeviceModelListResponse
-                                      .data![groupId].items![itemId]['lat']
-                                      .toDouble() ??
+                                  .data![groupId].items![itemId]['lat']
+                                  .toDouble() ??
                                   0.0;
                               latestLng = value.getDeviceModelListResponse
-                                      .data![groupId].items![itemId]['lng']
-                                      .toDouble() ??
+                                  .data![groupId].items![itemId]['lng']
+                                  .toDouble() ??
                                   0.0;
                               iconColorFromApi = value
                                   .getDeviceModelListResponse
@@ -529,7 +475,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                               switch (iconColorFromApi) {
                                 case 'red':
                                   mainBoxbgColor =
-                                      const Color.fromARGB(220, 212, 2, 2);
+                                  const Color.fromARGB(220, 212, 2, 2);
                                   vehicleStatus = 'Stop';
                                   vehicleStopStartStatus = 'Stop since ';
                                   vehicleStatuscColor = Colors.white;
@@ -537,7 +483,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
 
                                 case 'green':
                                   mainBoxbgColor =
-                                      const Color.fromARGB(220, 3, 95, 1);
+                                  const Color.fromARGB(220, 3, 95, 1);
                                   vehicleStatus = 'Driving';
                                   vehicleStopStartStatus = 'Running since ';
                                   vehicleStatuscColor = Colors.white;
@@ -545,14 +491,14 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                   break;
                                 case 'blue':
                                   mainBoxbgColor =
-                                      const Color.fromARGB(220, 2, 79, 130);
+                                  const Color.fromARGB(220, 2, 79, 130);
                                   vehicleStatus = 'Offline';
                                   vehicleStopStartStatus = 'Stop since ';
                                   vehicleStatuscColor = Colors.white;
                                   break;
                                 case 'yellow':
                                   mainBoxbgColor =
-                                      const Color.fromARGB(220, 255, 187, 1);
+                                  const Color.fromARGB(220, 255, 187, 1);
                                   vehicleStatus = 'Idle';
                                   vehicleStopStartStatus = 'Stop since ';
                                   vehicleStatuscColor = Colors.black;
@@ -560,7 +506,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                   break;
                                 case 'black':
                                   mainBoxbgColor =
-                                      const Color.fromARGB(220, 255, 187, 1);
+                                  const Color.fromARGB(220, 255, 187, 1);
 
                                   vehicleStatus = 'parked';
                                   vehicleStopStartStatus = 'Stop since ';
@@ -569,7 +515,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
 
                                 default:
                                   mainBoxbgColor =
-                                      const Color.fromARGB(244, 76, 77, 77);
+                                  const Color.fromARGB(244, 76, 77, 77);
                                   vehicleStatus = 'not connected or offline';
                                   vehicleStatuscColor = Colors.black87;
                               }
@@ -580,15 +526,15 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                               newLocationUpdate(LatLng(latestLat, latestLng),
                                   vehicleDirection, iconPathfromApi);
 
-                              CameraPosition cameraPosition = CameraPosition(
-                                  target: LatLng(latestLat, latestLng),
-                                  zoom: 15);
-                              if (isMapLoaded) {
-                                myController.animateCamera(
-                                  CameraUpdate.newCameraPosition(
-                                      cameraPosition),
-                                );
-                              }
+                              // CameraPosition cameraPosition = CameraPosition(
+                              //     target: LatLng(latestLat, latestLng),
+                              //     zoom: 15);
+                              // if (isMapLoaded) {
+                              //   myController.animateCamera(
+                              //     CameraUpdate.newCameraPosition(
+                              //         cameraPosition),
+                              //   );
+                              // }
 
                               Future.delayed(Duration.zero, () {
                                 osmAddressViewModel.fetchOsmAddress(
@@ -602,9 +548,9 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                           .toSet(),
                                       duration: const Duration(
                                           seconds:
-                                              10), // change the animation duration
+                                          10), // change the animation duration
                                       fps:
-                                          10, // change the animation frames per second
+                                      10, // change the animation frames per second
                                       curve: Curves
                                           .ease, // change the animation curve
                                       builder: (context, animatedMarkers) {
@@ -612,15 +558,17 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                           buildingsEnabled: false,
                                           indoorViewEnabled: false,
                                           rotateGesturesEnabled: false,
+                                          myLocationEnabled: false,
+                                          myLocationButtonEnabled: false,
                                           minMaxZoomPreference:
-                                              const MinMaxZoomPreference(1, 21),
+                                          const MinMaxZoomPreference(1, 21),
                                           mapType: currentMapType,
                                           trafficEnabled: enableTraffic,
                                           markers: animatedMarkers,
                                           zoomControlsEnabled: true,
                                           initialCameraPosition: CameraPosition(
                                               target:
-                                                  LatLng(latestLat, latestLng),
+                                              LatLng(latestLat, latestLng),
                                               zoom: 15),
                                           onCameraMove: currentMapStatus,
                                           onMapCreated: (gController) {
@@ -648,13 +596,13 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               heroTag: UniqueKey(),
                                               mini: true,
                                               backgroundColor:
-                                                  AppColors.buttonColor,
+                                              AppColors.buttonColor,
                                               onPressed: () {
                                                 currentMapType =
-                                                    currentMapType ==
-                                                            MapType.normal
-                                                        ? MapType.hybrid
-                                                        : MapType.normal;
+                                                currentMapType ==
+                                                    MapType.normal
+                                                    ? MapType.hybrid
+                                                    : MapType.normal;
                                                 deviceonmapViewViewModel
                                                     .getDeviceDataListFromApi();
                                               },
@@ -669,9 +617,9 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                             child: FloatingActionButton(
                                               heroTag: UniqueKey(),
                                               backgroundColor:
-                                                  enableTraffic == false
-                                                      ? AppColors.buttonColor
-                                                      : Colors.green,
+                                              enableTraffic == false
+                                                  ? AppColors.buttonColor
+                                                  : Colors.green,
                                               mini: true,
                                               child: Icon(
                                                 Icons.traffic,
@@ -681,9 +629,9 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               ),
                                               onPressed: () {
                                                 enableTraffic =
-                                                    enableTraffic == false
-                                                        ? true
-                                                        : false;
+                                                enableTraffic == false
+                                                    ? true
+                                                    : false;
                                                 deviceonmapViewViewModel
                                                     .getDeviceDataListFromApi();
                                               },
@@ -694,7 +642,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                             child: FloatingActionButton(
                                               heroTag: UniqueKey(),
                                               backgroundColor:
-                                                  AppColors.buttonColor,
+                                              AppColors.buttonColor,
                                               mini: true,
                                               child: const Icon(
                                                   Icons.streetview,
@@ -710,7 +658,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                             child: FloatingActionButton(
                                               heroTag: UniqueKey(),
                                               backgroundColor:
-                                                  AppColors.buttonColor,
+                                              AppColors.buttonColor,
                                               mini: true,
                                               child: const Icon(Icons.share,
                                                   color: Colors.black54),
@@ -726,7 +674,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               heroTag: UniqueKey(),
                                               mini: true,
                                               backgroundColor:
-                                                  AppColors.buttonColor,
+                                              AppColors.buttonColor,
                                               onPressed: () async {
                                                 await Future.delayed(
                                                     const Duration(
@@ -734,7 +682,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                                 Navigator.of(context).pop();
                                               },
                                               child:
-                                                  const Icon(Icons.arrow_back),
+                                              const Icon(Icons.arrow_back),
                                             ),
                                           ),
                                           // const SizedBox(
@@ -843,14 +791,14 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                                    CrossAxisAlignment.stretch,
                                     children: [
                                       Container(
                                         margin: const EdgeInsets.all(15),
                                         decoration: BoxDecoration(
                                           color: mainBoxbgColor,
                                           borderRadius:
-                                              BorderRadius.circular(15.0),
+                                          BorderRadius.circular(15.0),
                                           //border: Border.all(width: 6, color: Colors.red),
                                         ),
                                         height: 70,
@@ -860,17 +808,17 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               flex: 1,
                                               child: Column(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                MainAxisAlignment.center,
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
+                                                CrossAxisAlignment.center,
                                                 children: [
                                                   CircleAvatar(
                                                     backgroundColor:
-                                                        Colors.black,
+                                                    Colors.black,
                                                     radius: 24.4,
                                                     child: CircleAvatar(
                                                       backgroundColor:
-                                                          Colors.white,
+                                                      Colors.white,
                                                       radius: 23,
                                                       child: Image(
                                                         fit: BoxFit.contain,
@@ -887,27 +835,27 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               flex: 3,
                                               child: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                MainAxisAlignment.center,
                                                 children: [
                                                   Text(
                                                     vehicleName,
                                                     overflow:
-                                                        TextOverflow.ellipsis,
+                                                    TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                         color:
-                                                            vehicleStatuscColor,
+                                                        vehicleStatuscColor,
                                                         fontSize: 15,
                                                         fontWeight:
-                                                            FontWeight.bold),
+                                                        FontWeight.bold),
                                                   ),
                                                   Row(children: [
                                                     Text(
                                                       updateTime,
                                                       style: TextStyle(
                                                           color:
-                                                              vehicleStatuscColor,
+                                                          vehicleStatuscColor,
                                                           fontSize: 10,
                                                           fontWeight: FontWeight
                                                               .normal),
@@ -918,7 +866,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                                       '$vehicleStopStartStatus$vehicleStopTime',
                                                       style: TextStyle(
                                                           color:
-                                                              vehicleStatuscColor,
+                                                          vehicleStatuscColor,
                                                           fontSize: 13,
                                                           fontWeight: FontWeight
                                                               .normal),
@@ -931,36 +879,36 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                                               flex: 1,
                                               child: Column(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                MainAxisAlignment.center,
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
+                                                CrossAxisAlignment.center,
                                                 children: [
                                                   Text(
                                                     vehcleSpeed,
                                                     style: TextStyle(
                                                         color:
-                                                            vehicleStatuscColor,
+                                                        vehicleStatuscColor,
                                                         fontSize: 16,
                                                         fontWeight:
-                                                            FontWeight.bold),
+                                                        FontWeight.bold),
                                                   ),
                                                   Text(
                                                     'km/h',
                                                     style: TextStyle(
                                                         color:
-                                                            vehicleStatuscColor,
+                                                        vehicleStatuscColor,
                                                         fontSize: 10,
                                                         fontWeight:
-                                                            FontWeight.normal),
+                                                        FontWeight.normal),
                                                   ),
                                                   Text(
                                                     vehicleStatus,
                                                     style: TextStyle(
                                                         color:
-                                                            vehicleStatuscColor,
+                                                        vehicleStatuscColor,
                                                         fontSize: 13,
                                                         fontWeight:
-                                                            FontWeight.normal),
+                                                        FontWeight.normal),
                                                   ),
                                                 ],
                                               ),
@@ -1001,7 +949,7 @@ class _SingleDeviceOnMapState extends State<SingleDeviceOnMap> {
                       osmAddressViewModel,
                       deviceHistoryViewModel,
                       eventViewModel,
-                      widget.intialData!,
+                      widget.intialData!, // Provide a default value if null
                       sensorsData),
                 ),
               ],
@@ -1081,7 +1029,7 @@ Widget _scrollingList(
                         fillColor: Color(0xfff2f2f3),
                         isDense: false,
                         contentPadding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         prefixIcon: Icon(
                           Icons.price_change_outlined,
                           color: Color(0xff212435),
@@ -1104,7 +1052,7 @@ Widget _scrollingList(
                           return;
                         }
                         final SharedPreferences sp =
-                            await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                         sp.setDouble('fuelAverage_${initialData.deviceId}',
                             double.parse(fuelPriceController.text));
                         print('Fuel set fuelAverage_${initialData.deviceId} ' +
@@ -1166,7 +1114,7 @@ Widget _scrollingList(
         .getDeviceCommandListFromApi(initialData.deviceId.toString());
 
     SendDeviceCommandViewModel sendDeviceCommandViewModel =
-        SendDeviceCommandViewModel();
+    SendDeviceCommandViewModel();
     int groupValue = 1;
     String deviceCommand = 'No Command';
     return showDialog(
@@ -1222,16 +1170,16 @@ Widget _scrollingList(
                             .getDeviceCommandsListResponse.data!.length,
                         itemBuilder: (commandsContext, commandIndex) {
                           if (deviceCommandsvalue.getDeviceCommandsListResponse
-                                      .data![commandIndex].type
-                                      .toString() ==
-                                  'custom' ||
+                              .data![commandIndex].type
+                              .toString() ==
+                              'custom' ||
                               deviceCommandsvalue.getDeviceCommandsListResponse
-                                      .data![commandIndex].type
-                                      .toString() ==
+                                  .data![commandIndex].type
+                                  .toString() ==
                                   'engineResume' ||
                               deviceCommandsvalue.getDeviceCommandsListResponse
-                                      .data![commandIndex].type
-                                      .toString() ==
+                                  .data![commandIndex].type
+                                  .toString() ==
                                   'engineStop') {
                             return Container();
                           }
@@ -1285,7 +1233,7 @@ Widget _scrollingList(
                       Utils.toastMessage('Sending Command');
                       sendDeviceCommandViewModel
                           .sendDeviceCommandToApi(
-                              deviceCommand, initialData.deviceId.toString())
+                          deviceCommand, initialData.deviceId.toString())
                           .then((value) {
                         Navigator.pop(context);
                       });
@@ -1401,13 +1349,13 @@ Widget _scrollingList(
                       padding: const EdgeInsets.all(4),
                       icon: immobilizerValue
                           ? const Icon(
-                              Icons.lock,
-                              color: Colors.red,
-                            )
+                        Icons.lock,
+                        color: Colors.red,
+                      )
                           : const Icon(
-                              Icons.lock_open,
-                              color: Colors.green,
-                            ),
+                        Icons.lock_open,
+                        color: Colors.green,
+                      ),
                       iconSize: 20,
                       color: Colors.black12,
                       shape: GFIconButtonShape.circle,
@@ -1416,7 +1364,7 @@ Widget _scrollingList(
                       onPressed: () {},
                       padding: const EdgeInsets.symmetric(horizontal: 2),
                       icon:
-                          const Icon(Icons.battery_5_bar, color: Colors.green),
+                      const Icon(Icons.battery_5_bar, color: Colors.green),
                       //iconSize: 18,
                       text: batteryVoltage,
                       textColor: Colors.black54,
@@ -1433,7 +1381,7 @@ Widget _scrollingList(
                   text: 'Current Nearest Location',
                   type: AppColors.deviceOnMapSligePanelHeading,
                   icon:
-                      Icon(Icons.location_on_outlined, color: Colors.blue[800]),
+                  Icon(Icons.location_on_outlined, color: Colors.blue[800]),
                   showDivider: false,
                   fontWeight: FontWeight.bold,
                   textColor: Colors.blue[800],
@@ -1462,12 +1410,12 @@ Widget _scrollingList(
                                         'Error while fetching address');
                                   case Status.COMPLETED:
                                     final displayName = value
-                                            .osmAddressResponse
-                                            .data
-                                            ?.features?[0]
-                                            .properties
-                                            ?.displayName
-                                            ?.toString() ??
+                                        .osmAddressResponse
+                                        .data
+                                        ?.features?[0]
+                                        .properties
+                                        ?.displayName
+                                        ?.toString() ??
                                         'Unknown Address';
                                     return Text(
                                       displayName,
@@ -1541,23 +1489,23 @@ Widget _scrollingList(
                           case 0:
                             deviceHistoryViewModel
                                 .fetchTodayDeviceHisotyFromApi(
-                                    initialData.deviceId!.toString(), 0);
+                                initialData.deviceId!.toString(), 0);
                             break;
 
                           case 1:
                             deviceHistoryViewModel
                                 .fetchTodayDeviceHisotyFromApi(
-                                    initialData.deviceId!.toString(), 1);
+                                initialData.deviceId!.toString(), 1);
                             break;
                           case 7:
                             deviceHistoryViewModel
                                 .fetchTodayDeviceHisotyFromApi(
-                                    initialData.deviceId!.toString(), 7);
+                                initialData.deviceId!.toString(), 7);
                             break;
                           case 30:
                             deviceHistoryViewModel
                                 .fetchTodayDeviceHisotyFromApi(
-                                    initialData.deviceId!.toString(), 30);
+                                initialData.deviceId!.toString(), 30);
                             break;
 
                           default:
@@ -1692,9 +1640,9 @@ Widget _scrollingList(
                                           ),
                                           Row(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                            CrossAxisAlignment.center,
                                             mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+                                            MainAxisAlignment.spaceAround,
                                             children: [
                                               Expanded(
                                                 flex: 1,
@@ -1704,12 +1652,12 @@ Widget _scrollingList(
                                                       horizontal: 10,
                                                       vertical: 5),
                                                   padding:
-                                                      const EdgeInsets.all(10),
+                                                  const EdgeInsets.all(10),
                                                   decoration: BoxDecoration(
                                                     color: Colors.grey[100],
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
+                                                    BorderRadius.circular(
+                                                        10.0),
                                                   ),
                                                   child: Column(
                                                     children: [
@@ -1721,8 +1669,8 @@ Widget _scrollingList(
                                                               color: Colors
                                                                   .black54,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                              FontWeight
+                                                                  .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -1747,12 +1695,12 @@ Widget _scrollingList(
                                                       .symmetric(
                                                       horizontal: 10),
                                                   padding:
-                                                      const EdgeInsets.all(10),
+                                                  const EdgeInsets.all(10),
                                                   decoration: BoxDecoration(
                                                     color: Colors.grey[100],
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
+                                                    BorderRadius.circular(
+                                                        10.0),
                                                   ),
                                                   child: Column(
                                                     children: [
@@ -1764,8 +1712,8 @@ Widget _scrollingList(
                                                               color: Colors
                                                                   .black54,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                              FontWeight
+                                                                  .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -1787,9 +1735,9 @@ Widget _scrollingList(
                                           ),
                                           Row(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                            CrossAxisAlignment.center,
                                             mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+                                            MainAxisAlignment.spaceAround,
                                             children: [
                                               Expanded(
                                                 flex: 1,
@@ -1799,12 +1747,12 @@ Widget _scrollingList(
                                                       horizontal: 10,
                                                       vertical: 5),
                                                   padding:
-                                                      const EdgeInsets.all(10),
+                                                  const EdgeInsets.all(10),
                                                   decoration: BoxDecoration(
                                                     color: Colors.green[50],
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
+                                                    BorderRadius.circular(
+                                                        10.0),
                                                   ),
                                                   child: Column(
                                                     children: [
@@ -1816,8 +1764,8 @@ Widget _scrollingList(
                                                               color: Colors
                                                                   .green[900],
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                              FontWeight
+                                                                  .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -1834,12 +1782,12 @@ Widget _scrollingList(
                                                                 .moveDuration
                                                                 .toString(),
                                                             style:
-                                                                const TextStyle(
+                                                            const TextStyle(
                                                               color: Colors
                                                                   .black54,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                              FontWeight
+                                                                  .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -1855,12 +1803,12 @@ Widget _scrollingList(
                                                       .symmetric(
                                                       horizontal: 10),
                                                   padding:
-                                                      const EdgeInsets.all(10),
+                                                  const EdgeInsets.all(10),
                                                   decoration: BoxDecoration(
                                                     color: Colors.red[50],
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
+                                                    BorderRadius.circular(
+                                                        10.0),
                                                   ),
                                                   child: Column(
                                                     children: [
@@ -1872,8 +1820,8 @@ Widget _scrollingList(
                                                               color: Colors
                                                                   .red[900],
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                              FontWeight
+                                                                  .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -2291,13 +2239,13 @@ Widget _scrollingList(
                 children: [
                   immobilizerValue
                       ? const Icon(
-                          Icons.lock,
-                          color: Colors.red,
-                        )
+                    Icons.lock,
+                    color: Colors.red,
+                  )
                       : const Icon(
-                          Icons.lock_open_rounded,
-                          color: Colors.green,
-                        ),
+                    Icons.lock_open_rounded,
+                    color: Colors.green,
+                  ),
                 ],
               ),
             ),
@@ -2315,7 +2263,7 @@ Widget _scrollingList(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color:
-                                immobilizerValue ? Colors.red : Colors.green),
+                            immobilizerValue ? Colors.red : Colors.green),
                       ),
                       GFButton(
                         onPressed: () => showCommandListPicker(
@@ -2577,21 +2525,21 @@ Widget _scrollingList(
               case Status.LOADING:
                 return const CircleAvatar(
                     child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
-                ));
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    ));
               case Status.ERROR:
                 return const CircleAvatar(
                     child: Padding(
-                  padding: EdgeInsets.all(0.0),
-                  child: Text('n/a',
-                      style:
+                      padding: EdgeInsets.all(0.0),
+                      child: Text('n/a',
+                          style:
                           TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                ));
+                    ));
               case Status.COMPLETED:
                 alertsList.clear();
                 for (var element
-                    in value.eventsAlertsResponse.data!.items!.data!) {
+                in value.eventsAlertsResponse.data!.items!.data!) {
                   alertsList.add(element);
                 }
 
@@ -2628,42 +2576,42 @@ Widget _scrollingList(
                       const Divider(),
                       alertsList.isNotEmpty
                           ? ListView.builder(
-                              shrinkWrap: true,
-                              physics: const ClampingScrollPhysics(),
-                              itemCount: alertsList.length,
-                              itemBuilder: (alertscontext, index) {
-                                return index < 5
-                                    ? Column(
-                                        children: [
-                                          ListTile(
-                                            title: Text(
-                                              alertsList[index]
-                                                  .message
-                                                  .toString(),
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                            ),
-                                            subtitle: Text(
-                                                alertsList[index]
-                                                    .createdAt
-                                                    .toString(),
-                                                style: const TextStyle(
-                                                    fontSize: 12)),
-                                            trailing: const Icon(
-                                              Icons
-                                                  .notifications_active_outlined,
-                                              size: 16,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                          const Divider(
-                                            height: 2,
-                                          )
-                                        ],
-                                      )
-                                    : Container();
-                              },
-                            )
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
+                        itemCount: alertsList.length,
+                        itemBuilder: (alertscontext, index) {
+                          return index < 5
+                              ? Column(
+                            children: [
+                              ListTile(
+                                title: Text(
+                                  alertsList[index]
+                                      .message
+                                      .toString(),
+                                  style:
+                                  const TextStyle(fontSize: 14),
+                                ),
+                                subtitle: Text(
+                                    alertsList[index]
+                                        .createdAt
+                                        .toString(),
+                                    style: const TextStyle(
+                                        fontSize: 12)),
+                                trailing: const Icon(
+                                  Icons
+                                      .notifications_active_outlined,
+                                  size: 16,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              const Divider(
+                                height: 2,
+                              )
+                            ],
+                          )
+                              : Container();
+                        },
+                      )
                           : const Text('Recent alerts are not available'),
                       GFButton(
                         onPressed: () {
@@ -2906,5 +2854,6 @@ class AlertsContainer extends StatelessWidget {
         ],
       ),
     );
+
   }
 }

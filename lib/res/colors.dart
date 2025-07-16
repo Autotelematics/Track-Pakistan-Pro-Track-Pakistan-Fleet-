@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:getwidget/getwidget.dart';
 
 class AppColors {
-  static const Color buttonColor = Color(0xff37b669); //ffb400
-  static const Color buttonTextColor = Color(0xffFFFFFF); //ffb400
+  static const Color buttonColor = Colors.green; //ffb400
   static const GFTypographyType deviceOnMapSligePanelHeading =
       GFTypographyType.typo5;
   static BorderRadius popupmenuborder = BorderRadius.circular(30);

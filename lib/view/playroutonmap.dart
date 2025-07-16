@@ -41,6 +41,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
   final PanelController panelController = PanelController();
   late TabController _tabController;
   int _currentIndex = 0;
+  String IconPathAndroid = 'assets/images/';
+  String IconPathIOS = 'assets/images/ios/';
 
   List<String> move_duration_split = [];
   List<String> stop_duration_split = [];
@@ -59,7 +61,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
     interval(
         Duration(
             milliseconds: playRoutOnMapViewModel.playBackTimeSpeed[
-                playRoutOnMapViewModel.selectedPlayBackSpeed]), (timer) {
+            playRoutOnMapViewModel.selectedPlayBackSpeed]), (timer) {
       timerPlayBack = timer;
       if ((playRoutOnMapViewModel.routeList.length - 1) >
           playRoutOnMapViewModel.currentSliderValue) {
@@ -105,7 +107,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
   void googleMapCameraBond(List<LatLng> tripsLatLng) async {
     LatLngBounds newLatLngBounds = LatLngBounds(
       southwest:
-          LatLng(tripsLatLng.first.latitude, tripsLatLng.first.longitude),
+      LatLng(tripsLatLng.first.latitude, tripsLatLng.first.longitude),
       northeast: LatLng(tripsLatLng.last.latitude, tripsLatLng.last.longitude),
     );
     final GoogleMapController controller = await animationController.future;
@@ -160,8 +162,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                 builder: (context, value, child) {
                   switch (value.deviceRoutHistoryResponse.status) {
                     case Status.LOADING:
-                      return Expanded(
-                        child: Stack(children: const [
+                      return const Expanded(
+                        child: Stack(children: [
                           Center(
                             child: Image(
                                 image: AssetImage('assets/images/loading.gif'),
@@ -190,16 +192,19 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                 },
                                 onCameraMove: currentMapStatus,
                                 polylines: value.routPolyLine,
+                                myLocationEnabled: false,
+                                myLocationButtonEnabled: false,
+
                               ),
                               Center(
                                 child: Container(
                                   width: MediaQuery.of(context).size.width - 30,
                                   height:
-                                      MediaQuery.of(context).size.height * 0.20,
+                                  MediaQuery.of(context).size.height * 0.20,
                                   padding:
-                                      const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                  const EdgeInsets.fromLTRB(10, 10, 10, 10),
                                   margin:
-                                      const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  const EdgeInsets.fromLTRB(0, 10, 0, 0),
                                   decoration: BoxDecoration(
                                     color: const Color.fromARGB(180, 0, 0, 0),
                                     borderRadius: BorderRadius.circular(10.0),
@@ -259,6 +264,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                               padding: EdgeInsets.only(
                                   bottom: MediaQuery.of(context).size.height *
                                       0.35),
+                              myLocationEnabled: false,
+                              myLocationButtonEnabled: false,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -267,8 +274,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                   children: [
                                     SizedBox(
                                       height:
-                                          MediaQuery.of(context).size.height *
-                                              0.34,
+                                      MediaQuery.of(context).size.height *
+                                          0.34,
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -277,9 +284,9 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                         backgroundColor: AppColors.buttonColor,
                                         onPressed: () {
                                           currentMapType =
-                                              currentMapType == MapType.normal
-                                                  ? MapType.hybrid
-                                                  : MapType.normal;
+                                          currentMapType == MapType.normal
+                                              ? MapType.hybrid
+                                              : MapType.normal;
                                           playRoutOnMapViewModel
                                               .resetGoogleMap();
                                         },
@@ -309,7 +316,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                             ),
                             SlidingUpPanel(
                               minHeight:
-                                  MediaQuery.of(context).size.height * 0.35,
+                              MediaQuery.of(context).size.height * 0.35,
                               controller: panelController,
                               maxHeight: MediaQuery.of(context).size.height * 1,
                               borderRadius: const BorderRadius.only(
@@ -482,7 +489,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
                                 text:
-                                    '${value.routeList[value.currentSliderValue].speed.toString()} ',
+                                '${value.routeList[value.currentSliderValue].speed.toString()} ',
                                 children: const <TextSpan>[
                                   TextSpan(
                                     text: 'km/h',
@@ -511,7 +518,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
                                 text:
-                                    '${value.routeList[value.currentSliderValue].time.toString().split(' ')[1]} ${value.routeList[value.currentSliderValue].time.toString().split(' ')[2].toLowerCase()} ',
+                                '${value.routeList[value.currentSliderValue].time.toString().split(' ')[1]} ${value.routeList[value.currentSliderValue].time.toString().split(' ')[2].toLowerCase()} ',
                                 children: <TextSpan>[
                                   TextSpan(
                                     text: value
@@ -544,7 +551,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
                                 text:
-                                    '${double.parse(value.routeList[value.currentSliderValue].distance!.toString()).toStringAsFixed(2)} ',
+                                '${double.parse(value.routeList[value.currentSliderValue].distance!.toString()).toStringAsFixed(2)} ',
                                 children: const [
                                   TextSpan(
                                     text: 'km',
@@ -590,7 +597,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                           activeColor: Colors.grey[400],
                           thumbColor: Colors.grey[400],
                           label:
-                              '${value.routeList[value.currentSliderValue.toInt()].rawTime}',
+                          '${value.routeList[value.currentSliderValue.toInt()].rawTime}',
                           divisions: value.sliderValueMax,
                           min: 0,
                           max: value.sliderValueMax.toDouble(),
@@ -649,7 +656,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                             children: [
                               TextSpan(
                                 text:
-                                    '${value.deviceRoutHistoryResponse.data!.distanceSum}',
+                                '${value.deviceRoutHistoryResponse.data!.distanceSum}',
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -667,7 +674,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                           children: [
                             TextSpan(
                               text:
-                                  '${value.deviceRoutHistoryResponse.data!.topSpeed}',
+                              '${value.deviceRoutHistoryResponse.data!.topSpeed}',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -788,9 +795,9 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                       'trip lat lng ${value.tripsList[index].tripPlayBackRout[0].longitude}');
 
                   tripSliderIndex = value.routeList.indexWhere((route) =>
-                      (route.latitude ==
-                          value.tripsList[index].tripRoutLatLng.first.latitude
-                              .toString()) &&
+                  (route.latitude ==
+                      value.tripsList[index].tripRoutLatLng.first.latitude
+                          .toString()) &&
                       (route.longitude ==
                           value.tripsList[index].tripRoutLatLng.first.longitude
                               .toString()));
@@ -840,7 +847,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                     children: [
                                       TextSpan(
                                         text:
-                                            '${value.tripsList[index].distance}',
+                                        '${value.tripsList[index].distance}',
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -870,22 +877,22 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                               ),
                               child: Padding(
                                 padding:
-                                    const EdgeInsets.fromLTRB(15, 3, 15, 3),
+                                const EdgeInsets.fromLTRB(15, 3, 15, 3),
                                 child: value.tripsList[index].status == 1
                                     ? const Text(
-                                        'Trip ',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white),
-                                      )
+                                  'Trip ',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                )
                                     : const Text(
-                                        'Stop ',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white),
-                                      ),
+                                  'Stop ',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
                               ),
                             ),
                             Row(
@@ -906,7 +913,7 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                                     children: [
                                       TextSpan(
                                         text:
-                                            '${value.tripsList[index].topSpeed}',
+                                        '${value.tripsList[index].topSpeed}',
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -930,8 +937,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: const [
+                            const Row(
+                              children: [
                                 Icon(
                                   Icons.play_circle_outline_outlined,
                                   size: 17,
@@ -960,8 +967,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: const [
+                            const Row(
+                              children: [
                                 Icon(
                                   Icons.alarm,
                                   size: 17,
@@ -991,8 +998,8 @@ class _PlayRoutOnMapState extends State<PlayRoutOnMap>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: const [
+                            const Row(
+                              children: [
                                 Icon(
                                   Icons.stop_circle_outlined,
                                   size: 17,

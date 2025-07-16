@@ -45,5 +45,38 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- ✅ ADD THIS SECTION BELOW -->
+
+	<!-- For Firebase Messaging -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+
+	<!-- Local Network Permission -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app requires access to the local network for connectivity and communication.</string>
+
+	<!-- App Transport Security (for HTTP video loading - not for production) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+
+	<!-- Push Notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+
+	<!-- Optional: For camera/mic/location (if needed by app) -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to the camera to scan or record.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone for audio recording.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to show your current position on the map.</string>
+
 </dict>
 </plist>

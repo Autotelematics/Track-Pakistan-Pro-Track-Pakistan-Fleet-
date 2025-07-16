@@ -14,7 +14,6 @@ class SubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
-
       onPressed: onPresse,
       color: AppColors.buttonColor,
       shape: RoundedRectangleBorder(
@@ -25,7 +24,7 @@ class SubmitButton extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.all(16),
-      textColor: const Color(0xffffffff),
+      textColor: const Color(0xff000000),
       height: 40,
       minWidth: MediaQuery.of(context).size.width,
       elevation: 0,

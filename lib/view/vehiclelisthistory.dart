@@ -188,203 +188,199 @@ class _VehicleHistoryListState extends State<VehicleHistoryList> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Container(
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: CircleAvatar(
-                                                minRadius: 20,
-                                                maxRadius: 25,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(2.0),
-                                                  child: Image(
-                                                    fit: BoxFit.fitHeight,
-                                                    image: NetworkImage(AppUrl
-                                                            .baseImgURL +
-                                                        _foundVehicles[index]
-                                                            ["iconPath"]),
-                                                  ),
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.all(8.0),
+                                            child: CircleAvatar(
+                                              minRadius: 20,
+                                              maxRadius: 25,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(2.0),
+                                                child: Image(
+                                                  fit: BoxFit.fitHeight,
+                                                  image: NetworkImage(AppUrl
+                                                          .baseImgURL +
+                                                      _foundVehicles[index]
+                                                          ["iconPath"]),
                                                 ),
                                               ),
                                             ),
-                                            const VerticalDivider(
-                                                thickness: 40),
-                                            Text(
-                                              _foundVehicles[index]["name"],
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        child: PopupMenuButton(
-                                          shape: ContinuousRectangleBorder(
-                                            borderRadius:
-                                                AppColors.popupmenuborder,
                                           ),
-                                          onSelected: ((value) {
-                                            String toDate;
-                                            String fromDate;
-                                            String fromTime = '00:00:01';
-                                            String toTime = '23:59:00';
-                                            DateTime dt;
-                                            DateFormat newFormat;
-                                            dt = DateTime.now();
-                                            newFormat = DateFormat("yy-MM-dd");
-                                            toDate = newFormat.format(dt);
-                                            switch (value) {
-                                              case 0:
-                                                toDate = newFormat.format(dt);
-                                                fromDate = newFormat.format(dt);
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  RoutesName.playroutonmap,
-                                                  arguments:
-                                                      DeviceHistoryOnMapIntialData(
-                                                          deviceTitle:
-                                                              _foundVehicles[
-                                                                      index]
-                                                                  ['name'],
-                                                          deviceId:
-                                                              _foundVehicles[
-                                                                  index]['id'],
-                                                          fromDate: fromDate,
-                                                          toDate: toDate,
-                                                          fromTime: fromTime,
-                                                          toTime: toTime),
-                                                );
-                                                break;
-
-                                              case 1:
-                                                toDate = newFormat.format(
-                                                    dt.subtract(const Duration(
-                                                        days: 1)));
-                                                fromDate = newFormat.format(
-                                                    dt.subtract(const Duration(
-                                                        days: 1)));
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  RoutesName.playroutonmap,
-                                                  arguments:
-                                                      DeviceHistoryOnMapIntialData(
-                                                          deviceTitle:
-                                                              _foundVehicles[
-                                                                      index]
-                                                                  ['name'],
-                                                          deviceId:
-                                                              _foundVehicles[
-                                                                  index]['id'],
-                                                          fromDate: fromDate,
-                                                          toDate: toDate,
-                                                          fromTime: fromTime,
-                                                          toTime: toTime),
-                                                );
-                                                break;
-                                              case 7:
-                                                toDate = newFormat.format(dt);
-                                                fromDate = newFormat.format(
-                                                    dt.subtract(const Duration(
-                                                        days: 7)));
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  RoutesName.playroutonmap,
-                                                  arguments:
-                                                      DeviceHistoryOnMapIntialData(
-                                                          deviceTitle:
-                                                              _foundVehicles[
-                                                                      index]
-                                                                  ['name'],
-                                                          deviceId:
-                                                              _foundVehicles[
-                                                                  index]['id'],
-                                                          fromDate: fromDate,
-                                                          toDate: toDate,
-                                                          fromTime: fromTime,
-                                                          toTime: toTime),
-                                                );
-                                                break;
-                                              case 30:
-                                                toDate = newFormat.format(dt);
-                                                fromDate = newFormat.format(
-                                                    dt.subtract(const Duration(
-                                                        days: 30)));
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  RoutesName.playroutonmap,
-                                                  arguments:
-                                                      DeviceHistoryOnMapIntialData(
-                                                          deviceTitle:
-                                                              _foundVehicles[
-                                                                      index]
-                                                                  ['name'],
-                                                          deviceId:
-                                                              _foundVehicles[
-                                                                  index]['id'],
-                                                          fromDate: fromDate,
-                                                          toDate: toDate,
-                                                          fromTime: fromTime,
-                                                          toTime: toTime),
-                                                );
-                                                break;
-                                              case 2:
-                                                showDatePickerDialog(
-                                                    context,
-                                                    'playroutonmap',
-                                                    _foundVehicles[index]
-                                                        ['id']);
-                                                break;
-
-                                              default:
-                                                toDate = newFormat.format(dt);
-                                                fromDate = newFormat.format(dt);
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  RoutesName.playroutonmap,
-                                                  arguments:
-                                                      DeviceHistoryOnMapIntialData(
-                                                          deviceTitle:
-                                                              _foundVehicles[
-                                                                      index]
-                                                                  ['name'],
-                                                          deviceId:
-                                                              _foundVehicles[
-                                                                  index]['id'],
-                                                          fromDate: fromDate,
-                                                          toDate: toDate,
-                                                          fromTime: fromTime,
-                                                          toTime: toTime),
-                                                );
-                                            }
-                                          }),
-                                          itemBuilder: (BuildContext bc) {
-                                            return const [
-                                              PopupMenuItem(
-                                                value: 0,
-                                                child: Text('Today'),
-                                              ),
-                                              PopupMenuItem(
-                                                value: 1,
-                                                child: Text('yesterday'),
-                                              ),
-                                              PopupMenuItem(
-                                                value: 7,
-                                                child: Text('7 Days'),
-                                              ),
-                                              PopupMenuItem(
-                                                value: 30,
-                                                child: Text('30 Days'),
-                                              ),
-                                              PopupMenuItem(
-                                                value: 2,
-                                                child: Text('Custom Date'),
-                                              ),
-                                            ];
-                                          },
+                                          const VerticalDivider(
+                                              thickness: 40),
+                                          Text(
+                                            _foundVehicles[index]["name"],
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      PopupMenuButton(
+                                        shape: ContinuousRectangleBorder(
+                                          borderRadius:
+                                              AppColors.popupmenuborder,
                                         ),
+                                        onSelected: ((value) {
+                                          String toDate;
+                                          String fromDate;
+                                          String fromTime = '00:00:01';
+                                          String toTime = '23:59:00';
+                                          DateTime dt;
+                                          DateFormat newFormat;
+                                          dt = DateTime.now();
+                                          newFormat = DateFormat("yy-MM-dd");
+                                          toDate = newFormat.format(dt);
+                                          switch (value) {
+                                            case 0:
+                                              toDate = newFormat.format(dt);
+                                              fromDate = newFormat.format(dt);
+                                              Navigator.pushNamed(
+                                                context,
+                                                RoutesName.playroutonmap,
+                                                arguments:
+                                                    DeviceHistoryOnMapIntialData(
+                                                        deviceTitle:
+                                                            _foundVehicles[
+                                                                    index]
+                                                                ['name'],
+                                                        deviceId:
+                                                            _foundVehicles[
+                                                                index]['id'],
+                                                        fromDate: fromDate,
+                                                        toDate: toDate,
+                                                        fromTime: fromTime,
+                                                        toTime: toTime),
+                                              );
+                                              break;
+
+                                            case 1:
+                                              toDate = newFormat.format(
+                                                  dt.subtract(const Duration(
+                                                      days: 1)));
+                                              fromDate = newFormat.format(
+                                                  dt.subtract(const Duration(
+                                                      days: 1)));
+                                              Navigator.pushNamed(
+                                                context,
+                                                RoutesName.playroutonmap,
+                                                arguments:
+                                                    DeviceHistoryOnMapIntialData(
+                                                        deviceTitle:
+                                                            _foundVehicles[
+                                                                    index]
+                                                                ['name'],
+                                                        deviceId:
+                                                            _foundVehicles[
+                                                                index]['id'],
+                                                        fromDate: fromDate,
+                                                        toDate: toDate,
+                                                        fromTime: fromTime,
+                                                        toTime: toTime),
+                                              );
+                                              break;
+                                            case 7:
+                                              toDate = newFormat.format(dt);
+                                              fromDate = newFormat.format(
+                                                  dt.subtract(const Duration(
+                                                      days: 7)));
+                                              Navigator.pushNamed(
+                                                context,
+                                                RoutesName.playroutonmap,
+                                                arguments:
+                                                    DeviceHistoryOnMapIntialData(
+                                                        deviceTitle:
+                                                            _foundVehicles[
+                                                                    index]
+                                                                ['name'],
+                                                        deviceId:
+                                                            _foundVehicles[
+                                                                index]['id'],
+                                                        fromDate: fromDate,
+                                                        toDate: toDate,
+                                                        fromTime: fromTime,
+                                                        toTime: toTime),
+                                              );
+                                              break;
+                                            case 30:
+                                              toDate = newFormat.format(dt);
+                                              fromDate = newFormat.format(
+                                                  dt.subtract(const Duration(
+                                                      days: 30)));
+                                              Navigator.pushNamed(
+                                                context,
+                                                RoutesName.playroutonmap,
+                                                arguments:
+                                                    DeviceHistoryOnMapIntialData(
+                                                        deviceTitle:
+                                                            _foundVehicles[
+                                                                    index]
+                                                                ['name'],
+                                                        deviceId:
+                                                            _foundVehicles[
+                                                                index]['id'],
+                                                        fromDate: fromDate,
+                                                        toDate: toDate,
+                                                        fromTime: fromTime,
+                                                        toTime: toTime),
+                                              );
+                                              break;
+                                            case 2:
+                                              showDatePickerDialog(
+                                                  context,
+                                                  'playroutonmap',
+                                                  _foundVehicles[index]
+                                                      ['id']);
+                                              break;
+
+                                            default:
+                                              toDate = newFormat.format(dt);
+                                              fromDate = newFormat.format(dt);
+                                              Navigator.pushNamed(
+                                                context,
+                                                RoutesName.playroutonmap,
+                                                arguments:
+                                                    DeviceHistoryOnMapIntialData(
+                                                        deviceTitle:
+                                                            _foundVehicles[
+                                                                    index]
+                                                                ['name'],
+                                                        deviceId:
+                                                            _foundVehicles[
+                                                                index]['id'],
+                                                        fromDate: fromDate,
+                                                        toDate: toDate,
+                                                        fromTime: fromTime,
+                                                        toTime: toTime),
+                                              );
+                                          }
+                                        }),
+                                        itemBuilder: (BuildContext bc) {
+                                          return const [
+                                            PopupMenuItem(
+                                              value: 0,
+                                              child: Text('Today'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 1,
+                                              child: Text('yesterday'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 7,
+                                              child: Text('7 Days'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 30,
+                                              child: Text('30 Days'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 2,
+                                              child: Text('Custom Date'),
+                                            ),
+                                          ];
+                                        },
                                       ),
                                     ],
                                   ),

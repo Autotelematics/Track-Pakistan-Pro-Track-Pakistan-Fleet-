@@ -126,6 +126,7 @@ class _LoginState extends State<Login> {
                   ),
                   focusNode: emailFocusNode,
                   keyboardType: TextInputType.emailAddress,
+                  
                   onSubmitted: (value) {
                     Utils.fieldFocusChange(
                         context, emailFocusNode, passwordFocusNode);
@@ -173,7 +174,6 @@ class _LoginState extends State<Login> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
                 child: SubmitButton(
-
                   loading: authViewModel.loading,
                   onPresse: () async {
                     if (emailController.text.isEmpty) {
@@ -202,7 +202,8 @@ class _LoginState extends State<Login> {
                 children: [
                   Text('Dont have an account? '),
                   GestureDetector(
-                    onTap: () => _launchURLBrowser('mailto:info@bestcartracker.pk'),
+                    onTap: () =>
+                        _launchURLBrowser('mailto:trackdrive37@gmail.com'),
                     child: Text(
                       'Contact Us',
                       style: TextStyle(

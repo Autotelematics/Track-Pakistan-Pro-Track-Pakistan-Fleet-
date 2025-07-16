@@ -3,26 +3,28 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotificationServices {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   static void initilize() {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings("@mipmap/launcher_icon");
+    AndroidInitializationSettings("@mipmap/ic_launcher");
+
     const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
+    DarwinInitializationSettings(
       requestSoundPermission: true,
       requestBadgePermission: true,
       requestAlertPermission: true,
     );
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsDarwin);
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+    );
 
     _notificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        print('Notification details ' + details.toString());
+        print('Notification tapped: ${details.payload}');
       },
     );
   }
@@ -30,36 +32,48 @@ class LocalNotificationServices {
   static void showNotifiationForground(RemoteMessage message) {
     const notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-          'com.trackitpro.android', 'trackit_pro',
-          importance: Importance.high, priority: Priority.high),
+        'com.bestcartracker.android',
+        'Best Car Tracker',
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
       iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          threadIdentifier: 'trackitpro'),
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        threadIdentifier: 'bestcartracker',
+      ),
     );
+
     _notificationsPlugin.show(
-        DateTime.now().microsecond,
-        message.notification!.title,
-        message.notification!.body,
-        notificationDetails);
+      DateTime.now().microsecond,
+      message.notification?.title ?? '',
+      message.notification?.body ?? '',
+      notificationDetails,
+    );
   }
 
   static void showNotifiationForgroundString(String title, String body) {
     const notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'com.trackitpro.android',
-        'trackit_pro',
+        'com.bestcartracker.android',
+        'Best Car Tracker',
         importance: Importance.high,
         priority: Priority.high,
       ),
       iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          threadIdentifier: 'trackitpro'),
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        threadIdentifier: 'bestcartracker',
+      ),
     );
+
     _notificationsPlugin.show(
-        DateTime.now().microsecond, title, body, notificationDetails);
+      DateTime.now().microsecond,
+      title,
+      body,
+      notificationDetails,
+    );
   }
 }

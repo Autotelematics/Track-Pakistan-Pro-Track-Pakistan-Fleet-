@@ -19,7 +19,7 @@ class AlertsListViewModel with ChangeNotifier {
     Future<String> userApiKey = userLoginViewModel.getUserApiHashString();
     String userApiKeyString = await userApiKey;
     _repoAlertListView.alertsTypeListApi(userApiKeyString).then(
-      (value) {
+          (value) {
         setAlertsListTypeResponse(ApiResponse.complete(value));
       },
     ).onError((error, stackTrace) {

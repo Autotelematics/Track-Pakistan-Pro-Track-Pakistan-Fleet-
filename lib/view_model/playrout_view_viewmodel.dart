@@ -7,15 +7,15 @@ import 'package:trackerapp/models/playbackrout.dart';
 import 'package:trackerapp/models/track_play_rout_model.dart';
 import 'package:trackerapp/view_model/osmaddress_view_view_model.dart';
 import 'package:trackerapp/view_model/userlogin_view_model.dart';
-
 import 'package:trackerapp/repository/device_history_repository.dart';
+import 'dart:io';
 
 class PlayRoutOnMapViewModel with ChangeNotifier {
   final DeviceHistoryRepository _historyRepository = DeviceHistoryRepository();
   UserLoginViewModel userLoginViewModel = UserLoginViewModel();
   OsmAddressViewModel osmAddressViewModel = OsmAddressViewModel();
   ApiResponse<DeviceHistoryModel> deviceRoutHistoryResponse =
-      ApiResponse.loading();
+  ApiResponse.loading();
   List<Marker> mapMarkers = [];
   List<LatLng> polyLatLng = [];
   List<LatLng> tripsLatLng = [];
@@ -32,7 +32,11 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
   BitmapDescriptor parkingIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor eventsIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor carIcon = BitmapDescriptor.defaultMarker;
-  var carIconPath = "assets/images/car_icon6.png";
+  var carIconPath = "assets/images/ios/car_icon6.png";
+  var carIconPathAndroid = "assets/images/car_icon6.png";
+  String IconPathAndroid = 'assets/images/';
+  String IconPathIOS = 'assets/images/ios/';
+
   int sliderValueMax = 0;
   int currentSliderValue = 0;
   int tripCount = 0;
@@ -130,7 +134,7 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
 
   Future<String> getOSMAddress(lat, lng) async {
     Future<String> addressFromOSM =
-        osmAddressViewModel.fetchOsmAddressAsString(lat, lng);
+    osmAddressViewModel.fetchOsmAddressAsString(lat, lng);
     String finalAddress = await addressFromOSM;
     return finalAddress;
   }
@@ -141,7 +145,15 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
   }
 
   setParkingPointsMarkers() async {
-    var iconPath = "assets/images/stops.png";
+    String iconPath;
+    if (Platform.isAndroid) {
+      iconPath = "${IconPathAndroid}stops.png";
+    } else if (Platform.isIOS) {
+      iconPath = "${IconPathIOS}stops.png";
+    } else {
+      iconPath = "assets/images/stops.png";
+    }
+
     parkingIcon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(32, 32)),
       iconPath,
@@ -153,16 +165,23 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
           anchor: const Offset(0.5, 0.5),
           position: element,
           draggable: true,
-          // rotation: double.parse(routeList[0].course),
-
           icon: parkingIcon,
         ),
       );
     }
+    notifyListeners();
   }
 
   setEventsPointsMarkers() async {
-    var iconPath = "assets/images/alert.png";
+    String iconPath;
+    if (Platform.isAndroid) {
+      iconPath = "${IconPathAndroid}alert.png";
+    } else if (Platform.isIOS) {
+      iconPath = "${IconPathIOS}alert.png";
+    } else {
+      iconPath = "assets/images/alert.png";
+    }
+
     eventsIcon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(32, 32)),
       iconPath,
@@ -176,18 +195,20 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
           anchor: const Offset(0.5, 0.5),
           position: element,
           draggable: true,
-          // rotation: double.parse(routeList[0].course),
-
           icon: eventsIcon,
         ),
       );
     }
+    notifyListeners();
   }
 
   setInitialCarMarker() async {
+    String selectedCarIconPath =
+    Platform.isAndroid ? carIconPathAndroid : carIconPath;
+
     carIcon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(),
-      carIconPath,
+      selectedCarIconPath,
     );
     mapMarkers.add(
       Marker(
@@ -195,21 +216,34 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
           anchor: const Offset(0.5, 0.5),
           position: LatLng(double.parse(routeList[0].latitude.toString()),
               double.parse(routeList[0].longitude.toString())),
-          // updated position
-          // rotation: double.parse(routeList[0].course),
           rotation: double.parse(routeList[0].course.toString()),
           draggable: true,
           icon: carIcon,
           infoWindow: const InfoWindow(title: 'Car')),
     );
+    notifyListeners();
   }
 
   setStartAndEndPointMarkers() async {
-    var iconPath = "assets/images/start.png";
-    var iconPathEnd = "assets/images/end.png";
+    String iconStart = "start.png";
+    String iconEnd = "end.png";
+    String iconPathStart;
+    String iconPathEnd;
+
+    if (Platform.isAndroid) {
+      iconPathStart = "${IconPathAndroid}start.png";
+      iconPathEnd = "${IconPathAndroid}end.png";
+    } else if (Platform.isIOS) {
+      iconPathStart = "${IconPathIOS}start.png";
+      iconPathEnd = "${IconPathIOS}end.png";
+    } else {
+      iconPathStart = "assets/images/start.png";
+      iconPathEnd = "assets/images/end.png";
+    }
+
     startIcon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(100, 100)),
-      iconPath,
+      iconPathStart,
     );
     endIcon = await BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: Size(100, 100)),
@@ -221,27 +255,23 @@ class PlayRoutOnMapViewModel with ChangeNotifier {
         anchor: const Offset(0.5, 0.5),
         position: LatLng(double.parse(routeList[0].latitude.toString()),
             double.parse(routeList[0].longitude.toString())),
-        // updated position
-        // rotation: double.parse(routeList[0].course),
         draggable: true,
         icon: startIcon,
       ),
     );
     mapMarkers.add(
       Marker(
-        markerId: MarkerId((routeList.length + 2).toString()),
+        markerId: MarkerId((routeList.length + 3).toString()),
         anchor: const Offset(0.5, 0.5),
         position: LatLng(
             double.parse(routeList[routeList.length - 1].latitude.toString()),
             double.parse(routeList[routeList.length - 1].longitude.toString())),
-        // updated position
-        // rotation: double.parse(routeList[0].course),
         draggable: true,
         icon: endIcon,
       ),
     );
 
-    // notifyListeners();
+    notifyListeners();
   }
 
   Future<void> fetchDeviceRoutHisotyFromApi(String deviceID, String fromDate,
