@@ -25,5 +25,5 @@ class AppColors {
   );
   static const String errorMessage =
       'trying to load data.Please check internet connection';
-  static const String logoPath = 'assets/images/splashscreen.png';
+  static const String logoPath = 'assets/images/splashsceen.png';
 }

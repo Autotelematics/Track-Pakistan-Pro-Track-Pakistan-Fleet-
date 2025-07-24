@@ -42,17 +42,17 @@ void main() async {
 
   if (Platform.isAndroid) {
     firebaseOptions = const FirebaseOptions(
-      apiKey: "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU",
-      appId: "1:564804113447:android:4191cd2ac7261527292a02",
-      messagingSenderId: "564804113447",
-      projectId: "worldautotel-8b93c",
+      apiKey: "AIzaSyBd7u3Jl_979xmMn3-9NtTcPKqFce5smkY",
+      appId: "1:339329536042:android:c0331a53395f7ae5abb353",
+      messagingSenderId: "339329536042",
+      projectId: "autotel-2f5a1",
     );
   } else if (Platform.isIOS) {
     firebaseOptions = const FirebaseOptions(
-      apiKey: 'AIzaSyA0p80FOcP-h7i9ZecRnOHNtuXa_Oe37lQ',
-      appId: '1:564804113447:ios:82cd7412cc0d1aad292a02',
-      messagingSenderId: '564804113447',
-      projectId: 'worldautotel-8b93c',
+      apiKey: 'AIzaSyByXVejFx0oYq-U5I37HaBqoeq9dcaV-bk',
+      appId: '1:339329536042:ios:2931391744e01db0abb353',
+      messagingSenderId: '339329536042',
+      projectId: 'autotel-2f5a1',
     );
   }
 

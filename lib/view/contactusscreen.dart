@@ -70,7 +70,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                     InkWell(
                       onTap: () =>
-                          _launchURLBrowser('mailto:info@bestcartracker.pk'),
+                          _launchURLBrowser('mailto:info@autotelnew.pk'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -83,7 +83,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('https://bestcartracker.pk'),
+                      onTap: () => _launchURLBrowser('https://autotelnew.pk'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -129,7 +129,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _launchURLBrowser('https://www.instagram.com/bestcartracker/'),
+                      onTap: () => _launchURLBrowser('https://www.instagram.com/autotelnew/'),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.grey[100],
@@ -151,7 +151,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () =>
-                            _launchURLBrowser('https://bestcartracker.pk/about-us/'),
+                            _launchURLBrowser('https://autotelnew.pk/about-us/'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(
@@ -172,7 +172,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () => _launchURLBrowser(
-                            'https://bestcartracker.pk/about-us/'),
+                            'https://autotelnew.pk/about-us/'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(
@@ -193,7 +193,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     children: [
                       InkWell(
                         onTap: () =>
-                            _launchURLBrowser('https://bestcartracker.pk/ultimate-vehicle-tracking-solutions-in-pakistan-best-car-tracker/'),
+                            _launchURLBrowser('https://autotelnew.pk/ultimate-vehicle-tracking-solutions-in-pakistan-best-car-tracker/'),
                         child: Card(
                           shape: AppColors.cardBorderShape,
                           child: const ListTile(

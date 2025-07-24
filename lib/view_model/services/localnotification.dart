@@ -32,7 +32,7 @@ class LocalNotificationServices {
   static void showNotifiationForground(RemoteMessage message) {
     const notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'com.bestcartracker.android',
+        'com.autotelnew.android',
         'Best Car Tracker',
         importance: Importance.high,
         priority: Priority.high,
@@ -41,7 +41,7 @@ class LocalNotificationServices {
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        threadIdentifier: 'bestcartracker',
+        threadIdentifier: 'autotelnew',
       ),
     );
 
@@ -56,7 +56,7 @@ class LocalNotificationServices {
   static void showNotifiationForgroundString(String title, String body) {
     const notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'com.bestcartracker.android',
+        'com.autotelnew.android',
         'Best Car Tracker',
         importance: Importance.high,
         priority: Priority.high,
@@ -65,7 +65,7 @@ class LocalNotificationServices {
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        threadIdentifier: 'bestcartracker',
+        threadIdentifier: 'autotelnew',
       ),
     );
 
