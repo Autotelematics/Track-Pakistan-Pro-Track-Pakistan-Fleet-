@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,1823 +10,792 @@ import 'package:trackerapp/models/devices_model.dart';
 import 'package:trackerapp/models/events_intitial_data.dart';
 import 'package:trackerapp/res/colors.dart';
 import 'package:trackerapp/utils/routes/routes_name.dart';
-import 'package:trackerapp/view/home.dart';
 import 'package:trackerapp/view_model/device_view_viewmodel.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:trackerapp/view_model/event_view_model.dart';
 import 'package:trackerapp/view_model/expnese_record_view_model.dart';
 import 'package:trackerapp/view_model/vehicle_maintenance_view_model.dart';
 import 'package:video_player/video_player.dart';
+import 'home.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  const Dashboard({super.key});
 
   @override
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  DeviceViewViewModel deviceViewViewModelOnDashboard = DeviceViewViewModel();
-  EventViewModel eventViewModel = EventViewModel();
-  EventViewModel eventViewModelExcessDrive = EventViewModel();
-  EventViewModel eventViewModelGeoFence = EventViewModel();
-  EventViewModel eventViewModelOverSpeed = EventViewModel();
-  EventViewModel eventViewModelCustom = EventViewModel();
-  EventViewModel eventViewModelStopDuration = EventViewModel();
-  EventViewModel eventViewModelIdleDurations = EventViewModel();
-  ExpenseRecordViewModel expenseRecordViewModel = ExpenseRecordViewModel();
-  VehicleMaintenanceViewModel vehicleMaintenanceViewModel =
-      VehicleMaintenanceViewModel();
-  late VideoPlayerController _controller;
-  int runningCount = 0;
-  int stoppedCount = 0;
-  int idleCount = 0;
-  int oflineCount = 0;
-  int noDataCount = 0;
-  int allCount = 0;
-  int expiredCount = 0;
-  late Legend legendProperties;
-  late List<DevicesModel> groupList = [];
-  late List<Color> sfgPaletteColor = [];
-  late List<dynamic> devicesList = [];
-  late List<_ChartData> vehicleStatusCountdata;
-  late List<_ChartData> dataBar;
-  late TooltipBehavior _tooltip;
-  late TextStyle dashBoardHeadingStyle;
-  late DataLabelSettings vehicleStatusGraphLableSettings;
-  late String deviceID = '';
-  late String eventType = '';
-  late String fromDate = '';
-  late String toDate = '';
-  late String pageNumber = '';
-  late DateTime dt = DateTime.now();
-  late DateFormat newFormat = DateFormat("yy-MM-dd");
-
-  Map<String, double> dataMap = {
-    "Moving": 5,
-    "Stopped": 3,
-    "Idle": 2,
-    "Offline": 2,
+class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMixin {
+  final DeviceViewViewModel deviceViewViewModel = DeviceViewViewModel();
+  final Map<String, EventViewModel> eventViewModels = {
+    for (var type in [
+      'all',
+      'overspeed',
+      'geofence',
+      'custom',
+      'stop_duration',
+      'idle_duration',
+      'excess_drive'
+    ])
+      type: EventViewModel(),
   };
-  Map<String, String> legenstMap = {
-    "Moving": 'Running (5)',
-    "Stopped": 'Stopped (3)',
-    "Idle": '2',
-    "Offline": "2",
-  };
+   final ExpenseRecordViewModel expenseViewModel = ExpenseRecordViewModel();
+  final VehicleMaintenanceViewModel maintenanceViewModel =
+  VehicleMaintenanceViewModel();
+  VideoPlayerController? _controller;
+  int runningCount = 0,
+      stoppedCount = 0,
+      idleCount = 0,
+      offlineCount = 0,
+      noDataCount = 0,
+      expiredCount = 0;
+  String selectedView = "Graph View",
+      selectedDuration = "Today",
+      selectedAlertsView = "Graph View"; // Changed to Table View
+  List<DevicesModel> groupList = [];
+  List<dynamic> devicesList = [];
+  List<_ChartData> vehicleStatusData = [];
+  List<_AlertChartData> alertData = [];
+  TooltipBehavior? _tooltip;
+  ScrollController? _scrollController;
+  AnimationController? _animationController;
+  Animation<double>? _animation;
+  Timer? _timer;
+  final DateFormat dateFormat = DateFormat("yy-MM-dd");
+  String fromDate = '', toDate = '';
+  bool isGraphView = true,
+      isAlertsGraphView = false; // Changed to false for TableView default
 
-  final colorList = <Color>[
-    const Color.fromARGB(255, 3, 95, 1),
-    const Color.fromARGB(255, 212, 2, 2),
-    const Color.fromARGB(255, 255, 187, 1),
-    const Color.fromARGB(255, 2, 79, 130),
+  final List<Color> vehicleStatusColors = const [
+    Color(0xFF4CAF50), // Green
+    Color(0xFFdd4848), // Red
+    Color(0xFFFFA726), // Orange
+    Color(0xFF42A5F5), // Blue
+    Color(0xFFB0BEC5), // Grey
+    Color(0xFF8D6E63), // Brown
   ];
-  Future<void> saveDefaultFuelAverageForVehicle(
-      List<Map<String, dynamic>> vehiclesNamesIdMap) async {
-    for (var vehicleMap in vehiclesNamesIdMap) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (prefs.getDouble('fuelAverage_${vehicleMap['id']}') == null) {
-        String key =
-            'fuelAverage_${vehicleMap['id']}'; // Creates a unique key like "fuelAverage_Car"
-        prefs.setDouble(key, 13.0);
-      } else {
-        // print(prefs.getDouble('fuelAverage_${vehicleMap['id']}'));
-        // print('fuelAverage_${vehicleMap['id']}');
+
+  final TextStyle headingStyle = const TextStyle(
+      fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black54);
+  final List<ChartData> chartData = List.generate(
+    49,
+        (i) => ChartData(
+      [
+        'pak',
+        'ind',
+        'wes',
+        'ban',
+        'us',
+        'indo',
+        'uk',
+        'can',
+        'aus',
+        'nz',
+        'sa',
+        'ger',
+        'fra',
+        'ita',
+        'spa',
+        'por',
+        'bra',
+        'arg',
+        'chi',
+        'jap',
+        'kor',
+        'tha',
+        'mal',
+        'sin',
+        'phi',
+        'vie',
+        'ind2',
+        'sri',
+        'nep',
+        'bhutan',
+        'myan',
+        'lao',
+        'cam',
+        'rus',
+        'uae',
+        'qat',
+        'kuw',
+        'saudi',
+        'egy',
+        'mor',
+        'alg',
+        'tun',
+        'nig',
+        'ken',
+        'gha',
+        'zam',
+        'zimb',
+        'nam',
+        'bot'
+      ][i],
+      [
+        50,
+        80,
+        100,
+        60,
+        30,
+        60,
+        30,
+        70,
+        90,
+        40,
+        55,
+        75,
+        65,
+        45,
+        85,
+        35,
+        95,
+        50,
+        70,
+        60,
+        80,
+        40,
+        55,
+        75,
+        45,
+        65,
+        90,
+        30,
+        50,
+        70,
+        60,
+        80,
+        40,
+        95,
+        55,
+        75,
+        45,
+        85,
+        65,
+        35,
+        70,
+        50,
+        60,
+        80,
+        40,
+        55,
+        75,
+        45,
+        65
+      ][i]
+          .toDouble(),
+    ),
+  );
+  final List<RetentionData> data1 = [
+    RetentionData('Feb', 40, 60),
+    RetentionData('Mar', 50, 50),
+    RetentionData('Apr', 45, 55),
+    RetentionData('May', 60, 40),
+    RetentionData('Jun', 55, 45),
+    RetentionData('Jul', 50, 50),
+    RetentionData('Aug', 40, 60),
+  ];
+
+  List<LinearGradient> _getVehicleStatusGradients() {
+    return const [
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [
+          Color(0xFFF5CF5D),
+          Color(0xFFF4B702)
+        ], // Total Alerts (Running)
+      ),
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFF8E65FF), Colors.deepPurple], // Geofence (Stopped)
+      ),
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFF66C6F2), Colors.blueAccent], // Excess Idle (Idle)
+      ),
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFFF96464), Colors.red], // Ignition on/off (Offline)
+      ),
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFFB0BEC5), Color(0xFFECEFF1)], // No Data
+      ),
+      LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFF8D6E63), Color(0xFFBCAAA4)], // Expired
+      ),
+    ];
+  }
+
+// Header Gradient
+  LinearGradient headerGradient = LinearGradient(
+    begin: Alignment.topRight,
+    end: Alignment.bottomLeft,
+    colors: [Color(0xFF0288D1), Color(0xFF26A69A)],
+  );
+  List<LinearGradient> _getAlertGradients() {
+    return const [
+      LinearGradient(
+          colors: [Color(0xFFF5CF5D), Color(0xFFF4B702)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFF8E65FF), Color(0xFF7E57C2)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFF8E65FF), Color(0xFF7E57C2)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFF66C6F2), Color(0xFF42A5F5)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFF66C6F2), Color(0xFF42A5F5)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFFF96464), Color(0xFFE57373)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+      LinearGradient(
+          colors: [Color(0xFFF96464), Color(0xFFE57373)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft),
+    ];
+  }
+
+  Future<void> saveDefaultFuelAverage(
+      List<Map<String, dynamic>> vehicles) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (var vehicle in vehicles) {
+        final key = 'fuelAverage_${vehicle['id']}';
+        if (prefs.getDouble(key) == null) await prefs.setDouble(key, 13.0);
       }
+    } catch (e) {
+      debugPrint('Error saving fuel average: $e');
     }
   }
 
-  setDevicesStatusCounterss(List<dynamic> devicesList) async {
+  void setDeviceStatusCounts(List<dynamic> devices) {
     vehicleNames.clear();
     vehiclesNamesIdMap.clear();
-    for (var device in devicesList) {
-      vehicleNames.add(device['name']);
-      vehiclesNamesIdMap.add({"id": device['id'], "name": device['name']});
-      // if (prefs.getInt(device['id'].toString()) == null) {
-      //   prefs.setInt(device['id'].toString(), 13);
-      //   print('Default fuel data added for ' + device['id'].toString());
-      // }
-      allCount = allCount + 1;
-      var deviceStatus = device['online'];
-      if (deviceStatus.toLowerCase() == 'ack') {
-        stoppedCount = stoppedCount + 1;
-      }
-      if (deviceStatus.toLowerCase() == 'online') {
-        runningCount = runningCount + 1;
-      }
-      if (device['online'].toString().toLowerCase() == "offline" &&
-          device['time'].toString().toLowerCase() != "Not connected") {
-        oflineCount = oflineCount + 1;
-      }
-      if (device['online'].toString().toLowerCase() == "offline" &&
-          device['time'].toString().toLowerCase() == "not connected") {
-        noDataCount = noDataCount + 1;
-      }
-      if (device['time'].toString().toLowerCase() == "expired") {
-        expiredCount = expiredCount + 1;
-      }
-      if (deviceStatus.toLowerCase() == 'engine') {
-        idleCount = idleCount + 1;
+    runningCount = stoppedCount =
+        idleCount = offlineCount = noDataCount = expiredCount = 0;
+    for (var device in devices) {
+      vehicleNames.add(device['name']?.toString() ?? 'Unknown');
+      vehiclesNamesIdMap.add({
+        'id': device['id']?.toString() ?? '',
+        'name': device['name']?.toString() ?? 'Unknown'
+      });
+      final status = (device['online']?.toString() ?? '').toLowerCase();
+      final time = (device['time']?.toString() ?? '').toLowerCase();
+      switch (status) {
+        case 'ack':
+          stoppedCount++;
+          break;
+        case 'online':
+          runningCount++;
+          break;
+        case 'offline' when time != 'not connected':
+          offlineCount++;
+          break;
+        case 'offline' when time == 'not connected':
+          noDataCount++;
+          break;
+        case 'engine':
+          idleCount++;
+          break;
+        default:
+          if (time == 'expired') expiredCount++;
       }
     }
   }
 
+  late List<_ChartData> data;
   @override
   void initState() {
-    expenseRecordViewModel.fetchExpenseRecordsForVehicle('');
-    vehicleMaintenanceViewModel.fetchVehicleMaintenanceList('');
-    deviceViewViewModelOnDashboard.getDeviceDataListFromApi();
-    toDate = newFormat.format(dt.add(const Duration(days: 1)));
-    fromDate = newFormat.format(dt);
-    sfgPaletteColor = [
-      Colors.green,
-      Colors.red,
-      Colors.yellow,
-      Colors.blue,
-      Colors.grey,
-      const Color.fromARGB(255, 138, 13, 4)
+    super.initState();
+    _scrollController = ScrollController();
+    data = [
+      _ChartData('CHN', 12),
+      _ChartData('GER', 15),
+      _ChartData('RUS', 30),
+      _ChartData('BRZ', 64),
+      _ChartData('IND', 14)
     ];
-    dashBoardHeadingStyle = const TextStyle(
-        fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black54);
-    vehicleStatusGraphLableSettings = const DataLabelSettings(
-        isVisible: true,
-        labelPosition: ChartDataLabelPosition.inside,
-        showZeroValue: false,
-        useSeriesColor: false);
+    _tooltip = TooltipBehavior(enable: true);
+    _animationController =
+    AnimationController(vsync: this, duration: const Duration(seconds: 20))
+      ..repeat();
+    _animation =
+    Tween<double>(begin: 0, end: 2000).animate(_animationController!)
+      ..addListener(() {
+        if (_scrollController?.hasClients ?? false) {
+          _scrollController!.jumpTo(_animation!.value);
+        }
+      });
+    _animationController?.forward();
 
-    legendProperties = Legend(
-      isVisible: true,
-      position: LegendPosition.right,
-      isResponsive: true,
-      width: '100%',
-    );
-    vehicleStatusCountdata = [
+    expenseViewModel.fetchExpenseRecordsForVehicle('');
+    maintenanceViewModel.fetchVehicleMaintenanceList('');
+    deviceViewViewModel.getDeviceDataListFromApi();
+
+    final now = DateTime.now();
+    fromDate = dateFormat.format(now);
+    toDate = dateFormat.format(now.add(const Duration(days: 1)));
+
+    _tooltip = TooltipBehavior(enable: true);
+    vehicleStatusData = [
       _ChartData('Running', 1),
       _ChartData('Stopped', 1),
       _ChartData('Idle', 1),
       _ChartData('Offline', 1),
-      _ChartData('No Data', 1),
-      _ChartData('Expired', 1),
     ];
-    dataBar = [
-      _ChartData('Runninga', 4),
-      _ChartData('Stoped', 26),
-      _ChartData('Idle', 3),
-      _ChartData('Offline', 2),
-      _ChartData('fast', 4),
-      _ChartData('urltraFast', 26),
-      _ChartData('Idlea', 3),
-      _ChartData('Offlinea', 2),
-      _ChartData('Runningaa', 4),
-      _ChartData('Stopeda', 26),
-      _ChartData('Idlea', 3),
-      _ChartData('Offlinea', 2),
-      _ChartData('fasta', 4),
-      _ChartData('urltraFasta', 26),
-      _ChartData('Idleaa', 3),
-      _ChartData('Offlineaa', 2)
+    alertData = [
+      _AlertChartData(
+        'Total Alerts', 0, Icons.notifications_active_outlined,),
+      _AlertChartData('Geofence', 0, Icons.fence_outlined),
+      _AlertChartData('Overspeed', 0, Icons.speed),
+      _AlertChartData('Excess Idle', 0, Icons.pause),
+      _AlertChartData('Excess Driving', 0, Icons.drive_eta),
+      _AlertChartData('Ignition on/off', 0, Icons.key),
+      _AlertChartData('Parked', 0, Icons.local_parking_outlined),
     ];
-    dataBar.add(_ChartData('Offlineaaa', 56));
-    _tooltip = TooltipBehavior(enable: true);
-    Timer.periodic(const Duration(seconds: 30), (timer) {
-      deviceViewViewModelOnDashboard.getDeviceDataListFromApi();
-    });
-    eventViewModel.fetchEventsAlertsFromApi(
-        deviceID, eventType, fromDate, toDate, pageNumber);
-    eventViewModelOverSpeed.fetchEventsAlertsFromApi(
-        deviceID, 'overspeed', fromDate, toDate, pageNumber);
-    eventViewModelCustom.fetchEventsAlertsFromApi(
-        deviceID, 'custom', fromDate, toDate, pageNumber);
-    eventViewModelExcessDrive.fetchEventsAlertsFromApi(
-        deviceID, 'distance', fromDate, toDate, pageNumber);
-    eventViewModelGeoFence.fetchEventsAlertsFromApi(
-        deviceID, 'zone_out', fromDate, toDate, pageNumber);
-    eventViewModelStopDuration.fetchEventsAlertsFromApi(
-        deviceID, 'stop_duration', fromDate, toDate, pageNumber);
-    eventViewModelIdleDurations.fetchEventsAlertsFromApi(
-        deviceID, 'idle_duration', fromDate, toDate, pageNumber);
-    super.initState();
 
-    _controller =
-        VideoPlayerController.network('http://103.31.82.31/images/appvideo.mp4')
-          ..initialize().then((_) {
-            setState(() {
-              _controller.setLooping(true);
-              _controller.play();
-            });
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      deviceViewViewModel.getDeviceDataListFromApi();
+      eventViewModels.forEach((key, model) {
+        model.fetchEventsAlertsFromApi(
+            '', key == 'all' ? '' : key, fromDate, toDate, '');
+      });
+    });
+
+    eventViewModels.forEach((key, model) {
+      model.fetchEventsAlertsFromApi(
+          '', key == 'all' ? '' : key, fromDate, toDate, '');
+    });
+
+    _controller = VideoPlayerController.networkUrl(
+        Uri.parse('http://103.31.82.31/images/appvideo.mp4'))
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _controller?.setLooping(true);
+            _controller?.play();
           });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose();
+    _scrollController?.dispose();
+    _controller?.dispose();
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: DecoratedBox(
-        decoration: AppColors.appScreenBackgroundImage,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            title: Text(
-              'Dashboard',
-              style: AppColors.appTitleTextStyle,
-            ),
-            elevation: 0,
-            backgroundColor: Colors.white,
-            centerTitle: false,
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                Card(
-                  shape: AppColors.cardBorderShape,
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Text(
-                              'Vehicle Status',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ],
-                      ),
-                      ChangeNotifierProvider.value(
-                        value: deviceViewViewModelOnDashboard,
-                        // create: (BuildContext context) =>
-                        //     deviceViewViewModelOnDashboard,
-                        child: Consumer<DeviceViewViewModel>(
-                          builder: (context, value, child) {
-                            switch (value.getDeviceModelListResponse.status) {
-                              case Status.LOADING:
-                                return SfCircularChart(
-                                  margin: const EdgeInsets.all(0),
-                                  // title: ChartTitle(text: 'Vehicle Status'),
-                                  tooltipBehavior: _tooltip,
-                                  annotations: <CircularChartAnnotation>[
-                                    CircularChartAnnotation(
-                                      widget: const Image(
-                                          image: AssetImage(
-                                              'assets/images/loading.gif'),
-                                          height: 50,
-                                          width: 50),
-                                    )
-                                  ],
-                                  legend: legendProperties,
-                                  palette: sfgPaletteColor,
-                                  series: <CircularSeries>[
-                                    DoughnutSeries<_ChartData, String>(
-                                      onPointTap:
-                                          (ChartPointDetails details) {},
-                                      dataLabelSettings:
-                                          vehicleStatusGraphLableSettings,
-                                      dataSource: vehicleStatusCountdata,
-                                      xValueMapper: (_ChartData data, _) =>
-                                          data.x,
-                                      yValueMapper: (_ChartData data, _) =>
-                                          data.y,
-                                    )
-                                  ],
-                                );
-                              case Status.ERROR:
-                                return SfCircularChart(
-                                  margin: const EdgeInsets.all(0),
-                                  //   title: ChartTitle(text: 'Vehicle Status'),
-                                  tooltipBehavior: _tooltip,
-                                  annotations: <CircularChartAnnotation>[
-                                    CircularChartAnnotation(
-                                      widget: const Image(
-                                          image: AssetImage(
-                                              'assets/images/loading.gif'),
-                                          height: 70,
-                                          width: 70),
-                                    )
-                                  ],
-                                  legend: legendProperties,
-                                  palette: sfgPaletteColor,
-                                  series: <CircularSeries>[
-                                    DoughnutSeries<_ChartData, String>(
-                                      onPointTap:
-                                          (ChartPointDetails details) {},
-                                      dataLabelSettings:
-                                          vehicleStatusGraphLableSettings,
-                                      dataSource: vehicleStatusCountdata,
-                                      xValueMapper: (_ChartData data, _) =>
-                                          data.x,
-                                      yValueMapper: (_ChartData data, _) =>
-                                          data.y,
-                                    )
-                                  ],
-                                );
-                              case Status.COMPLETED:
-                                runningCount = 0;
-                                stoppedCount = 0;
-                                idleCount = 0;
-                                oflineCount = 0;
-                                noDataCount = 0;
-                                allCount = 0;
-                                expiredCount = 0;
-                                groupList.clear();
-                                devicesList.clear();
-                                groupList.addAll(
-                                    value.getDeviceModelListResponse.data!);
-                                for (var element in groupList) {
-                                  devicesList.addAll(element.items!);
-                                }
-                                setDevicesStatusCounterss(devicesList);
-                                saveDefaultFuelAverageForVehicle(
-                                    vehiclesNamesIdMap);
-                                print('Vehicle map length is ${vehiclesNamesIdMap.length}');
-                                vehicleStatusCountdata.clear();
-                                vehicleStatusCountdata.add(_ChartData(
-                                    'Running', runningCount.toInt()));
-                                vehicleStatusCountdata.add(_ChartData(
-                                    'Stopped', stoppedCount.toInt()));
-                                vehicleStatusCountdata
-                                    .add(_ChartData('Idle', idleCount.toInt()));
-                                vehicleStatusCountdata.add(
-                                    _ChartData('Offline', oflineCount.toInt()));
-                                vehicleStatusCountdata.add(
-                                    _ChartData('No Data', noDataCount.toInt()));
-                                vehicleStatusCountdata.add(_ChartData(
-                                    'Expired', expiredCount.toInt()));
-                                return SfCircularChart(
-                                  margin: const EdgeInsets.all(0),
-                                  //  title: ChartTitle(text: 'Vehicle Status'),
-                                  tooltipBehavior: _tooltip,
-                                  annotations: <CircularChartAnnotation>[
-                                    CircularChartAnnotation(
-                                      widget: Text(
-                                        devicesList.length.toString(),
-                                        style: const TextStyle(
-                                            color: Color.fromRGBO(0, 0, 0, 0.5),
-                                            fontSize: 40),
-                                      ),
-                                    )
-                                  ],
-                                  legend: legendProperties,
-                                  palette: sfgPaletteColor,
-                                  series: <CircularSeries>[
-                                    DoughnutSeries<_ChartData, String>(
-                                      onPointTap: (ChartPointDetails details) {
-                                        print(details.pointIndex);
-                                        print(details.seriesIndex);
-
-                                        navBarIndex = 1;
-
-                                        Navigator.pushReplacementNamed(
-                                            context, RoutesName.home);
-                                      },
-                                      dataLabelSettings:
-                                          vehicleStatusGraphLableSettings,
-                                      dataSource: vehicleStatusCountdata,
-                                      xValueMapper: (_ChartData data, _) =>
-                                          data.x,
-                                      yValueMapper: (_ChartData data, _) =>
-                                          data.y,
-                                    )
-                                  ],
-                                );
-                              default:
-                                return Container();
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Card(
-                  shape: AppColors.cardBorderShape,
-                  margin: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Text(
-                              'Alerts (Today)',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8, right: 8, bottom: 0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: '',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 245, 207, 93),
-                                        Color.fromARGB(255, 244, 183, 2),
-                                      ],
-                                    ),
-                                    color: Colors.amber,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: const [
-                                          VerticalDivider(
-                                            width: 4,
-                                          ),
-                                          Icon(
-                                            Icons.notifications_active_outlined,
-                                            color: Colors.white,
-                                            size: 28,
-                                          ),
-                                          VerticalDivider(width: 4),
-                                          Text(
-                                            'Total Alerts',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor: Colors.white,
-                                            radius: 15,
-                                            child: ChangeNotifierProvider.value(
-                                              value: eventViewModel,
-                                              // create: (BuildContext context) =>
-                                              //     eventViewModel,
-                                              child: Consumer<EventViewModel>(
-                                                builder:
-                                                    (context, value, child) {
-                                                  switch (value
-                                                      .eventsAlertsResponse
-                                                      .status) {
-                                                    case Status.LOADING:
-                                                      return const CircleAvatar(
-                                                          child: Padding(
-                                                        padding:
-                                                            EdgeInsets.all(8.0),
-                                                        child:
-                                                            CircularProgressIndicator(),
-                                                      ));
-                                                    case Status.ERROR:
-                                                      return const CircleAvatar(
-                                                          child: Padding(
-                                                        padding:
-                                                            EdgeInsets.all(0.0),
-                                                        child: Text('n/a',
-                                                            style: TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                      ));
-                                                    case Status.COMPLETED:
-                                                      return CircleAvatar(
-                                                        child: Text(
-                                                          value
-                                                              .eventsAlertsResponse
-                                                              .data!
-                                                              .items!
-                                                              .total
-                                                              .toString(),
-                                                          style: const TextStyle(
-                                                              fontSize: 11,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      );
-
-                                                    default:
-                                                      Text(value
-                                                          .eventsAlertsResponse
-                                                          .data!
-                                                          .items!
-                                                          .total
-                                                          .toString());
-                                                  }
-
-                                                  return Container();
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          const VerticalDivider(width: 8),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8, right: 4, top: 8, bottom: 0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'zone_out',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 142, 101, 255),
-                                        Colors.deepPurple,
-                                      ],
-                                    ),
-                                    color: Colors.amber,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.fence_outlined,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Geofence',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value: eventViewModelGeoFence,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelGeoFence,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ])),
-                                    ],
-                                  ),
-                                  // width: MediaQuery.of(context).size.width * 0.45,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 4, right: 8, top: 8, bottom: 0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'overspeed',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 142, 101, 255),
-                                        Colors.deepPurple,
-                                      ],
-                                    ),
-                                    color: Colors.blue,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.speed,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Overspeed',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value: eventViewModelOverSpeed,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelOverSpeed,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8, right: 4, top: 8, bottom: 0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'idle_duration',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 102, 198, 242),
-                                        Colors.blueAccent,
-                                      ],
-                                    ),
-                                    color: Colors.amber,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.pause,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Excess Idle',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value:
-                                                    eventViewModelIdleDurations,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelIdleDurations,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ])),
-                                    ],
-                                  ),
-                                  // width: MediaQuery.of(context).size.width * 0.45,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 4, right: 8, top: 8, bottom: 0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'distance',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 102, 198, 242),
-                                        Colors.blueAccent,
-                                      ],
-                                    ),
-                                    color: Colors.blue,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.drive_eta,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Excess Driving',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value:
-                                                    eventViewModelExcessDrive,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelOverSpeed,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8, right: 4, top: 8, bottom: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'custom',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 249, 100, 100),
-                                        Colors.red,
-                                      ],
-                                    ),
-                                    color: Colors.amber,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.key,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Ignition \n on/off',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value: eventViewModelCustom,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelCustom,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ])),
-                                    ],
-                                  ),
-                                  // width: MediaQuery.of(context).size.width * 0.45,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 4, right: 8, top: 4, bottom: 4),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RoutesName.eventsScreen,
-                                      arguments: EventsInitialData(
-                                          deviceID: '',
-                                          eventType: 'stop_duration',
-                                          fromDate: '',
-                                          toDate: '',
-                                          pageNumber: ''));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                      colors: [
-                                        Color.fromARGB(255, 249, 100, 100),
-                                        Colors.red,
-                                      ],
-                                    ),
-                                    color: Colors.blue,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius:
-                                        AppColors.StatusDshboardBarborderRadius,
-                                  ),
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.local_parking_outlined,
-                                              color: Colors.white,
-                                              size: 28,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: const [
-                                                Text(
-                                                  'Parked',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ])),
-                                      Expanded(
-                                          child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 15,
-                                              child:
-                                                  ChangeNotifierProvider.value(
-                                                value:
-                                                    eventViewModelStopDuration,
-                                                // create: (BuildContext context) =>
-                                                //     eventViewModelStopDuration,
-                                                child: Consumer<EventViewModel>(
-                                                  builder:
-                                                      (context, value, child) {
-                                                    switch (value
-                                                        .eventsAlertsResponse
-                                                        .status) {
-                                                      case Status.LOADING:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  8.0),
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ));
-                                                      case Status.ERROR:
-                                                        return const CircleAvatar(
-                                                            child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  0.0),
-                                                          child: Text('n/a',
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ));
-                                                      case Status.COMPLETED:
-                                                        return CircleAvatar(
-                                                          child: Text(
-                                                            value
-                                                                .eventsAlertsResponse
-                                                                .data!
-                                                                .items!
-                                                                .total
-                                                                .toString(),
-                                                            style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        );
-
-                                                      default:
-                                                        Text(value
-                                                            .eventsAlertsResponse
-                                                            .data!
-                                                            .items!
-                                                            .total
-                                                            .toString());
-                                                    }
-
-                                                    return Container();
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                          ])),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Card(
-                //   shape: AppColors.cardBorderShape,
-                //   margin:
-                //       const EdgeInsets.only(left: 15, right: 15, bottom: 10),
-                //   child: Padding(
-                //     padding: const EdgeInsets.symmetric(
-                //         vertical: 10, horizontal: 10),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         _controller.value.isInitialized
-                //             ? Center(
-                //                 child: ClipRRect(
-                //                   borderRadius: BorderRadius.circular(10.0),
-                //                   child: SizedBox(
-                //                     width:
-                //                         MediaQuery.of(context).size.width * .85,
-                //                     child: AspectRatio(
-                //                       aspectRatio:
-                //                           _controller.value.aspectRatio,
-                //                       child: VideoPlayer(_controller),
-                //                     ),
-                //                   ),
-                //                 ),
-                //               )
-                //             : const CircularProgressIndicator(),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              // _buildCardHeader(
+              //     'Vehicle Status', selectedView, ['Graph View',],
+              //         (value) {
+              //       setState(() {
+              //         selectedView = value ?? '';
+              //         isGraphView = value == 'Graph View';
+              //       });
+              //     }),
+              const SizedBox(height: 10),
+              _buildVehicleStatusCard(),
+              const SizedBox(height: 10),
+              _buildCardHeader('Region Data', selectedDuration, [
+                'Today',
+                'yesterday',
+                'Last 3 days',
+                'Last 7 days'
+              ], (value) {
+                setState(() => selectedDuration = value ?? '');
+              }),
+              const SizedBox(height: 10),
+              _buildRegionDataCard(),
+              const SizedBox(height: 10),
+              _buildCardHeader(
+                  'Alerts', selectedAlertsView, ['Graph View', 'Table View'],
+                      (value) {
+                    setState(() {
+                      selectedAlertsView = value ?? '';
+                      isAlertsGraphView = value == 'Graph View';
+                    });
+                  }),
+              const SizedBox(height: 10),
+              _buildAlertsCard(),
+              const SizedBox(height: 10),
               Card(
-                shape: AppColors.cardBorderShape,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                ),
-                child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    // ignore: sized_box_for_whitespace
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.90,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: const [
-                            Text(
-                              '!انتباہ',
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Divider(height: 5),
-                            Text(
-                                'ٹریکر ڈیوائس موٹر انشورنس کے متبادل نہیں ہے اور نا ہی چوری کو روکنے کا آلہ ہے، کمپنی گاڑی چوری کی صورت میں زمہ دار نہیں ہوگی۔',
-                                textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ),
-                    )),
-              ),
-                SizedBox(height: 10,),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, RoutesName.vehiclereportlist);
-                              },
-                              child: Card(
-                                shape: AppColors.cardBorderShape,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Reports',
-                                        style: dashBoardHeadingStyle),
-                                    const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Image(
-                                          image: AssetImage(
-                                              'assets/images/Combo_Chart_96px.png'),
-                                          height: 45,
-                                          width: 45),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
+                child: SfCartesianChart(
+                  primaryXAxis: CategoryAxis(),
+                  series: <CartesianSeries<RetentionData, String>>[
+                    StackedColumnSeries<RetentionData, String>(
+                      dataSource: data1,
+                      xValueMapper: (RetentionData data, _) => data.month,
+                      yValueMapper: (RetentionData data, _) => data.firstTimeBuyers,
+                      color: Colors.orange,
+                      name: 'First-Time Buyers',
                     ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, RoutesName.vehiclehistorylist);
-                              },
-                              child: Card(
-                                shape: AppColors.cardBorderShape,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('History',
-                                        style: dashBoardHeadingStyle),
-                                    const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Image(
-                                          image: AssetImage(
-                                              'assets/images/Time_Machine_96px.png'),
-                                          height: 45,
-                                          width: 45),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
+                    StackedColumnSeries<RetentionData, String>(
+                      dataSource: data1,
+                      xValueMapper: (RetentionData data, _) => data.month,
+                      yValueMapper: (RetentionData data, _) => data.loyalCustomers,
+                      color: Colors.black,
+                      name: 'Loyal Customers',
+                    ),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: InkWell(
-                              onTap: () {
-                                navBarIndex = 2;
+              )
+              ,
+              _buildWarningCard(),
+              const SizedBox(height: 10),
+              _buildExpenseCard(),
+              const SizedBox(height: 10),
+              _buildMaintenanceCard(),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                                Navigator.pushReplacementNamed(
-                                    context, RoutesName.home);
-                              },
-                              child: Card(
-                                shape: AppColors.cardBorderShape,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Vehicles',
-                                        style: dashBoardHeadingStyle),
-                                    const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Image(
-                                          image: AssetImage(
-                                              'assets/images/Traffic_Jam_96px.png'),
-                                          height: 45,
-                                          width: 45),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, RoutesName.viewVehicleFuelList);
-                              },
-                              child: Card(
-                                shape: AppColors.cardBorderShape,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Fuel', style: dashBoardHeadingStyle),
-                                    const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Image(
-                                          image: AssetImage(
-                                              'assets/images/Gas_Station_96px.png'),
-                                          height: 45,
-                                          width: 45),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                // Card(
-                //   shape: AppColors.cardBorderShape,
-                //   margin:
-                //       const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       _controller.value.isInitialized
-                //           ? Padding(
-                //               padding: const EdgeInsets.symmetric(
-                //                   vertical: 10, horizontal: 10),
-                //               child: Center(
-                //                 child: ClipRRect(
-                //                   borderRadius: BorderRadius.circular(10.0),
-                //                   child: SizedBox(
-                //                     width:
-                //                         MediaQuery.of(context).size.width * .85,
-                //                     child: AspectRatio(
-                //                       aspectRatio:
-                //                           _controller.value.aspectRatio,
-                //                       child: const Image(
-                //                           fit: BoxFit.fill,
-                //                           image: NetworkImage(
-                //                               'http://103.31.82.31/images/ad.gif')),
-                //                     ),
-                //                   ),
-                //                 ),
-                //               ),
-                //             )
-                //           : const CircularProgressIndicator(),
-                //     ],
-                //   ),
-                // ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.viewExpenseScreen,
-                        arguments: {'vehicleId': ''});
-                  },
-                  child: Card(
-                    shape: AppColors.cardBorderShape,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              CircleAvatar(
-                                  maxRadius: 16,
-                                  backgroundColor: Colors.blueAccent,
-                                  child: Icon(
-                                    Icons.attach_money_outlined,
-                                  )),
-                              VerticalDivider(
-                                width: 6,
-                              ),
-                              Text(
-                                'Vehicle Expenses',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.bold),
-                              )
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              ChangeNotifierProvider.value(
-                                value: expenseRecordViewModel,
-                                child: Consumer<ExpenseRecordViewModel>(
-                                  builder: (context, viewModel, _) {
-                                    double totalAmount =
-                                        viewModel.calculateTotalAmount();
-                                    return Text('Rs.$totalAmount');
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      RoutesName.viewMaintenanceSchedule,
-                    );
-                  },
-                  child: Card(
-                    shape: AppColors.cardBorderShape,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                maxRadius: 16,
-                                backgroundColor: Colors.red[800],
-                                child: const Icon(
-                                  Icons.car_repair,
-                                ),
-                              ),
-                              const VerticalDivider(
-                                width: 6,
-                              ),
-                              const Text(
-                                'Upcoming Maintenance',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.bold),
-                              )
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    maxRadius: 16,
-                                    child: ChangeNotifierProvider.value(
-                                      value: vehicleMaintenanceViewModel,
-                                      child:
-                                          Consumer<VehicleMaintenanceViewModel>(
-                                        builder: (context, viewModel, _) {
-                                          return Text(viewModel
-                                              .maintenanceList.length
-                                              .toString());
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 3),
-                                  InkWell(
-                                      onTap: () => Navigator.pushNamed(
-                                          context,
-                                          RoutesName
-                                              .addVehicleMaintenanceScreen),
-                                      child: const CircleAvatar(
-                                          maxRadius: 16, child: Text('+'))),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
+  Widget _buildCardHeader(String title, String value, List<String> items,
+      Function(String?) onChanged) {
+    return Container(
+      margin: const EdgeInsets.only(right: 15),
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.only(
+            topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+        gradient: LinearGradient(
+            colors: [Color(0xFFFFA726), Color(0xFFFFCA28)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(title,
+                style: GoogleFonts.inter(
+                    fontSize: 14, fontWeight: FontWeight.w500)),
+            DropdownButton<String>(
+              value: value,
+              underline: const SizedBox.shrink(),
+              isDense: true,
+              alignment: Alignment.centerRight,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  fontSize: 14),
+              icon: const Icon(Icons.arrow_drop_down, size: 20),
+              iconSize: 35,
+              items: items
+                  .map((item) =>
+                  DropdownMenuItem(value: item, child: Text(item)))
+                  .toList(),
+              onChanged: onChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVehicleStatusCard() {
+    return ChangeNotifierProvider<DeviceViewViewModel>.value(
+      value: deviceViewViewModel,
+      child: Consumer<DeviceViewViewModel>(
+        builder: (context, value, _) {
+          final status = value.getDeviceModelListResponse.status;
+          if (status == Status.LOADING || status == Status.ERROR) {
+            return const SizedBox(
+                height: 250,
+                child: Center(child: CircularProgressIndicator()));
+          } else if (status == Status.COMPLETED) {
+            groupList.clear();
+            devicesList.clear();
+            groupList.addAll(value.getDeviceModelListResponse.data ?? []);
+            for (var element in groupList) {
+              devicesList.addAll(element.items ?? []);
+            }
+            setDeviceStatusCounts(devicesList);
+            vehicleStatusData = [
+              _ChartData('Running', runningCount),
+              _ChartData('Stopped', stoppedCount),
+              _ChartData('Idle', idleCount),
+              _ChartData('Offline', offlineCount),
+            ];
+            return isGraphView
+                ? _buildGraphView()
+                : _buildVehicleStatusTable();
+          }
+          return Container();
+        },
+      ),
+    );
+  }
+
+  Widget _buildGraphView() {
+    return SfCircularChart(
+      annotations: [
+        CircularChartAnnotation(
+          widget: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4))
+                ]),
+            child: Text("Total\n${devicesList.length}",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.blueGrey,
+                    fontWeight: FontWeight.bold,
+                    height: 1.4)),
+          ),
+        ),
+      ],
+      onDataLabelRender: (DataLabelRenderArgs args) {
+        final status = vehicleStatusData[args.pointIndex].x;
+        args.textStyle = TextStyle(
+          color: vehicleStatusColors[{
+            'Running': 0,
+            'Stopped': 1,
+            'Idle': 2,
+            'Offline': 3
+          }[status] ??
+              4],
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        );
+      },
+      series: <DoughnutSeries<_ChartData, String>>[
+        DoughnutSeries<_ChartData, String>(
+          dataSource: vehicleStatusData,
+          xValueMapper: (_ChartData data, _) => data.x,
+          yValueMapper: (_ChartData data, _) => data.y,
+          pointColorMapper: (_ChartData data, index) =>
+          vehicleStatusColors[index % vehicleStatusColors.length],
+          radius: '65%',
+          innerRadius: '60%',
+          cornerStyle: CornerStyle.bothFlat,
+          explode: true,
+          explodeOffset: '5%',
+          explodeAll: true,
+          dataLabelMapper: (_ChartData data, _) => '${data.y}\n${data.x}',
+          dataLabelSettings: const DataLabelSettings(
+              isVisible: true, labelPosition: ChartDataLabelPosition.outside),
+        ),
+      ],
+    );
+  }
+
+
+
+
+
+  Widget _buildVehicleStatusTable() {
+    final gradients = _getVehicleStatusGradients();
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTableHeader(),
+          const SizedBox(height: 8),
+          ...vehicleStatusData.asMap().entries.map(
+                  (entry) => _buildTableRow(entry.key, entry.value, gradients)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+            colors: [Color(0xFF0288D1), Color(0xFF26A69A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 3))
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: const Row(
+        children: [
+          Expanded(
+              flex: 2,
+              child: Text('Status',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white))),
+          Expanded(
+              flex: 1,
+              child: Text('Count',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white),
+                  textAlign: TextAlign.center)),
+          Expanded(
+              flex: 1,
+              child: Text('Indicator',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white),
+                  textAlign: TextAlign.center)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableRow(
+      int index, _ChartData data, List<LinearGradient> gradients)
+  {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 6,
+              offset: const Offset(0, 7))
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+              flex: 2,
+              child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  decoration: BoxDecoration(
+                      gradient: gradients[index % gradients.length],
+                      borderRadius: BorderRadius.circular(4)),
+                  child: Text(data.x,
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)))),
+          Expanded(
+              flex: 1,
+              child: Text(data.y.toString(),
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87),
+                  textAlign: TextAlign.center)),
+          Expanded(
+              flex: 1,
+              child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: gradients[index % gradients.length]))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegionDataCard() {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+      shadowColor: Colors.black12,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: 2000,
+            child: SfCartesianChart(
+              isTransposed: true,
+              margin: const EdgeInsets.only(left: 12),
+              plotAreaBorderWidth: 0,
+              plotAreaBorderColor: Colors.transparent,
+              primaryXAxis: const CategoryAxis(
+                plotOffset: 15,
+                labelPlacement: LabelPlacement.onTicks,
+                edgeLabelPlacement: EdgeLabelPlacement.shift,
+                majorGridLines: MajorGridLines(width: 0),
+                axisLine: AxisLine(width: 0),
+                labelStyle: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87),
+              ),
+              primaryYAxis: const NumericAxis(
+                majorGridLines: MajorGridLines(
+                    width: 0.5, color: Colors.grey, dashArray: [4, 4]),
+                axisLine: AxisLine(width: 0),
+                majorTickLines: MajorTickLines(size: 0),
+                minorTickLines: MinorTickLines(width: 0),
+                labelStyle: TextStyle(fontSize: 12, color: Colors.grey),
+                minimum: 0,
+                maximum: 100,
+                interval: 20,
+              ),
+              series: [
+                BarSeries<ChartData, String>(
+                  dataSource: chartData,
+                  xValueMapper: (ChartData data, _) => data.x,
+                  yValueMapper: (ChartData data, _) => data.y,
+                  spacing: 0.3,
+                  width: 0.55,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  gradient: const LinearGradient(
+                      colors: [Color(0xFF26A69A), Color(0xFF4DB6AC)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter),
+                  dataLabelSettings: const DataLabelSettings(
+                      isVisible: true,
+                      textStyle: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      labelAlignment: ChartDataLabelAlignment.outer),
+                  enableTooltip: true,
+                  animationDuration: 1000,
                 ),
               ],
             ),
@@ -1834,11 +804,466 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
+
+  Widget _buildAlertsCard() {
+    return Card(
+      shape: AppColors.cardBorderShape,
+      margin: const EdgeInsets.symmetric(horizontal: 15),
+      child: MultiProvider(
+        providers: [
+          for (var type in eventViewModels.keys)
+            ChangeNotifierProvider<EventViewModel>.value(
+              value: eventViewModels[type] ?? EventViewModel(),
+              key: Key(type),
+            ),
+        ],
+        child: Builder(
+          builder: (context) {
+            final alertRowsData = _buildAlertRows();
+            return isAlertsGraphView
+                ? _buildAlertsGraphView()
+                : _buildAlertsTableView(alertRowsData['rows'] as List<Widget>);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertsGraphView() {
+    final gradients = _getAlertGradients();
+    // Ensure alertData is populated dynamically from _buildAlertRows
+    final alertRowsData = _buildAlertRows();
+    alertData = alertRowsData['data'] as List<_AlertChartData>;
+
+    return SizedBox(
+      height: 280, // Slightly reduced for a cleaner fit
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pie Chart with Subtle Animation
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 800), // Softer animation
+                curve: Curves.easeIn,
+                child: SfCircularChart(
+                  backgroundColor: Colors.transparent,
+                  title: ChartTitle(
+                    text: 'Alerts (Today)',
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  legend: Legend(isVisible: false),
+                  series: <CircularSeries<_AlertChartData, String>>[
+                    PieSeries<_AlertChartData, String>(
+                      dataSource: alertData,
+                      xValueMapper: (_AlertChartData data, _) => data.label,
+                      yValueMapper: (_AlertChartData data, _) => data.count.toDouble(),
+                      pointColorMapper: (_, int index) => gradients[index % gradients.length].colors[0],
+                      dataLabelMapper: (_AlertChartData data, _) => data.count > 0 ? '${data.count}' : '',
+                      dataLabelSettings: const DataLabelSettings(
+                        isVisible: true,
+                        labelPosition: ChartDataLabelPosition.inside,
+                        textStyle: TextStyle(
+                          fontSize: 10, // Slightly smaller for readability
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      animationDuration: 1200,
+                      explode: false, // Removed explode for simplicity
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Scrollable Labels on the Right
+          Expanded(
+            flex: 1,
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: Colors.grey[200]!, width: 0.5)), // Lighter border
+              ),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 260),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(alertData.length, (index) {
+                      return AnimatedOpacity(
+                        opacity: 1.0,
+                        duration: const Duration(milliseconds: 600), // Synchronized animation
+                        curve: Curves.easeIn,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: gradients[index % gradients.length].colors[0],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  alertData[index].label,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black87,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${alertData[index].count}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildAlertsTableView(List<Widget> rows) {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 10),
+          child: Text('Alerts (Today)',
+              style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold)),
+        ),
+        const Divider(),
+        ...rows,
+      ],
+    );
+  }
+
+  Map<String, dynamic> _buildAlertRows() {
+    const alerts = [
+      {
+        'type': 'all',
+        'icon': Icons.notifications_active_outlined,
+        'label': 'Total Alerts',
+      },
+      {
+        'type': 'overspeed',
+        'icon': Icons.speed,
+        'label': 'Overspeed',
+      },
+      {
+        'type': 'idle_duration',
+        'icon': Icons.pause,
+        'label': 'Excess Idle',
+      },
+      {
+        'type': 'geofence',
+        'icon': Icons.fence_outlined,
+        'label': 'Geofence',
+      },
+      {
+        'type': 'excess_drive',
+        'icon': Icons.drive_eta,
+        'label': 'Excess Driving',
+      },
+      {
+        'type': 'custom',
+        'icon': Icons.key,
+        'label': 'Ignition \non/off',
+      },
+      {
+        'type': 'stop_duration',
+        'icon': Icons.local_parking_outlined,
+        'label': 'Parked',
+      },
+    ];
+
+    List<Widget> rows = [];
+    alertData.clear();
+
+    for (var alert in alerts) {
+      final type = alert['type'] as String;
+      final eventModel = eventViewModels[type] ?? EventViewModel();
+      final count = eventModel.eventsAlertsResponse.data?.items?.total ?? 0;
+      debugPrint('TableView - ${alert['label']}: $count');
+      alertData.add(_AlertChartData(alert['label'] as String, count,
+          alert['icon'] as IconData));
+    }
+
+    rows.add(Row(children: [_buildAlertItem(alerts[0], 2, true, false)]));
+    for (int i = 1; i < alerts.length; i += 2) {
+      rows.add(Row(
+        children: [
+          _buildAlertItem(alerts[i], 1, false, i == alerts.length - 1),
+          if (i + 1 < alerts.length)
+            _buildAlertItem(alerts[i + 1], 1, false, i + 1 == alerts.length - 1)
+          else
+            const Expanded(flex: 1, child: SizedBox()),
+        ],
+      ));
+    }
+
+    return {'rows': rows, 'data': alertData};
+  }
+
+  Widget _buildAlertItem(
+      Map<String, dynamic> alert, int flex, bool isFirst, bool isLast)
+  {
+    final eventModel =
+        eventViewModels[alert['type'] as String] ?? EventViewModel();
+    final gradients =
+    _getAlertGradients(); // Get the gradients used in the graph
+    final alertIndex = [
+      'all', // Total Alerts
+      'overspeed',
+      'idle_duration',
+      'geofence',
+      'excess_drive',
+      'custom',
+      'stop_duration'
+    ].indexOf(alert['type'] as String);
+
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: EdgeInsets.only(
+            left: 8,
+            right: isFirst ? 8 : 4,
+            top: isFirst ? 0 : 8,
+            bottom: isLast ? 8 : 0),
+        child: InkWell(
+          onTap: () {
+            Navigator.pushNamed(context, RoutesName.eventsScreen,
+                arguments: EventsInitialData(
+                    deviceID: '',
+                    eventType: alert['type'] as String,
+                    fromDate: '',
+                    toDate: '',
+                    pageNumber: ''));
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: gradients[alertIndex %
+                  gradients.length], // Use gradient from _getAlertGradients
+              borderRadius: AppColors.StatusDshboardBarborderRadius,
+            ),
+            height: 50,
+            child: Row(
+              children: [
+                Expanded(
+                    flex: 1,
+                    child: Icon(alert['icon'] as IconData,
+                        color: Colors.white, size: 28)),
+                Expanded(
+                    flex: 2,
+                    child: Text(alert['label'] as String,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold))),
+                Expanded(
+                  child: ChangeNotifierProvider<EventViewModel>.value(
+                    value: eventModel,
+                    child: Consumer<EventViewModel>(
+                      builder: (context, value, _) {
+                        final status = value.eventsAlertsResponse.status;
+                        if (status == Status.LOADING) {
+                          return const CircleAvatar(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator()));
+                        }
+                        if (status == Status.ERROR) {
+                          return const CircleAvatar(
+                              child: Text('n/a',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)));
+                        }
+                        final total =
+                            value.eventsAlertsResponse.data?.items?.total ?? 0;
+                        return CircleAvatar(
+                            child: Text(total.toString(),
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold)));
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWarningCard() {
+    return Card(
+      shape: AppColors.cardBorderShape,
+      margin: const EdgeInsets.symmetric(horizontal: 15),
+      child: const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text('!انتباہ',
+                style: TextStyle(
+                    color: Color(0xFFE57373), fontWeight: FontWeight.bold)),
+            Divider(height: 5),
+            Text(
+                'ٹریکر ڈیوائس موٹر انشورنس کے متبادل نہیں ہے اور نا ہی چوری کو روکنے کا آلہ ہے، کمپنی گاڑی چوری کی صورت میں زمہ دار نہیں ہوگی۔',
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildExpenseCard() {
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, RoutesName.viewExpenseScreen,
+          arguments: {'vehicleId': ''}),
+      child: Card(
+        shape: AppColors.cardBorderShape,
+        margin: const EdgeInsets.symmetric(horizontal: 15),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  CircleAvatar(
+                      maxRadius: 16,
+                      backgroundColor: Color(0xFF42A5F5),
+                      child: Icon(Icons.attach_money_outlined)),
+                  VerticalDivider(width: 6),
+                  Text('Vehicle Expenses',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              ChangeNotifierProvider<ExpenseRecordViewModel>.value(
+                value: expenseViewModel,
+                child: Consumer<ExpenseRecordViewModel>(
+                    builder: (context, viewModel, _) =>
+                        Text('Rs.${viewModel.calculateTotalAmount()}')),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMaintenanceCard() {
+    return InkWell(
+      onTap: () =>
+          Navigator.pushNamed(context, RoutesName.viewMaintenanceSchedule),
+      child: Card(
+        shape: AppColors.cardBorderShape,
+        margin: const EdgeInsets.symmetric(horizontal: 15),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  CircleAvatar(
+                      maxRadius: 16,
+                      backgroundColor: Color(0xFFE57373),
+                      child: Icon(Icons.car_repair)),
+                  VerticalDivider(width: 6),
+                  Text('Upcoming Maintenance',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Row(
+                children: [
+                  CircleAvatar(
+                    maxRadius: 16,
+                    child: ChangeNotifierProvider<
+                        VehicleMaintenanceViewModel>.value(
+                      value: maintenanceViewModel,
+                      child: Consumer<VehicleMaintenanceViewModel>(
+                          builder: (context, viewModel, _) => Text(
+                              viewModel.maintenanceList.length.toString())),
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  InkWell(
+                    onTap: () => Navigator.pushNamed(
+                        context, RoutesName.addVehicleMaintenanceScreen),
+                    child: const CircleAvatar(maxRadius: 16, child: Text('+')),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ChartData {
+  ChartData(this.x, this.y);
+  final String x;
+  final double y;
 }
 
 class _ChartData {
   _ChartData(this.x, this.y);
-
   final String x;
   final int y;
+}
+
+class _AlertChartData {
+  _AlertChartData(this.label, this.count, [IconData? alert]);
+  final String label;
+  final int count;
+}
+class RetentionData {
+  final String month;
+  final int firstTimeBuyers;
+  final int loyalCustomers;
+
+  RetentionData(this.month, this.firstTimeBuyers, this.loyalCustomers);
 }

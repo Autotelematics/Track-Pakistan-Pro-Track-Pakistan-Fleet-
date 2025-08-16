@@ -12,7 +12,7 @@ class AlertListRepository {
       //print(response);
       return response = AlertsListModel.fromJson(response);
     } catch (e) {
-      print('the error is' + e.toString());
+      print('the error is$e');
       rethrow;
     }
   }

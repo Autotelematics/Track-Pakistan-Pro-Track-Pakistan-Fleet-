@@ -1,3 +1,4 @@
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -135,12 +136,10 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         body: routs[navBarIndex],
         bottomNavigationBar: BottomNavigationBar(
-          items: <BottomNavigationBarItem>[
+          items: [
             BottomNavigationBarItem(
-              icon: const Icon(Icons.dashboard_outlined),
+              icon: Icon(Icons.dashboard_outlined),
               label: navBarIndex == 0 ? 'Dashboard' : 'Home',
-              activeIcon: const Icon(Icons.dashboard),
-              // backgroundColor: Color(0xffefecec)
             ),
             const BottomNavigationBarItem(
                 icon: Icon(Icons.map_outlined),

@@ -43,7 +43,7 @@ class EventViewModel with ChangeNotifier {
     }).onError((error, stackTrace) {
       setEventsAlertsResponse(ApiResponse.error(error.toString()));
       if (kDebugMode) {
-        print('Error Accord' + error.toString());
+        print('Error Accord$error');
       }
     });
   }
@@ -55,7 +55,7 @@ class EventViewModel with ChangeNotifier {
     String userApiKeyString = await userApiKey;
     _eventrepo.destroyEventsAlertsApi(userApiKeyString).then((value) {
       if (kDebugMode) {
-        print('Status is' + value.status.toString());
+        print('Status is${value.status}');
       }
       //setEventsAlertsResponse(ApiResponse.complete(value));
     }).onError((error, stackTrace) {

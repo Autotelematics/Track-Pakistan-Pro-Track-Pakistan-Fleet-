@@ -13,16 +13,13 @@ class ExpenseRecordViewModel extends ChangeNotifier {
   Future<void> fetchExpenseRecordsForVehicle(String vehicleId) async {
     _isLoading = true;
     notifyListeners();
-
     try {
       _expenseRecords =
           await DatabaseHelper.getExpenseRecordsForVehicle(vehicleId);
-
       _isLoading = false;
       notifyListeners();
     } catch (error) {
       // Handle error
-
       _isLoading = false;
       notifyListeners();
     }

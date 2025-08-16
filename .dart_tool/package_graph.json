@@ -11,6 +11,7 @@
         "animate_do",
         "animated_marker",
         "another_flushbar",
+        "async",
         "bloc",
         "change_app_package_name",
         "connectivity_plus",
@@ -36,6 +37,7 @@
         "geocoding",
         "geolocator",
         "getwidget",
+        "google_fonts",
         "google_map_marker_animation",
         "google_maps_flutter",
         "google_maps_flutter_platform_interface",
@@ -60,7 +62,8 @@
         "timezone",
         "url_launcher",
         "video_player",
-        "video_player_web"
+        "video_player_web",
+        "visibility_detector"
       ],
       "devDependencies": [
         "flutter_lints",
@@ -100,6 +103,31 @@
         "test_api",
         "vector_math",
         "vm_service"
+      ]
+    },
+    {
+      "name": "visibility_detector",
+      "version": "0.4.0+2",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "async",
+      "version": "2.13.0",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
+      "name": "google_fonts",
+      "version": "6.2.1",
+      "dependencies": [
+        "crypto",
+        "flutter",
+        "http",
+        "path_provider"
       ]
     },
     {
@@ -181,7 +209,7 @@
     },
     {
       "name": "fl_chart",
-      "version": "0.71.0",
+      "version": "1.0.0",
       "dependencies": [
         "equatable",
         "flutter",
@@ -725,14 +753,6 @@
       ]
     },
     {
-      "name": "async",
-      "version": "2.13.0",
-      "dependencies": [
-        "collection",
-        "meta"
-      ]
-    },
-    {
       "name": "leak_tracker_flutter_testing",
       "version": "3.0.9",
       "dependencies": [
@@ -792,6 +812,13 @@
         "stream_channel",
         "string_scanner",
         "term_glyph"
+      ]
+    },
+    {
+      "name": "crypto",
+      "version": "3.0.6",
+      "dependencies": [
+        "typed_data"
       ]
     },
     {
@@ -1429,15 +1456,15 @@
       "dependencies": []
     },
     {
-      "name": "convert",
-      "version": "3.1.2",
+      "name": "typed_data",
+      "version": "1.4.0",
       "dependencies": [
-        "typed_data"
+        "collection"
       ]
     },
     {
-      "name": "crypto",
-      "version": "3.0.6",
+      "name": "convert",
+      "version": "3.1.2",
       "dependencies": [
         "typed_data"
       ]
@@ -1512,13 +1539,6 @@
       "dependencies": [
         "meta",
         "vector_math"
-      ]
-    },
-    {
-      "name": "typed_data",
-      "version": "1.4.0",
-      "dependencies": [
-        "collection"
       ]
     },
     {

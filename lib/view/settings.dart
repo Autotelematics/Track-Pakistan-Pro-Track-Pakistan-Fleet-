@@ -367,24 +367,22 @@ class _SettingScreenState extends State<SettingScreen> {
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold, fontSize: 14),
                                     ),
-                                    trailing: Container(
-                                      child: GFButton(
-                                        onPressed: () {
-                                          navBarIndex = 0;
-                                          Provider.of<UserLoginViewModel>(context, listen: false)
-                                              .userSessionRemove()
-                                              .then((value) {
-                                            Provider.of<UserSessionData>(context, listen: false)
-                                                .checkusersession(context);
-                                          });
-                                        },
-                                        text: "Logout",
-                                        textStyle:
-                                        AppColors.settingPageButtonTextStyle,
-                                        color: AppColors.buttonColor,
-                                        shape: GFButtonShape.pills,
-                                        size: 20,
-                                      ),
+                                    trailing: GFButton(
+                                      onPressed: () {
+                                        navBarIndex = 0;
+                                        Provider.of<UserLoginViewModel>(context, listen: false)
+                                            .userSessionRemove()
+                                            .then((value) {
+                                          Provider.of<UserSessionData>(context, listen: false)
+                                              .checkusersession(context);
+                                        });
+                                      },
+                                      text: "Logout",
+                                      textStyle:
+                                      AppColors.settingPageButtonTextStyle,
+                                      color: AppColors.buttonColor,
+                                      shape: GFButtonShape.pills,
+                                      size: 20,
                                     ),
                                   ),
                                 ),

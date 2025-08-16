@@ -24,7 +24,7 @@ class AlertsListViewModel with ChangeNotifier {
       },
     ).onError((error, stackTrace) {
       setAlertsListTypeResponse(ApiResponse.error(error.toString()));
-      print('Error List ' + error.toString());
+      print('Error List $error');
     });
   }
 

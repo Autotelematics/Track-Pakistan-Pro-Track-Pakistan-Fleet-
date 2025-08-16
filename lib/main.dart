@@ -3,29 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:trackerapp/utils/constant_colors.dart';
 import 'package:trackerapp/utils/routes/routes.dart';
 import 'package:trackerapp/utils/routes/routes_name.dart';
 import 'package:trackerapp/view_model/auth_view_model.dart';
-import 'package:trackerapp/view_model/services/localnotification.dart';
 import 'package:trackerapp/view_model/userlogin_view_model.dart';
 import 'package:trackerapp/view_model/event_view_model.dart';
 import 'package:trackerapp/view_model/expnese_record_view_model.dart';
 import 'package:trackerapp/view_model/device_commands_view_model.dart';
+import 'package:trackerapp/view_model/services/localnotification.dart';
 import 'package:trackerapp/view_model/services/playsounds.dart';
 
 @pragma('vm:entry-point')
 Future<void> backGroundHandler(RemoteMessage event) async {
   await Firebase.initializeApp();
-
   if (event.notification != null) {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+    final sp = await SharedPreferences.getInstance();
     if (sp.getBool('playAlertSounds') ?? false) {
       PlaySounds.playAnnoucment(event);
     }
-
-    // Show local notification
     LocalNotificationServices.showNotifiationForground(event);
   }
 }
@@ -33,77 +31,53 @@ Future<void> backGroundHandler(RemoteMessage event) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FirebaseOptions firebaseOptions = const FirebaseOptions(
-    apiKey: '',
-    appId: '',
-    messagingSenderId: '',
-    projectId: '',
+  final firebaseOptions = FirebaseOptions(
+    apiKey: Platform.isAndroid
+        ? 'AIzaSyBd7u3Jl_979xmMn3-9NtTcPKqFce5smkY'
+        : 'AIzaSyByXVejFx0oYq-U5I37HaBqoeq9dcaV-bk',
+    appId: Platform.isAndroid
+        ? '1:339329536042:android:c0331a53395f7ae5abb353'
+        : '1:339329536042:ios:2931391744e01db0abb353',
+    messagingSenderId: '339329536042',
+    projectId: 'autotel-2f5a1',
   );
 
-  if (Platform.isAndroid) {
-    firebaseOptions = const FirebaseOptions(
-      apiKey: "AIzaSyBd7u3Jl_979xmMn3-9NtTcPKqFce5smkY",
-      appId: "1:339329536042:android:c0331a53395f7ae5abb353",
-      messagingSenderId: "339329536042",
-      projectId: "autotel-2f5a1",
-    );
-  } else if (Platform.isIOS) {
-    firebaseOptions = const FirebaseOptions(
-      apiKey: 'AIzaSyByXVejFx0oYq-U5I37HaBqoeq9dcaV-bk',
-      appId: '1:339329536042:ios:2931391744e01db0abb353',
-      messagingSenderId: '339329536042',
-      projectId: 'autotel-2f5a1',
-    );
-  }
-
   await Firebase.initializeApp(options: firebaseOptions);
-
-  // Request notification permissions
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     badge: true,
     sound: true,
     announcement: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
   );
-
-  // Initialize local notifications
   LocalNotificationServices.initilize();
-
-  // Background handler
   FirebaseMessaging.onBackgroundMessage(backGroundHandler);
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ChangeNotifierProvider(create: (_) => UserLoginViewModel()),
-        ChangeNotifierProvider(create: (_) => EventViewModel()),
-        ChangeNotifierProvider(create: (_) => ExpenseRecordViewModel()),
-        ChangeNotifierProvider(create: (_) => DeviceCommandsViewModel()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.grey,
-          primaryColor: Colors.white,
-        ),
-        initialRoute: RoutesName.splashSceen,
-        onGenerateRoute: Routes.generateRoute,
-      ),
-    );
+        providers: [
+          ChangeNotifierProvider(create: (_) => AuthViewModel()),
+          ChangeNotifierProvider(create: (_) => UserLoginViewModel()),
+          ChangeNotifierProvider(create: (_) => EventViewModel()),
+          ChangeNotifierProvider(create: (_) => ExpenseRecordViewModel()),
+          ChangeNotifierProvider(create: (_) => DeviceCommandsViewModel()),
+        ],
+        child: ResponsiveSizer(builder: (context, orientation, screenType) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+                scaffoldBackgroundColor: ConstantColors.scaffoldBg,
+                primarySwatch: Colors.grey,
+                primaryColor: Colors.white),
+            initialRoute: RoutesName.splashSceen,
+            onGenerateRoute: Routes.generateRoute,
+          );
+        }));
   }
 }

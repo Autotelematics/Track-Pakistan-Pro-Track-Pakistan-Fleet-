@@ -10,23 +10,31 @@
 		</data>
 		<key>flutter_assets/AssetManifest.bin</key>
 		<data>
-		7DikZVA6GhDwZB+UKssSMysFtPs=
+		e85tY+qjIqpY3r/DWNjhHovDEW4=
 		</data>
 		<key>flutter_assets/AssetManifest.json</key>
 		<data>
-		BMBthPQFYrR1h4Pv9Guts/4pUT8=
+		WH0ex2GcprIy9YiXU21EeVNLq+w=
 		</data>
 		<key>flutter_assets/FontManifest.json</key>
 		<data>
-		k458iJmDDN9Mf3znn3wvVxNtxoc=
+		mUw6WODYNHQntLO9kb5NrkpLyUs=
 		</data>
 		<key>flutter_assets/NOTICES.Z</key>
 		<data>
-		Yhzx2La7YvgcFHxyjTbYAqzZnrg=
+		ciNFyjCA9VJCi014b/sKyidZ61M=
 		</data>
 		<key>flutter_assets/NativeAssetsManifest.json</key>
 		<data>
 		re4p7E8rPLLsN+wzaPN/+AVpXTY=
+		</data>
+		<key>flutter_assets/assets/fonts/AlmarenaBold.otf</key>
+		<data>
+		YeoQArhXSDAaJzO+GIS0CUbXS78=
+		</data>
+		<key>flutter_assets/assets/fonts/AlmarenaRegular.ttf</key>
+		<data>
+		yK/s+TAUPqzTJ3HEzyCSq3dIoCM=
 		</data>
 		<key>flutter_assets/assets/images/Auto_Telematics_Pvt_Ltd_Logo-removebg-preview.png</key>
 		<data>
@@ -156,6 +164,34 @@
 		<data>
 		8mYlcYEOhakVecWiLsAdHmiyflA=
 		</data>
+		<key>flutter_assets/assets/svgs/fuel.svg</key>
+		<data>
+		v+O0WjctqtWyAOzocQqCsCbiAYs=
+		</data>
+		<key>flutter_assets/assets/svgs/geofence.svg</key>
+		<data>
+		o0TFZE9uPdzk1ad/dNyLl5gchGk=
+		</data>
+		<key>flutter_assets/assets/svgs/idle.svg</key>
+		<data>
+		heFWJEsQlolehbXlCZOeMjBrgqE=
+		</data>
+		<key>flutter_assets/assets/svgs/location.svg</key>
+		<data>
+		BYuw3qoVdJOt0URf3p4wKXPFKds=
+		</data>
+		<key>flutter_assets/assets/svgs/overspeed.svg</key>
+		<data>
+		U3oh9BsfcgAsiMvLwELqAubU+GQ=
+		</data>
+		<key>flutter_assets/assets/svgs/running.svg</key>
+		<data>
+		q2hRAYRtleTBttlnQ4X5AS1AMM0=
+		</data>
+		<key>flutter_assets/assets/svgs/stop.svg</key>
+		<data>
+		HhpRYUsSKlevCLRORrc26UjzfvM=
+		</data>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
 		<data>
 		/CUoTuPQqqdexfyOT9lpJhV+2MQ=
@@ -166,7 +202,7 @@
 		</data>
 		<key>flutter_assets/kernel_blob.bin</key>
 		<data>
-		xObEKpXgpzTuSwr6s/dWR14LmwE=
+		tdsljB/YrLfIy2fECqhM6AvE+fI=
 		</data>
 		<key>flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>
 		<data>
@@ -287,28 +323,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MYryuwx4Dz5aPsiyZoG4flsYPPd1IWs4QgVubx8o5eM=
+			g5rNwpbVeABMVzk87lFywY1GbG1XIRNzSngqq4wLopM=
 			</data>
 		</dict>
 		<key>flutter_assets/AssetManifest.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			vAZKIkMx7KKP+K7TfdmBSkMVKOrSp9hX8D4HIDk0FsY=
+			EIhkPsTNyUzV8llS+r5uyCSwKiRlvZF2Ps523cdJN0Y=
 			</data>
 		</dict>
 		<key>flutter_assets/FontManifest.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			nUrXu/yx9iQqLRRNzXaw4s/MmgdmF5D4SHU/Y8bL4B4=
+			KKjOV5UdNh4Woj9hRSY1AdzJduaH6xMxoaC3oceBxfg=
 			</data>
 		</dict>
 		<key>flutter_assets/NOTICES.Z</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			pRYm/PtlaMYk7pfeDaYyb29lWFTU0U4qWLeUSLcUxfg=
+			aYsA194MhClDFUD1um8twsViFRBOUbQPwBYnRCXJW0g=
 			</data>
 		</dict>
 		<key>flutter_assets/NativeAssetsManifest.json</key>
@@ -316,6 +352,20 @@
 			<key>hash2</key>
 			<data>
 			lUijHkoEgTXB2U+Rkyi/tirix7s8q5ZVfHlB2ql3dss=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/fonts/AlmarenaBold.otf</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			WMQ7uSso/sc2R+fAgFt28k5VCn59hiaBLdgXj0eoGqM=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/fonts/AlmarenaRegular.ttf</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yaIMShu0qg5UIAqf3gZHT+oZB7HWklPrKG2mAw58VRE=
 			</data>
 		</dict>
 		<key>flutter_assets/assets/images/Auto_Telematics_Pvt_Ltd_Logo-removebg-preview.png</key>
@@ -542,6 +592,55 @@
 			ZsVrAhwynbxiObu1h2a8Oru/5HgcMSZ8aUWONRV3LMc=
 			</data>
 		</dict>
+		<key>flutter_assets/assets/svgs/fuel.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			8HQasdpPbWti7p2jYSacv38NH2zChY9abwMhM7rTOG4=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/geofence.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			iq1B23xcxHcf9Ga2UX158fTHfbELYvjrQNC9GS/wC74=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/idle.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			52IqBkGTTTqTkzJ+kkjpBQvk+ag9F4B2RTp6sqfwiyo=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/location.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			+YKD6phnCCr9gVhXk+1BAHpS9vC8i6YWE+mzfSPE36E=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/overspeed.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			XKuWl/gJsjH9p9ZuavlVgezRkKESiLmTippFV8cmmh0=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/running.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			90qwjA9q89P6T3OZ/PZVwVmfi5a3D9yR54gnS3QmCUM=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/svgs/stop.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			goyQizea90LFlim/VDpyfM9x3gbSph4djmGfnED7B8s=
+			</data>
+		</dict>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
 		<dict>
 			<key>hash2</key>
@@ -560,7 +659,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			odhbLR3PnvP/TACeBKp+DnSYC2qTsD0BFjEO9ipL6Wk=
+			ou1Ab31zxoJL0oLKaQTTBSt9WxiC2leWmsHQHopTiBE=
 			</data>
 		</dict>
 		<key>flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>

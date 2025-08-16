@@ -84,7 +84,7 @@ class _EventsAlertsPageState extends State<EventsAlertsPage> {
 
   @override
   void initState() {
-    print('this is ' + widget.eventsInitialData.deviceID.toString());
+    print('this is ${widget.eventsInitialData.deviceID}');
     eventViewModel.fetchEventsAlertsFromApi(
         widget.eventsInitialData.deviceID.toString(),
         eventType,
