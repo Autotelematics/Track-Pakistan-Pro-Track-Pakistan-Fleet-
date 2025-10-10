@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:trackerapp/res/colors.dart';
-import 'package:trackerapp/view/new_dashboard.dart';
-import 'package:trackerapp/view_model/services/usersessiondata.dart';
+import 'package:trackerapp/app/theme/app_styles.dart';
 
-import 'new_vehicle_list_dashboard.dart';
-
+import '../utils/motion_bottom_navigation_bar.dart';
 class SplachScreen extends StatefulWidget {
   const SplachScreen({super.key});
 
@@ -14,14 +11,12 @@ class SplachScreen extends StatefulWidget {
 }
 
 class _SplachScreenState extends State<SplachScreen> {
-  UserSessionData userSessionData = UserSessionData();
   @override
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 1), (() async {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => NewVehicleListDashBoard()));
-      // userSessionData.checkusersession(context);
+          context, MaterialPageRoute(builder: (context) => MotionBottomNavigationBar()));
     }));
   }
 
@@ -31,7 +26,7 @@ class _SplachScreenState extends State<SplachScreen> {
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(50.0),
-          child: Image(image: AssetImage(AppColors.logoPath)),
+          child: Image(image: AssetImage(AppStyles.logoPath)),
         ),
       ),
     );
