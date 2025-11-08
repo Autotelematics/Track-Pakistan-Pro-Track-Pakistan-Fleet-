@@ -1,3 +1,4 @@
+// widgets/header_widget.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -6,7 +7,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/dashboard_data.dart';
 import 'package:trackerapp/view/settings.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_verticle_space.dart';
+import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'vehicle_summary_card.dart';
 
 class HeaderWidget extends StatelessWidget {
@@ -16,12 +17,15 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return SizedBox(
       height: 48.h,
       width: 100.w,
       child: Stack(
         children: [
-          _header(context),
+          _header(context, isDark),
           Positioned(
             top: 24.h,
             left: 5.w,
@@ -33,83 +37,117 @@ class HeaderWidget extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context) => Container(
-    padding: EdgeInsets.symmetric(horizontal: 6.w),
-    height: 38.h,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [AppColors.purple, AppColors.blueCyanWithOpacity],
-      ),
-      borderRadius: const BorderRadius.only(
-        bottomRight: Radius.circular(38),
-        bottomLeft: Radius.circular(38),
-      ),
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          offset: Offset(0, 4),
-          blurRadius: 20,
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        verticalSpace(height: 6.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            CircleAvatar(
-              radius: 3.h,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: CachedNetworkImage(
-                  imageUrl:
-                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3",
-                  fit: BoxFit.cover,
-                  height: 7.h,
-                  width: 7.h,
-                  placeholder: (context, url) =>
-                  const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) =>
-                  const Icon(Icons.error),
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingScreen(),
-                      ),
-                    );
-                  },
-                  child: Icon(Icons.settings, size: 3.h, color: Colors.white),
-                ),
-                horizontalSpace(width: 5.w),
-                Icon(Icons.notifications, size: 3.h, color: Colors.white),
-              ],
-            ),
+  Widget _header(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w),
+      height: 38.h,
+      decoration: BoxDecoration(
+        color: isDark ? surface : null, // Solid in dark
+        gradient: isDark
+            ? null
+            :  LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.purple,
+            AppColors.blueCyanWithOpacity,
           ],
         ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            "Good Afternoon",
-            style: AppStyles.regularTextStyle(context)
-                .copyWith(fontSize: 16.sp, color: Colors.white),
-          ),
-          subtitle: Text(
-            "Alex Bahadur Nepali",
-            style: AppStyles.boldTextStyle(context)
-                .copyWith(color: Colors.white),
-          ),
+        borderRadius: const BorderRadius.only(
+          bottomRight: Radius.circular(38),
+          bottomLeft: Radius.circular(38),
         ),
-      ],
-    ),
-  );
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(0.12),
+            offset: const Offset(0, 4),
+            blurRadius: isDark ? 16 : 20,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          verticalSpace(height: 6.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Profile Avatar
+              CircleAvatar(
+                radius: 3.h,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: CachedNetworkImage(
+                    imageUrl:
+                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3",
+                    fit: BoxFit.cover,
+                    height: 7.h,
+                    width: 7.h,
+                    placeholder: (_, __) => const CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.error,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Settings + Notification
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ModernSettingsScreen(),
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      Icons.settings,
+                      size: 3.h,
+                      color: Colors.white,
+                    ),
+                  ),
+                  horizontalSpace(width: 5.w),
+                  Icon(
+                    Icons.notifications,
+                    size: 3.h,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Greeting
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              "Good Afternoon",
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 16.sp,
+                color: Colors.white,
+              ),
+            ),
+            subtitle: Text(
+              "Alex Bahadur Nepali",
+              style: AppStyles.boldTextStyle(context).copyWith(
+                color: Colors.white,
+                fontSize: 18.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -4,17 +4,26 @@ import '../../data/repositories/vehicle_repository.dart';
 
 class VehicleListProvider with ChangeNotifier {
   final VehicleRepository _repository;
+  bool _isFilterOpen = false;
+  List<String> filterGroups = [];
+
+  bool get isFilterOpen => _isFilterOpen;
+
+  void toggleFilter() {
+    _isFilterOpen = !_isFilterOpen;
+    notifyListeners();
+  }
+
   VehicleData? _vehicleData;
   String? _error;
   bool _isLoading = false;
-  bool _isFilterOpen = false;
   final Set<String> _selectedGroups = {};
   String _searchQuery = '';
+  List<String> filterItems=["Group A", "Group B", "Group C", "Group D"];
 
   VehicleData? get vehicleData => _vehicleData;
   String? get error => _error;
   bool get isLoading => _isLoading;
-  bool get isFilterOpen => _isFilterOpen;
   Set<String> get selectedGroups => _selectedGroups;
   String get searchQuery => _searchQuery;
 
@@ -38,10 +47,7 @@ class VehicleListProvider with ChangeNotifier {
     }
   }
 
-  void toggleFilter() {
-    _isFilterOpen = !_isFilterOpen;
-    notifyListeners();
-  }
+
 
   void updateSearchQuery(String query) {
     _searchQuery = query;

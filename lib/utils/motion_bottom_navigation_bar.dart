@@ -4,75 +4,82 @@ import 'package:motion_tab_bar_v2/motion-tab-controller.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
-import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
-import 'package:trackerapp/view/new_dashboard.dart';
-import 'package:trackerapp/view/new_vehicle_list_dashboard.dart';
+import 'package:trackerapp/view/dashboard.dart';
+import 'package:trackerapp/view/new_notification_screen.dart';
 import 'package:trackerapp/view/settings.dart';
-
-import '../view/new_notification_page.dart' show VehicleEventsScreen;
-
+import 'package:trackerapp/view/vehicle_list_dashboard.dart';
 class MotionBottomNavigationBar extends StatefulWidget {
   const MotionBottomNavigationBar({super.key});
 
   @override
-  State<MotionBottomNavigationBar> createState() =>
-      _MotionBottomNavigationBarState();
+  State<MotionBottomNavigationBar> createState() => _MotionBottomNavigationBarState();
 }
 
 class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     with SingleTickerProviderStateMixin {
-  MotionTabBarController? _motionTabBarController;
-  late MotionBottomBarProvider _motionBottomBarProvider;
+  MotionTabBarController? _tabController;
+  late final MotionBottomBarProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    _motionBottomBarProvider =
-        Provider.of<MotionBottomBarProvider>(context, listen: false);
-
-    _motionTabBarController =
-        MotionTabBarController(initialIndex: _motionBottomBarProvider.currentIndex, length: 5, vsync: this);
+    _provider = Provider.of<MotionBottomBarProvider>(context, listen: false);
+    _tabController = MotionTabBarController(
+      initialIndex: _provider.currentIndex,
+      length: 5,
+      vsync: this,
+    );
   }
 
   @override
   void dispose() {
-    _motionTabBarController?.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final currentIndex = context.watch<MotionBottomBarProvider>().currentIndex;
 
-    // ✅ Safely update after the frame is built
+    // Sync provider index with tab controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_motionTabBarController != null &&
-          _motionTabBarController!.index != currentIndex) {
-        _motionTabBarController!.index = currentIndex;
+      if (_tabController != null && _tabController!.index != currentIndex) {
+        _tabController!.index = currentIndex;
       }
     });
 
-    // ✅ If controller not yet ready, show loader instead of crashing
-    if (_motionTabBarController == null) {
+    if (_tabController == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
     return Scaffold(
+      // Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient:isDark?LinearGradient(colors: [theme.cardColor,theme.cardColor]): LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.purple, AppColors.blueCyanWithOpacity.withOpacity(0.1)],
-          )),
-        child:  MotionTabBar(
-          controller: _motionTabBarController!,
+            colors: [
+              AppColors.purple,
+              AppColors.blueCyanWithOpacity,
+            ],
+          ),
+        ),
+        child: MotionTabBar(
+          controller: _tabController!,
           initialSelectedTab: "Dashboard",
           labelAlwaysVisible: true,
-          labels: const ["Status", "Map", "Dashboard", "Alerts", "Settings"],
+          labels: const [
+            "Status",
+            "Map",
+            "Dashboard",
+            "Alerts",
+            "Settings",
+          ],
           icons: const [
             Icons.map_outlined,
             Icons.location_on_outlined,
@@ -80,33 +87,35 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
             Icons.notifications_none_outlined,
             Icons.settings_outlined,
           ],
-          tabSize: 6.h,
-          tabBarHeight: 7.h,
-          textStyle: AppStyles.lightTextStyle(context).copyWith(
-            color: AppColors.white,
-            height: 0.9
-          ),
-          tabIconSize: 22.sp,
-          tabIconColor: AppColors.white,
-          tabIconSelectedSize: 22.sp,
-          tabSelectedColor: AppColors.white,
-          tabIconSelectedColor:  AppColors.blueCyan,
-          tabBarColor:  AppColors.blueCyanWithOpacity,
 
-          onTabItemSelected: (int value) {
-            _motionBottomBarProvider.setIndex(value);
+          textStyle: TextStyle(
+            color: AppColors.white,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
+          ),
+          tabIconSize: 21.sp,
+          tabBarHeight: 7.h,
+          tabIconColor: AppColors.white,
+          tabIconSelectedSize: 21.sp,
+          tabSelectedColor: AppColors.white,
+          tabIconSelectedColor: AppColors.blueCyan,
+          tabBarColor:Colors.transparent,
+          onTabItemSelected: (index) {
+            _provider.setIndex(index);
           },
         ),
       ),
+
+      // Body - Tab Views
       body: TabBarView(
         physics: const NeverScrollableScrollPhysics(),
-        controller: _motionTabBarController!,
-        children: const [
-          NewVehicleListDashBoard(),
-          Center(child: Text("Map")),
-          NewDashboard(),
-          VehicleEventsScreen(),
-          SettingScreen(),
+        controller: _tabController!,
+        children: [
+          const NewVehicleListDashBoard(),
+          const Center(child: Text("Map")),
+          const NewDashboard(),
+          NewNotificationScreen(),
+          const ModernSettingsScreen(),
         ],
       ),
     );

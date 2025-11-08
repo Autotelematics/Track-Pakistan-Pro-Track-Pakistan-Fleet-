@@ -4,12 +4,12 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
-import 'package:trackerapp/view/new_notification_page.dart';
-import 'package:trackerapp/view/new_analytics_page.dart';
-import 'package:trackerapp/view/new_livetracking_page.dart' show NewLiveTrackingPage;
-import 'package:trackerapp/view/new_report_type_page.dart' show ReportTypesScreen;
+import 'package:trackerapp/view/notification_screen.dart';
+import 'package:trackerapp/view/analytics_screen.dart';
+import 'package:trackerapp/view/live_tracking_screen.dart' show NewLiveTrackingPage;
+import 'package:trackerapp/view/report_type_screen.dart' show ReportTypesScreen;
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_verticle_space.dart';
+import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class SingleVehicleAnalytics extends StatefulWidget {
   const SingleVehicleAnalytics({super.key});

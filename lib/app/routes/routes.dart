@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:trackerapp/view/login.dart';
+import 'package:trackerapp/view/login_screen.dart';
 import 'package:trackerapp/view/splashscreen.dart';
 import 'package:trackerapp/app/routes/routes_name.dart';
 
@@ -9,11 +9,11 @@ class Routes {
     switch (settings.name) {
       case RoutesName.splashSceen:
         return MaterialPageRoute(
-          builder: (BuildContext context) => const SplachScreen(),
+          builder: (BuildContext context) => const SplashScreen(),
         );
       case RoutesName.login:
         return MaterialPageRoute(
-          builder: (BuildContext context) => Login(),
+          builder: (BuildContext context) => LoginScreen(),
         );
       // case RoutesName.geoFenceList:
       //   return MaterialPageRoute(
@@ -109,7 +109,7 @@ class Routes {
 
       default:
         return MaterialPageRoute(
-          builder: (BuildContext context) => const SplachScreen(),
+          builder: (BuildContext context) => const SplashScreen(),
         );
     }
   }

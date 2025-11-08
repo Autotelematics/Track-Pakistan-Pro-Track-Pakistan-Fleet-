@@ -9,8 +9,7 @@ plugins {
 }
 
 android {
-    compileSdk = 35
-    // Use a fallback NDK version if flutter.ndkVersion is not available
+    compileSdk = 36
     ndkVersion = if (extra.has("flutter.ndkVersion")) {
         extra["flutter.ndkVersion"] as String
     } else {
@@ -20,14 +19,14 @@ android {
     namespace = "com.autotelnew.android"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-        isCoreLibraryDesugaringEnabled = true  // ✅ Enable desugaring
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
 
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     sourceSets {
@@ -38,8 +37,8 @@ android {
 
     defaultConfig {
         applicationId = "com.autotelnew.android"
-        minSdk = 21
-        targetSdk = 35
+        minSdk = flutter.minSdkVersion
+        targetSdk = 36
         versionCode = System.getenv("FLUTTER_VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = System.getenv("FLUTTER_VERSION_NAME") ?: "1.0"
         multiDexEnabled = true
@@ -85,5 +84,5 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
     implementation(platform("com.google.firebase:firebase-bom:31.2.2"))
     implementation("com.google.firebase:firebase-analytics")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

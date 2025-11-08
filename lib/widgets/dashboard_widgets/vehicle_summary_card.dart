@@ -1,3 +1,4 @@
+// widgets/vehicle_summary_card.dart
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,8 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/dashboard_data.dart';
 import 'package:trackerapp/providers/dashboard_provider.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_verticle_space.dart';
+import 'package:trackerapp/widgets/get_vertical_space.dart';
+
 class VehicleSummaryCard extends StatelessWidget {
   final DashboardData data;
 
@@ -14,18 +16,30 @@ class VehicleSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            spreadRadius: 0,
-            offset: Offset(0, 3),
+            color: isDark
+                ? Colors.black.withOpacity(0.6)     // Deep shadow in dark
+                : Colors.black.withOpacity(0.12),   // Soft in light
+            blurRadius: isDark ? 16 : 10,
+            spreadRadius: isDark ? 1 : 0,
+            offset: const Offset(0, 4),
           ),
+          if (isDark)
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.15),
+              blurRadius: 20,
+              spreadRadius: 0,
+              offset: const Offset(0, 0),
+            ), // Subtle glow in dark
         ],
       ),
       child: Row(
@@ -39,17 +53,17 @@ class VehicleSummaryCard extends StatelessWidget {
     );
   }
 
+  // === REST OF YOUR CODE (UNCHANGED) ===
   Widget _vehicleLegend(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        "Total Vehicles",
-        style: AppStyles.regularTextStyle(context),
-      ),
+      Text("Total Vehicles", style: AppStyles.regularTextStyle(context)),
       Text(
         data.totalVehicles,
-        style: AppStyles.lightTextStyle(context)
-            .copyWith(fontSize: 16.sp, fontWeight: FontWeight.w900),
+        style: AppStyles.lightTextStyle(context).copyWith(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w900,
+        ),
       ),
       verticalSpace(height: 1.h),
       ...data.chartData.map(
@@ -69,7 +83,7 @@ class VehicleSummaryCard extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Padding(
-            padding:  EdgeInsets.only(right: 7.w),
+            padding: EdgeInsets.only(right: 7.w),
             child: PieChart(
               PieChartData(
                 pieTouchData: PieTouchData(
@@ -86,7 +100,7 @@ class VehicleSummaryCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding:  EdgeInsets.only(right: 7.w),
+            padding: EdgeInsets.only(right: 7.w),
             child: Text(
               data.totalVehicles,
               style: AppStyles.boldTextStyle(context),
@@ -108,10 +122,7 @@ class VehicleSummaryCard extends StatelessWidget {
         ),
       ),
       horizontalSpace(width: 1.5.w),
-      Text(
-        label,
-        style: AppStyles.lightTextStyle(context),
-      ),
+      Text(label, style: AppStyles.lightTextStyle(context)),
     ],
   );
 

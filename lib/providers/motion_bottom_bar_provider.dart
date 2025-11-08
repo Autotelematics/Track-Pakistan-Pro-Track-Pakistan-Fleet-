@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class MotionBottomBarProvider extends ChangeNotifier {
-  int _currentIndex = 2; // Dashboard default
+  int _currentIndex = 2;
 
   int get currentIndex => _currentIndex;
 

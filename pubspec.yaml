@@ -16,84 +16,22 @@ dependencies:
     sdk: flutter
 
   # Core Flutter UI and platform packages
-  cupertino_icons: ^1.0.2
-
-  # Google Maps and related utilities
-  google_maps_flutter: ^2.12.2
-  google_maps_flutter_web: ^0.5.10
-  google_maps_flutter_platform_interface: ^2.2.6
-  maps_launcher: ^3.0.0+1
-  google_map_marker_animation: ^0.0.1
-  custom_marker: ^1.0.0
-  label_marker: ^1.0.1
-  fluster: ^1.2.0
-  animated_marker: ^0.1.4
-
-  # Location & geocoding
-  geolocator: ^14.0.1
-  geocoding: ^3.0.0
-
-  # State management
-  flutter_bloc: ^9.1.1
-  bloc: ^9.0.0
-  provider: ^6.1.5
-  equatable: ^2.0.7
-
-  # Network and APIs
-  http: ^1.4.0
-  dio: ^5.8.0+1
-  pretty_dio_logger: ^1.4.0
-  connectivity_plus: ^6.1.4
-
-  # UI & animations
-  font_awesome_flutter: ^10.8.0
-  another_flushbar: ^1.12.30
-  fluttertoast: ^8.2.12
-  sliding_up_panel: ^2.0.0+1
-  getwidget: ^6.0.0
-  animate_do: ^4.2.0
+  cupertino_icons: ^1.0.8
+  google_maps_flutter: ^2.13.1
+  provider: ^6.1.5+1
+  http: ^1.5.0
   responsive_sizer: ^3.3.1
-  flutter_svg: ^1.1.6
-  after_layout: ^1.2.0
-
-  # Local storage
+  flutter_svg: ^2.2.1
   shared_preferences: ^2.5.3
-  flutter_cache_manager: ^3.4.1
-  sqflite: ^2.2.8+4
-  path: ^1.9.1
-  path_provider: ^2.1.5
-
-  # Notifications & Firebase
-  firebase_core: ^3.13.0
-  firebase_core_web: ^2.22.0
-  firebase_messaging: ^15.2.5
-  flutter_local_notifications: ^18.0.1
-
-  # Multimedia
-  video_player: ^2.9.5
-  video_player_web: ^2.3.5
-  flutter_tts: ^4.2.2
-
-  # Charts, PDFs, and time
-  syncfusion_flutter_pdfviewer: ^29.2.4
-  syncfusion_flutter_charts: ^29.2.4
-  syncfusion_flutter_gauges: ^29.2.7+1
-  pie_chart: ^5.3.2
-  fl_chart: ^1.0.0
-  timezone: ^0.9.2
-
-  # Utilities
-  share_plus: ^11.0.0
-  url_launcher: ^6.3.1
-  change_app_package_name: ^1.5.0
-  device_info_plus: ^11.4.0
-  flutter_downloader: ^1.12.0
-  intl: ^0.20.2
-  google_fonts: ^6.2.1
-  async: ^2.12.0
-  visibility_detector: ^0.4.0+2
+  firebase_core: ^4.2.0
+  firebase_messaging: ^16.0.3
+  flutter_local_notifications: ^19.5.0
+  syncfusion_flutter_gauges: ^31.2.3
+  fl_chart: ^1.1.1
+  url_launcher: ^6.3.2
   motion_tab_bar_v2: ^0.4.0
   cached_network_image: ^3.4.1
+  dropdown_button2: ^2.3.9
 
 
 
@@ -117,6 +55,9 @@ flutter:
           weight: 400
         - asset: assets/fonts/AlmarenaBold.otf
           weight: 700
+    - family: Limelight
+      fonts:
+        - asset: assets/fonts/Limelight.ttf
 
 # -------------------------------
 # Note:

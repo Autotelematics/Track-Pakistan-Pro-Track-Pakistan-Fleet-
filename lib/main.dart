@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -5,28 +6,25 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
-import 'package:trackerapp/providers/dashboard_provider.dart';
-import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
-import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
-import 'package:trackerapp/providers/theme_provider.dart';
-import 'package:trackerapp/providers/vehicle_list_provider.dart';
-import 'package:trackerapp/app/routes/routes.dart';
-import 'package:trackerapp/app/routes/routes_name.dart';
-// @pragma('vm:entry-point')
-// Future<void> backGroundHandler(RemoteMessage event) async {
-//   await Firebase.initializeApp();
-//   if (event.notification != null) {
-//     final sp = await SharedPreferences.getInstance();
-//     if (sp.getBool('playAlertSounds') ?? false) {
-//       PlaySounds.playAnnoucment(event);
-//     }
-//     LocalNotificationServices.showNotifiationForground(event);
-//   }
-// }
+import 'package:trackerapp/providers/contact_us_provider.dart';
+import 'package:trackerapp/providers/maintenance_provider.dart';
+import 'package:trackerapp/providers/settings_provider.dart';
+import 'package:trackerapp/providers/vehicle_expense_provider.dart';
+import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
+import 'package:trackerapp/view/splashscreen.dart';
+import 'providers/alert_settings_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/dashboard_provider.dart';
+import 'providers/motion_bottom_bar_provider.dart';
+import 'providers/single_vehicle_analytics_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/vehicle_list_provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Firebase Initialization
   final firebaseOptions = FirebaseOptions(
     apiKey: Platform.isAndroid
         ? 'AIzaSyBd7u3Jl_979xmMn3-9NtTcPKqFce5smkY'
@@ -45,10 +43,8 @@ void main() async {
     sound: true,
     announcement: true,
   );
-  // LocalNotificationServices.initilize();
-  // FirebaseMessaging.onBackgroundMessage(backGroundHandler);
 
-  // Load theme before runApp
+  // Load Theme
   final themeProvider = ThemeProvider();
   await themeProvider.loadTheme();
 
@@ -65,109 +61,95 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: themeProvider),
-        ChangeNotifierProvider(create:(_)=> MotionBottomBarProvider()),
-        ChangeNotifierProvider(create:(_)=> DashboardProvider()),
-        ChangeNotifierProvider(create:(_)=> VehicleListProvider()),
-        ChangeNotifierProvider(create:(_)=> SingleVehicleAnalyticsProvider()),
+        ChangeNotifierProvider(create: (_) => MotionBottomBarProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleListProvider()),
+        ChangeNotifierProvider(create: (_) => SingleVehicleAnalyticsProvider()),
+        ChangeNotifierProvider(create: (_) => AlertSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleTrackingProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => MaintenanceProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => ContactProvider()),
       ],
-      child: ResponsiveSizer(builder: (context, orientation, screenType) {
-        return Consumer<ThemeProvider>(
-          builder: (context, themeProvider, _) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
+      child: ResponsiveSizer(
+        builder: (context, orientation, screenType) {
+          return Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                theme: _buildLightTheme(),
+                darkTheme: _buildDarkTheme(),
+                themeMode: themeProvider.themeMode,
+                home: SplashScreen(),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 
-              // Light Theme → White UI
-              theme: ThemeData(
-                brightness: Brightness.light,
-                scaffoldBackgroundColor: AppColors.scaffoldBg,
-                primaryColor: AppColors.black,
-                cardColor: Colors.white,
-                colorScheme: ColorScheme.light(
-                  surface: Colors.white,
-                  onSurface: AppColors.textBlack,
-                  primary: AppColors.black,
-                  onPrimary: Colors.white,
-                ),
-                appBarTheme: AppBarTheme(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.black,
-                  iconTheme: IconThemeData(color: AppColors.black),
-                  titleTextStyle: TextStyle(
-                    color: AppColors.black,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                textTheme: const TextTheme(
-                  bodyMedium: TextStyle(color: Colors.black),
-                ),
-              ),
+  // Light Theme
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.scaffoldBg,
+      primaryColor: AppColors.black,
+      cardColor: AppColors.white,
+      colorScheme: ColorScheme.light(
+        primary: AppColors.black,
+        onPrimary: AppColors.white,
+        surface: AppColors.white,
+        onSurface: AppColors.textBlack,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.black,
+        elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.black),
+        titleTextStyle: TextStyle(
+          color: AppColors.black,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textTheme: TextTheme(
+        bodyMedium: TextStyle(color: AppColors.textBlack),
+      ),
+    );
+  }
 
-              // Dark Theme → Black UI
-              darkTheme: ThemeData(
-                brightness: Brightness.dark,
-                scaffoldBackgroundColor: AppColors.black,
-                primaryColor: AppColors.white,
-                cardColor: Colors.grey[900]!,
-                colorScheme: ColorScheme.dark(
-                  surface: Colors.grey[900]!,
-                  onSurface: Colors.white,
-                  primary: AppColors.white,
-                  onPrimary: Colors.black,
-                ),
-                appBarTheme: AppBarTheme(
-                  backgroundColor: AppColors.black,
-                  foregroundColor: AppColors.white,
-                  iconTheme: IconThemeData(color: AppColors.white),
-                  titleTextStyle: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                textTheme: const TextTheme(
-                  bodyMedium: TextStyle(color: Colors.white),
-                ),
-              ),
-
-              themeMode: themeProvider.themeMode,
-
-              initialRoute: RoutesName.splashSceen,
-              onGenerateRoute: Routes.generateRoute,
-
-              // Example Home Scaffold (Remove when splash screen works)
-              home: Scaffold(
-                appBar: AppBar(
-                  title: const Text("Black & White Theme"),
-                  actions: [
-                    Consumer<ThemeProvider>(
-                      builder: (context, themeProvider, _) {
-                        return IconButton(
-                          icon: Icon(
-                            themeProvider.themeMode == ThemeMode.light
-                                ? Icons.dark_mode
-                                : Icons.light_mode,
-                          ),
-                          onPressed: () => themeProvider.toggleTheme(),
-                        );
-                      },
-                    )
-                  ],
-                ),
-                body: Center(
-                  child: Text(
-                    "Hello Tracker App!",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      }),
+  // Dark Theme
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.black,
+      primaryColor: AppColors.white,
+      cardColor: AppColors.darkCard,
+      colorScheme: ColorScheme.dark(
+        primary: AppColors.white,
+        onPrimary: AppColors.black,
+        surface: AppColors.darkCard,
+        onSurface: AppColors.darkOnSurface,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.black,
+        foregroundColor: AppColors.white,
+        elevation: 0,
+        iconTheme:  IconThemeData(color: AppColors.white),
+        titleTextStyle: TextStyle(
+          color: AppColors.white,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textTheme:  TextTheme(
+        bodyMedium: TextStyle(color: AppColors.white),
+      ),
     );
   }
 }

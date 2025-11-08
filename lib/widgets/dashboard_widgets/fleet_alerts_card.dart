@@ -3,7 +3,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/dashboard_data.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_verticle_space.dart';
+import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class FleetAlertsCard extends StatelessWidget {
   final DashboardData data;

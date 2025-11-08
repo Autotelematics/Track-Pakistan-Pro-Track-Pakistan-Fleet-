@@ -5,8 +5,9 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/vehicle_data.dart';
 import 'package:trackerapp/view/single_vehicle_analytics.dart';
+import 'package:trackerapp/view/vehicle_tracking_screen.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_verticle_space.dart';
+import 'package:trackerapp/widgets/get_vertical_space.dart';
 class VehicleCard extends StatelessWidget {
   final Vehicle vehicle;
   final ThemeData theme;
@@ -139,8 +140,6 @@ class VehicleCard extends StatelessWidget {
   );
 
   Widget _buildActionButtons(BuildContext context, ThemeData theme) {
-    final primary = theme.colorScheme.primary;
-    final onSurface = theme.colorScheme.onSurface;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -148,6 +147,10 @@ class VehicleCard extends StatelessWidget {
           context,
           "Live Tracking",
           textColor: AppColors.black,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const VehicleTrackingScreen()),
+          ),
         ),
         _actionButton(
           context,

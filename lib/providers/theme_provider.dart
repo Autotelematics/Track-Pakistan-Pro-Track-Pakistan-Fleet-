@@ -2,21 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.system;
+  int _selectedIndex = 2; // 0 = Light, 1 = Dark, 2 = System
 
   ThemeMode get themeMode => _themeMode;
+  int get selectedIndex => _selectedIndex;
 
   Future<void> loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final String mode = prefs.getString('themeMode') ?? 'light';
-    _themeMode = mode == 'dark' ? ThemeMode.dark : ThemeMode.light;
+    final saved = prefs.getString('themeMode') ?? 'system';
+
+    switch (saved) {
+      case 'dark':
+        _themeMode = ThemeMode.dark;
+        _selectedIndex = 1;
+        break;
+      case 'light':
+        _themeMode = ThemeMode.light;
+        _selectedIndex = 0;
+        break;
+      default:
+        _themeMode = ThemeMode.system;
+        _selectedIndex = 2;
+    }
     notifyListeners();
   }
 
-  Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+  Future<void> setTheme(ThemeMode mode, int index) async {
+    _themeMode = mode;
+    _selectedIndex = index;
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('themeMode', _themeMode == ThemeMode.dark ? 'dark' : 'light');
+    String modeString;
+    switch (mode) {
+      case ThemeMode.dark:
+        modeString = 'dark';
+        break;
+      case ThemeMode.light:
+        modeString = 'light';
+        break;
+      default:
+        modeString = 'system';
+    }
+
+    await prefs.setString('themeMode', modeString);
     notifyListeners();
   }
 }

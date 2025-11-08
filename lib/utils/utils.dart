@@ -1,36 +1,45 @@
-import 'package:another_flushbar/flushbar.dart';
-import 'package:another_flushbar/flushbar_route.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class Utils {
+  /// Move focus from current field to next
   static void fieldFocusChange(
       BuildContext context, FocusNode current, FocusNode next) {
     current.unfocus();
     FocusScope.of(context).requestFocus(next);
   }
 
-  static toastMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
+  /// Show a simple SnackBar message
+  static void showMessage(BuildContext context, String message) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(fontSize: 16, color: Colors.white),
+      ),
       backgroundColor: Colors.black,
-      fontSize: 30,
-      textColor: Colors.white,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      duration: const Duration(seconds: 3),
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  static void flushBarErrorMessage(String message, BuildContext context) {
-    showFlushbar(
-        context: context,
-        flushbar: Flushbar(
-          title: 'Error',
-          message: message,
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-          padding: const EdgeInsets.all(10),
-          icon: const Icon(Icons.error, size: 30, color: Colors.white),
-          borderRadius: BorderRadius.circular(15),
-        )..show(context));
+  /// Show an error SnackBar
+  static void showError(BuildContext context, String message) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.error, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message, style: const TextStyle(fontSize: 16))),
+        ],
+      ),
+      backgroundColor: Colors.red,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      duration: const Duration(seconds: 3),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
