@@ -41,14 +41,7 @@ class NewNotificationScreen extends StatelessWidget {
       backgroundColor:Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
-          gradient:isDark?LinearGradient(colors: [theme.cardColor,theme.cardColor]): LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.purple,
-              AppColors.blueCyanWithOpacity,
-            ],
-          ),
+          gradient:isDark?LinearGradient(colors: [theme.cardColor,theme.cardColor]): AppColors.mainGradient
         ),
         child: SizedBox(
           height: 100.h,

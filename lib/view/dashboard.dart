@@ -73,6 +73,7 @@ class NewDashboard extends StatelessWidget {
               // Scrollable Content
               Expanded(
                 child: SingleChildScrollView(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
                       AlertGrid(data: data),

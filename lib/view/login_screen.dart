@@ -127,18 +127,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   verticalSpace(height: 4.h),
 
                   // Sign In Button
-                  CustomButton(
-                    text: "Sign In",
-                    textColor:  AppColors.white,
-                    backgroundColor:isDark?AppColors.primaryColor: primaryColor,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MotionBottomNavigationBar()),
+                  Consumer<AuthProvider>(
+                    builder: (context, provider, _) {
+                      return CustomButton(
+                        text: provider.isLoading ? "Please wait..." : "Sign In",
+                        textColor: AppColors.white,
+                        backgroundColor: isDark ? AppColors.primaryColor : primaryColor,
+                        onPressed: provider.isLoading
+                            ? null
+                            : () {
+                          provider.loginProvider(
+                            context: context,
+                            email: _emailController.text.trim(),
+                            password: _passwordController.text.trim(),
+                          );
+                        },
                       );
-                      if (kDebugMode) print("Sign In pressed");
                     },
                   ),
+
                   verticalSpace(height: 3.h),
 
                   // Footer

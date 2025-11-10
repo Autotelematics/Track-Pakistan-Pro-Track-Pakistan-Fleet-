@@ -15,8 +15,8 @@ class DistanceTravelledCard extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     final surface = Theme.of(context).colorScheme.surface;
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+      margin: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(16),
@@ -33,8 +33,7 @@ class DistanceTravelledCard extends StatelessWidget {
         children: [
           Text(
             "Distance Travelled",
-            style: AppStyles.boldTextStyle(context)
-                .copyWith(fontSize: 17.sp, fontWeight: FontWeight.w800),
+              style:AppStyles.semiboldTextStyle(context)
           ),
           verticalSpace(height: 1.5.h),
           Row(
@@ -129,7 +128,7 @@ class DistanceTravelledCard extends StatelessWidget {
       Text(
         label,
         style: AppStyles.regularTextStyle(context)
-            .copyWith(fontWeight: FontWeight.w700),
+            .copyWith(fontSize: 15.sp),
       ),
       Text(
         value,

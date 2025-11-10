@@ -18,19 +18,11 @@ class AlertSettingsScreen extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark
               ? LinearGradient(colors: [theme.cardColor, theme.cardColor])
-              : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.purple,
-              AppColors.blueCyanWithOpacity,
-            ],
-          ),
+              :AppColors.mainGradient
         ),
         child: Column(
           children: [

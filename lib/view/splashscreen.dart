@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(50.0),
-          child: Image(image: AssetImage(AppStyles.logoPath)),
+          child: Image(image: AssetImage("assets/images/splashsceen.png")),
         ),
       ),
     );

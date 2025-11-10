@@ -4,7 +4,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color? backgroundColor;
   final Color textColor;
   final double borderRadius;
@@ -17,7 +17,7 @@ class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
     this.backgroundColor,
     this.textColor = Colors.white,
     this.borderRadius = 10,
@@ -33,7 +33,6 @@ class CustomButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // If no background color provided → use gradient based on theme
     final bool useGradient = backgroundColor == null;
 
     return SizedBox(
@@ -57,7 +56,7 @@ class CustomButton extends StatelessWidget {
                 ? LinearGradient(
               colors: [theme.cardColor, theme.cardColor],
             )
-                :  LinearGradient(
+                : LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -73,9 +72,10 @@ class CustomButton extends StatelessWidget {
             child: Text(
               text,
               style: AppStyles.regularTextStyle(context).copyWith(
-                color: AppColors.white,
-                fontWeight: FontWeight.w800
-              )
+                color: textColor,
+                fontWeight: fontWeight,
+                fontSize: fontSize,
+              ),
             ),
           ),
         ),

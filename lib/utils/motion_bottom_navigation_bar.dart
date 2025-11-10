@@ -57,53 +57,39 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
       );
     }
     return Scaffold(
-      // Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient:isDark?LinearGradient(colors: [theme.cardColor,theme.cardColor]): LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.purple,
-              AppColors.blueCyanWithOpacity,
-            ],
-          ),
-        ),
-        child: MotionTabBar(
-          controller: _tabController!,
-          initialSelectedTab: "Dashboard",
-          labelAlwaysVisible: true,
-          labels: const [
-            "Status",
-            "Map",
-            "Dashboard",
-            "Alerts",
-            "Settings",
-          ],
-          icons: const [
-            Icons.map_outlined,
-            Icons.location_on_outlined,
-            Icons.dashboard,
-            Icons.notifications_none_outlined,
-            Icons.settings_outlined,
-          ],
+      bottomNavigationBar: MotionTabBar(
+        controller: _tabController!,
+        initialSelectedTab: "Dashboard",
+        labelAlwaysVisible: true,
+        labels: const [
+          "Status",
+          "Map",
+          "Dashboard",
+          "Alerts",
+          "Settings",
+        ],
+        icons: const [
+          Icons.map_outlined,
+          Icons.location_on_outlined,
+          Icons.dashboard,
+          Icons.notifications_none_outlined,
+          Icons.settings_outlined,
+        ],
 
-          textStyle: TextStyle(
-            color: AppColors.white,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
-          ),
-          tabIconSize: 21.sp,
-          tabBarHeight: 7.h,
-          tabIconColor: AppColors.white,
-          tabIconSelectedSize: 21.sp,
-          tabSelectedColor: AppColors.white,
-          tabIconSelectedColor: AppColors.blueCyan,
-          tabBarColor:Colors.transparent,
-          onTabItemSelected: (index) {
-            _provider.setIndex(index);
-          },
+        textStyle: TextStyle(
+          color: AppColors.white,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
         ),
+        tabIconSize: 21.sp,
+        tabIconColor: AppColors.white,
+        tabIconSelectedSize: 23.sp,
+        tabSelectedColor: AppColors.white,
+        tabIconSelectedColor:AppColors.primaryColor,
+        tabBarColor: isDark?theme.cardColor:AppColors.secondaryColor,
+        onTabItemSelected: (index) {
+          _provider.setIndex(index);
+        },
       ),
 
       // Body - Tab Views

@@ -21,13 +21,13 @@ class HeaderWidget extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return SizedBox(
-      height: 48.h,
+      height: 44.h,
       width: 100.w,
       child: Stack(
         children: [
           _header(context, isDark),
           Positioned(
-            top: 24.h,
+            top: 20.h,
             left: 5.w,
             right: 5.w,
             child: VehicleSummaryCard(data: data),
@@ -48,14 +48,7 @@ class HeaderWidget extends StatelessWidget {
         color: isDark ? surface : null, // Solid in dark
         gradient: isDark
             ? null
-            :  LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.purple,
-            AppColors.blueCyanWithOpacity,
-          ],
-        ),
+            :AppColors.mainGradient,
         borderRadius: const BorderRadius.only(
           bottomRight: Radius.circular(38),
           bottomLeft: Radius.circular(38),

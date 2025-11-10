@@ -14,8 +14,8 @@ class MaintenanceCard extends StatelessWidget {
     final cardColor = Theme.of(context).cardColor;
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 6.w),
-      margin: EdgeInsets.symmetric(vertical: 1.h, horizontal: 6.w),
+      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+      margin: EdgeInsets.symmetric( horizontal: 6.w),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -33,8 +33,7 @@ class MaintenanceCard extends StatelessWidget {
         children: [
           Text(
             "Maintenance Reminder",
-            style: AppStyles.boldTextStyle(context)
-                .copyWith(fontSize: 17.sp, fontWeight: FontWeight.w800),
+              style:AppStyles.semiboldTextStyle(context)
           ),
           verticalSpace(height: 1.h),
           _maintenanceRow(context, "Due", Colors.orange, data.maintenanceDue),
@@ -58,7 +57,7 @@ class MaintenanceCard extends StatelessWidget {
           child: Text(
             title,
             style: AppStyles.regularTextStyle(context)
-                .copyWith(fontWeight: FontWeight.w700, fontSize: 15.sp),
+                .copyWith(fontSize: 15.sp),
           ),
         ),
         Container(

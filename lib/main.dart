@@ -20,6 +20,9 @@ import 'providers/single_vehicle_analytics_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/vehicle_list_provider.dart';
 
+/// GLOBAL snackBar key
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +81,7 @@ class MyApp extends StatelessWidget {
           return Consumer<ThemeProvider>(
             builder: (context, themeProvider, _) {
               return MaterialApp(
+                scaffoldMessengerKey: rootScaffoldMessengerKey,
                 debugShowCheckedModeBanner: false,
                 theme: _buildLightTheme(),
                 darkTheme: _buildDarkTheme(),

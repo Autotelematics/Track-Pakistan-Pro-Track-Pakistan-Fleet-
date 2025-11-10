@@ -29,11 +29,7 @@ class ContactScreen extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             )
-                : LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.purple, AppColors.blueCyanWithOpacity],
-            ),
+                :AppColors.mainGradient
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

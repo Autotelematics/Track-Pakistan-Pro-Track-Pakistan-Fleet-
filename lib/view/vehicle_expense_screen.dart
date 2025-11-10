@@ -30,11 +30,7 @@ class VehicleExpenseScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: isDark
                     ? LinearGradient(colors: [theme.cardColor, theme.cardColor])
-                    : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.purple, AppColors.blueCyanWithOpacity],
-                ),
+                    : AppColors.mainGradient
               ),
               child: Column(
                 children: [
@@ -61,12 +57,12 @@ class VehicleExpenseScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 48), // balance for back icon
+                        horizontalSpace(width: 6.w),
                       ],
                     ),
                   ),
 
-                  SizedBox(height: 3.h),
+                  verticalSpace(height: 3.h),
 
                   // White curved card area
                   Expanded(
@@ -74,16 +70,16 @@ class VehicleExpenseScreen extends StatelessWidget {
                       clipper: TopCurveClipper(),
                       child: Container(
                         decoration: BoxDecoration(
+                          color: AppColors.white,
                           gradient: isDark
                               ? LinearGradient(colors: [theme.scaffoldBackgroundColor, theme.scaffoldBackgroundColor])
-                              : LinearGradient(colors: [Colors.white, Colors.grey.shade100]),
+                              : null,
                         ),
                         padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 4.h),
                         child: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Month selector row
                               Row(
                                 children: [
                                   IconButton(
@@ -98,8 +94,8 @@ class VehicleExpenseScreen extends StatelessWidget {
                                         children: [
                                           Text(provider.monthLabel,
                                               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
-                                          SizedBox(height: 4),
-                                          Text('April 2022', style: TextStyle(color: Colors.grey.shade600, fontSize: 12.sp)),
+                                          verticalSpace(height: .5.h),
+                                          Text('April 2022', style: AppStyles.lightTextStyle(context).copyWith(color: AppColors.grey)),
                                         ],
                                       ),
                                     ),
@@ -126,16 +122,16 @@ class VehicleExpenseScreen extends StatelessWidget {
                                       child: Column(
                                         children: [
                                           Text('M', style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
-                                          SizedBox(height: 6),
+                                          verticalSpace(height: .6.h),
                                           Container(
                                             width: 10.w,
                                             height: 4.h,
                                             decoration: BoxDecoration(
-                                              color: isSelected ? AppColors.purple : Colors.transparent,
+                                              color: isSelected ? AppColors.secondaryColor : Colors.transparent,
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             alignment: Alignment.center,
-                                            child: Text('$day', style: TextStyle(color: isSelected ?AppColors.white:isDark?AppColors.white:AppColors.black)),
+                                            child: Text('$day', style: AppStyles.lightTextStyle(context).copyWith(color: isDark?AppColors.white:AppColors.black)),
                                           ),
                                         ],
                                       ),
@@ -156,7 +152,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                         Text('You have Spend', style: AppStyles.lightTextStyle(context).copyWith(color: AppColors.textBlack)),
                                         verticalSpace(height: 6),
                                         Text('\$${provider.monthTotal.toStringAsFixed(0)}',
-                                            style:AppStyles.boldTextStyle(context).copyWith(color: isDark?AppColors.white:AppColors.purple)),
+                                            style:AppStyles.boldTextStyle(context).copyWith(color: isDark?AppColors.white:AppColors.secondaryColor)),
                                         verticalSpace(height: 6),
                                         Text('this month.', style:  AppStyles.lightTextStyle(context).copyWith(color: AppColors.grey)),
                                       ],
@@ -189,7 +185,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                             widthFactor: 0.7578,
                                             child: Container(
                                               decoration: BoxDecoration(
-                                                gradient: LinearGradient(colors: [AppColors.purple, AppColors.blueCyanWithOpacity]),
+                                                color: AppColors.secondaryColor,
                                                 borderRadius: BorderRadius.circular(10.px),
                                               ),
                                             ),
@@ -224,7 +220,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                   )),
                                   Text('View All', style: AppStyles.appTitleTextStyle.copyWith(
                                       fontSize: 15.sp,
-                                    color: AppColors.purple
+                                    color: AppColors.secondaryColor
                                   )
                                   ),
                                 ],

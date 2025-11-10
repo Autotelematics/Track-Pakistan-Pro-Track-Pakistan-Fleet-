@@ -4,8 +4,6 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/vehicle_data.dart';
-import 'package:trackerapp/view/single_vehicle_analytics.dart';
-import 'package:trackerapp/view/vehicle_tracking_screen.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 class VehicleCard extends StatelessWidget {
@@ -22,11 +20,22 @@ class VehicleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = AppColors.statusColor(vehicle.status);
 
-    return Card(
+    return Container(
       margin: EdgeInsets.symmetric(vertical: 1.h),
-      color: theme.cardColor,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.px),
+        color: theme.cardColor,
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            spreadRadius: 0,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: EdgeInsets.all(1.h),
+        padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 2.w),
         child: Column(
           children: [
             Row(
@@ -108,8 +117,6 @@ class VehicleCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            verticalSpace(height: 1.h),
-            _buildActionButtons(context, theme),
           ],
         ),
       ),
@@ -139,77 +146,6 @@ class VehicleCard extends StatelessWidget {
     ),
   );
 
-  Widget _buildActionButtons(BuildContext context, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _actionButton(
-          context,
-          "Live Tracking",
-          textColor: AppColors.black,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const VehicleTrackingScreen()),
-          ),
-        ),
-        _actionButton(
-          context,
-          "Playback",
-          textColor: AppColors.black,
-        ),
-        _actionButton(
-          context,
-          "Analytics",
-          textColor: AppColors.black,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SingleVehicleAnalytics()),
-          ),
-        ),
-        _actionButton(
-          context,
-          "Reports",
-          textColor: AppColors.black,
-        ),
-      ],
-    );
-  }
 
-  Widget _actionButton(
-      BuildContext context,
-      String text, {
-        Color? textColor,
-        VoidCallback? onTap,
-      }) {
-    final theme = Theme.of(context);
-    final onSurface = theme.colorScheme.onSurface;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: EdgeInsets.only(right: 2.w),
-          alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.7.h),
-          decoration: BoxDecoration(
-            color:  Colors.white,
-            borderRadius: BorderRadius.circular(5),
-            // border: Border.all(color: AppColors.black) ,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withOpacity(0.15),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Text(
-            text,
-            style: AppStyles.action(textColor ?? onSurface, context),
-          ),
-        ),
-      ),
-    );
-  }
 
 }

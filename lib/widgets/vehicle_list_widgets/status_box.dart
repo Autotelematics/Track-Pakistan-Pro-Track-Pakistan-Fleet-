@@ -8,8 +8,8 @@ class StatusBox extends StatelessWidget {
   final Color onSurface;
   final Color cardColor;
   final double boxWidth = 15.5.w;
-  final double boxHeight = 4.5.h;
-  final double baseCircleSize = 3.2.h;
+  final double boxHeight = 3.5.h;
+  final double baseCircleSize = 3.4.h;
 
    StatusBox({
     super.key,
@@ -23,7 +23,6 @@ class StatusBox extends StatelessWidget {
     final countStr = status.count.toString();
     final digits = countStr.length;
     final circleSize = baseCircleSize + (digits > 3 ? (digits - 3) * 0.4.h : 0);
-    final fontSize = digits > 4 ? 10.sp : 12.sp;
 
     return Padding(
       padding: EdgeInsets.only(right: 1.w),
@@ -41,7 +40,7 @@ class StatusBox extends StatelessWidget {
                   color: status.color,
                   borderRadius: BorderRadius.circular(5),
                 ),
-                padding: EdgeInsets.only(top: 2.h),
+                padding: EdgeInsets.only(top: 1.6.h),
                 child: Text(
                   status.title,
                   textAlign: TextAlign.center,
@@ -63,11 +62,10 @@ class StatusBox extends StatelessWidget {
                 ),
                 child: Text(
                   countStr,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.w500,
-                    color: onSurface,
-                  ),
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 13.sp,
+                    color: onSurface
+                  )
                 ),
               ),
             ),

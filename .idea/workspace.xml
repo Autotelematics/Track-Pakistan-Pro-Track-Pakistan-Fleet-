@@ -10,133 +10,36 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="896819a2-2024-4c02-b203-30e88c39ed61" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/assets/fonts/Limelight.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/images/change_passwod.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/images/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/images/logout.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/alert_settings_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/auth_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/contact_us_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/maintenance_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/settings_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/vehicle_expense_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/vehicle_tracking_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/diagonal_bezier.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/header_bezier.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/logout_popup.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/top_curve_bezier.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/add_maintenance_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/alerts_setting_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/appearance_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/login_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/vehicle_tracking_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/SearchAndFilterBar.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/appearance_widgets/appearance_body.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/appearance_widgets/appearance_header.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/appearance_widgets/theme_option_card.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/address_footer_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/contact_grid_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/explore_section_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/header_section_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/hero_section_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/custom_button.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/custom_text_field.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/filter_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/maintenance_field.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/vehicle_dropdown.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_header.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_list.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_tile.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/common_small_widgets.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/top_bar.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/vehicle_bottom_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins-dependencies" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/res/app_endpoints.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/app_snackbar.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/preference_keys.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/shared_preference.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/key.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/key.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/upload-keystore.jks" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Android Image/ldpi.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Auto_Telematics_Pvt_Ltd_Logo-removebg-preview.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Banner.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Combo Chart_30px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Combo Chart_80px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Combo_Chart_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Flag Filled _96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Gas Station_80px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Gas_Station_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Globe_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Green Flag_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Instagram_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Phone_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Send Email_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Time Machine_80px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Time_Machine_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Traffic Jam_80px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/Traffic_Jam_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/WhatsApp_96px.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/appicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/car_icon6.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/car_icon61.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/end.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/facebook.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/icon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/icon/icon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/ios/car_icon6.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/ios/end.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/ios/stops.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/loading.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/login-page-background-2.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/login-page-background-3.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/login-page-background.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/start.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/stops.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/waiting.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/svgs/location.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Flutter/AppFrameworkInfo.plist" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/AppFrameworkInfo.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Podfile" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Podfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/routes/routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/routes/routes.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/routes/routes.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/routes/routes_name.dart" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers/motion_bottom_bar_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/motion_bottom_bar_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers/theme_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/theme_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers/vehicle_list_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/vehicle_list_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/auth_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/auth_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/utils.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/utils.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/login.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_analytics_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/analytics_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_livetracking_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/live_tracking_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_notification_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/notification_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_report_type_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/report_type_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_vehicle_list_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/alerts_setting_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/alerts_setting_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/settings.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/single_vehicle_analytics.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/single_vehicle_analytics.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/splashscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/splashscreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_textfield.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/search_textfield.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/custom_button.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fleet_alerts_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fleet_alerts_card.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/vehicle_summary_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/vehicle_summary_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/get_verticle_space.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/get_vertical_space.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/widget_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

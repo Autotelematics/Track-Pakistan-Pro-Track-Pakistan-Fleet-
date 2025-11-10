@@ -15,8 +15,8 @@ class FleetAlertsCard extends StatelessWidget {
     final surface = Theme.of(context).colorScheme.surface;
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+      margin: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(16),
@@ -33,8 +33,7 @@ class FleetAlertsCard extends StatelessWidget {
         children: [
           Text(
             "Fleet Alerts",
-            style: AppStyles.boldTextStyle(context)
-                .copyWith(fontSize: 17.sp, fontWeight: FontWeight.w800),
+              style:AppStyles.semiboldTextStyle(context)
           ),
           verticalSpace(height: 1.5.h),
           Column(
@@ -47,7 +46,7 @@ class FleetAlertsCard extends StatelessWidget {
                   children: [
                     Text(
                       alertData.label,
-                      style: AppStyles.regularTextStyle(context)
+                      style:AppStyles.regularTextStyle(context)
                           .copyWith(fontSize: 15.sp),
                       overflow: TextOverflow.ellipsis,
                     ),

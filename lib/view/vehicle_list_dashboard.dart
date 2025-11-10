@@ -150,14 +150,11 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
   Widget _buildVehicleList(VehicleListProvider provider, ThemeData theme) {
     return Expanded(
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 3.w),
+        padding: EdgeInsets.symmetric(horizontal: 3.w,vertical: 0),
         itemCount: provider.filteredVehicles.length,
-        itemBuilder: (_, i) => Padding(
-          padding: EdgeInsets.only(bottom: 1.5.h),
-          child: VehicleCard(
-            vehicle: provider.filteredVehicles[i],
-            theme: theme,
-          ),
+        itemBuilder: (_, i) => VehicleCard(
+          vehicle: provider.filteredVehicles[i],
+          theme: theme,
         ),
       ),
     );
