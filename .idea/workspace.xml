@@ -10,36 +10,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="896819a2-2024-4c02-b203-30e88c39ed61" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/res/app_endpoints.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/app_snackbar.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/preference_keys.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/shared_preference.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/app_loading.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/app_validators.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_sensors_row.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/routes/routes.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/routes/routes_name.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/providers/auth_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/auth_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/alerts_setting_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/alerts_setting_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/preference_keys.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/preference_keys.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/login_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/settings.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/splashscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/splashscreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/custom_button.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fleet_alerts_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fleet_alerts_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

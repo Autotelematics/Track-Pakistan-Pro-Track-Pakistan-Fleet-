@@ -78,12 +78,14 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
 
         textStyle: TextStyle(
           color: AppColors.white,
-          fontSize: 12.sp,
+          fontSize: 13.sp,
           fontWeight: FontWeight.w500,
         ),
         tabIconSize: 21.sp,
+        tabBarHeight: 7.5.h,
         tabIconColor: AppColors.white,
-        tabIconSelectedSize: 23.sp,
+        tabIconSelectedSize: 22.sp,
+        tabSize: 6.5.h,
         tabSelectedColor: AppColors.white,
         tabIconSelectedColor:AppColors.primaryColor,
         tabBarColor: isDark?theme.cardColor:AppColors.secondaryColor,

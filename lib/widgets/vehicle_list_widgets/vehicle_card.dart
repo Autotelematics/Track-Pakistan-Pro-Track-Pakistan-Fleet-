@@ -6,6 +6,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/vehicle_data.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+import 'package:trackerapp/widgets/vehicle_list_widgets/vehicle_sensors_row.dart';
 class VehicleCard extends StatelessWidget {
   final Vehicle vehicle;
   final ThemeData theme;
@@ -117,6 +118,8 @@ class VehicleCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
+            verticalSpace(height: 1.h),
+            VehicleStatusRow()
           ],
         ),
       ),

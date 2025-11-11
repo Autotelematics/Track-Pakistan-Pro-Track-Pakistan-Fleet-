@@ -19,16 +19,8 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    if (email.isEmpty) {
-      return AppSnackBar.show(message: "Email is required",isError: true);
-    }
-    if (password.isEmpty) {
-      return AppSnackBar.show(message: "Password is required",isError: true);
-    }
-
     isLoading = true;
     notifyListeners();
-
     try {
       bool success = await _repo.loginApi(email: email, password: password);
       if (success) {

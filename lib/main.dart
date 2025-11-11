@@ -11,6 +11,7 @@ import 'package:trackerapp/providers/maintenance_provider.dart';
 import 'package:trackerapp/providers/settings_provider.dart';
 import 'package:trackerapp/providers/vehicle_expense_provider.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
+import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/view/splashscreen.dart';
 import 'providers/alert_settings_provider.dart';
 import 'providers/auth_provider.dart';
@@ -26,6 +27,7 @@ GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MySharedPreferences.init();
 
   // Firebase Initialization
   final firebaseOptions = FirebaseOptions(
