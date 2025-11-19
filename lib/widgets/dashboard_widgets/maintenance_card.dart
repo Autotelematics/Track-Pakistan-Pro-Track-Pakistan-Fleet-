@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/data/models/dashboard_data.dart';
+import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
-class MaintenanceCard extends StatelessWidget {
-  final DashboardData data;
 
-  const MaintenanceCard({super.key, required this.data});
+class MaintenanceCard extends StatelessWidget {
+  final GetDashboardModel data;
+
+  const MaintenanceCard({
+    super.key,
+    required this.data,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cardColor = Theme.of(context).cardColor;
     final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    // Ignore items where current = 0
+    final valid = data.maintenance.where((m) => m.current != 0).toList();
+
+    // All Maintenance Count
+    final allCount = valid.length.toString();
+    // Due = percent == 100 OR percent > 100
+    final due = valid.where((m) => m.percent < 100).toList();
+    final dueCount = due.length.toString();
+    // Overdue = percent > 100 OR status == "expired"
+    final overdue =
+    valid.where((m) =>m.percent==100|| m.percent > 100).toList();
+    final overdueCount = overdue.length.toString();
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
-      margin: EdgeInsets.symmetric( horizontal: 6.w),
+      margin: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -31,39 +49,77 @@ class MaintenanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Maintenance Reminder",
-              style:AppStyles.semiboldTextStyle(context)
+          Row(
+            children: [
+              Text(
+                "Maintenance Reminder",
+                style: AppStyles.semiboldTextStyle(context),
+              ),
+
+            ],
           ),
-          verticalSpace(height: 1.h),
-          _maintenanceRow(context, "Due", Colors.orange, data.maintenanceDue),
-          verticalSpace(height: 1.h),
+
+          verticalSpace(height: 2.h),
+
+          /// ALL
+          _maintenanceRow(
+            context,
+            title: "All",
+            iconColor: Colors.blue,
+            count: allCount,
+          ),
+          verticalSpace(height: 1.5.h),
+
           Divider(color: onSurface.withOpacity(0.2)),
-          verticalSpace(height: 1.h),
-          _maintenanceRow(context, "Overdue", Colors.red, data.maintenanceOverdue),
+          verticalSpace(height: 1.5.h),
+
+          /// DUE
+          _maintenanceRow(
+            context,
+            title: "Due",
+            iconColor: Colors.orange,
+            count: dueCount,
+          ),
+          verticalSpace(height: 1.5.h),
+
+          Divider(color: onSurface.withOpacity(0.2)),
+          verticalSpace(height: 1.5.h),
+
+          /// OVERDUE
+          _maintenanceRow(
+            context,
+            title: "Overdue",
+            iconColor: Colors.red,
+            count: overdueCount,
+          ),
         ],
       ),
     );
   }
 
   Widget _maintenanceRow(
-      BuildContext context, String title, Color iconColor, String count) {
+      BuildContext context, {
+        required String title,
+        required Color iconColor,
+        required String count,
+      }) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Row(
       children: [
-        Icon(Icons.calendar_month, color: iconColor, size: 20.sp),
+        Icon(title=="All"?Icons.build_circle:Icons.calendar_month, color: iconColor, size: 20.sp),
         horizontalSpace(width: 3.w),
+
         Expanded(
           child: Text(
             title,
-            style: AppStyles.regularTextStyle(context)
-                .copyWith(fontSize: 15.sp),
+            style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
           ),
         ),
+
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 1.h, vertical: 0.5.h),
+          padding: EdgeInsets.symmetric(horizontal: 1.2.h, vertical: 0.6.h),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: iconColor.withOpacity(0.15),
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
@@ -72,7 +128,9 @@ class MaintenanceCard extends StatelessWidget {
                 .copyWith(fontWeight: FontWeight.w700, fontSize: 14.sp),
           ),
         ),
+
         horizontalSpace(width: 1.h),
+
         Icon(
           Icons.arrow_forward_ios_rounded,
           size: 18.sp,

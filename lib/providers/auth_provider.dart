@@ -18,7 +18,8 @@ class AuthProvider extends ChangeNotifier {
     required BuildContext context,
     required String email,
     required String password,
-  }) async {
+  })
+  async {
     isLoading = true;
     notifyListeners();
     try {

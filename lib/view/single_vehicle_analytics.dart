@@ -4,9 +4,9 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
-import 'package:trackerapp/view/notification_screen.dart';
 import 'package:trackerapp/view/analytics_screen.dart';
 import 'package:trackerapp/view/live_tracking_screen.dart' show NewLiveTrackingPage;
+import 'package:trackerapp/view/new_notification_screen.dart';
 import 'package:trackerapp/view/report_type_screen.dart' show ReportTypesScreen;
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -186,7 +186,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                                 ),
                               ),
 
-                            const KeepAliveWrapper(child: VehicleEventsScreen()),
+                             KeepAliveWrapper(child: NewNotificationScreen()),
                           ],
                         ),
                       ),

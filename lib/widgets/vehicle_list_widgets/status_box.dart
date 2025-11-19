@@ -1,75 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/data/models/vehicle_data.dart';
+import 'package:trackerapp/providers/vehicle_list_provider.dart';
 
 class StatusBox extends StatelessWidget {
-  final StatusData status;
+  final String title;
+  final int count;
+  final Color color;
   final Color onSurface;
   final Color cardColor;
-  final double boxWidth = 15.5.w;
-  final double boxHeight = 3.5.h;
-  final double baseCircleSize = 3.4.h;
 
-   StatusBox({
+  const StatusBox({
     super.key,
-    required this.status,
+    required this.title,
+    required this.count,
+    required this.color,
     required this.onSurface,
     required this.cardColor,
   });
 
+  String get _statusKey {
+    switch (title) {
+      case 'All': return 'all';
+      case 'Running': return 'running';
+      case 'Stopped': return 'stopped';
+      case 'Idle': return 'idle';
+      case 'Offline': return 'offline';
+      case 'No Data': return 'nodata';
+      case 'Expired': return 'expired';
+      default: return 'all';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final countStr = status.count.toString();
-    final digits = countStr.length;
-    final circleSize = baseCircleSize + (digits > 3 ? (digits - 3) * 0.4.h : 0);
+    final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
+    final isSelected = provider.filterStatus == _statusKey;
 
-    return Padding(
-      padding: EdgeInsets.only(right: 1.w),
-      child: SizedBox(
-        width: boxWidth,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: circleSize / 2,
-              child: Container(
-                width: boxWidth,
-                height: boxHeight,
-                decoration: BoxDecoration(
-                  color: status.color,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                padding: EdgeInsets.only(top: 1.6.h),
-                child: Text(
-                  status.title,
-                  textAlign: TextAlign.center,
-                  style: AppStyles.statusTitle(context),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: (boxWidth - circleSize) / 2,
-              child: Container(
-                width: circleSize,
-                height: circleSize,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: cardColor,
-                  border: Border.all(color: status.color, width: 2),
-                ),
-                child: Text(
-                  countStr,
-                  style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 13.sp,
-                    color: onSurface
-                  )
+    final countStr = count.toString();
+    final digits = countStr.length;
+    final baseCircleSize = 3.4.h;
+    final circleSize = baseCircleSize + (digits > 3 ? (digits - 3) * 0.4.h : 0);
+    final boxWidth = 15.5.w;
+    final boxHeight = 3.5.h;
+
+    return GestureDetector(
+      onTap: () => provider.setFilter(_statusKey),
+      child: Padding(
+        padding: EdgeInsets.only(right: 1.w),
+        child: SizedBox(
+          width: boxWidth,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: circleSize / 2,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: boxWidth,
+                  height: boxHeight,
+                  decoration: BoxDecoration(
+                    color: isSelected ? color : color.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: EdgeInsets.only(top: 1.6.h),
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: AppStyles.statusTitle(context).copyWith(
+                      color: isSelected ? Colors.white : onSurface.withOpacity(0.7),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                top: 0,
+                left: (boxWidth - circleSize) / 2,
+                child: Container(
+                  width: circleSize,
+                  height: circleSize,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cardColor,
+                    border: Border.all(
+                      color: isSelected ? color : color.withOpacity(0.5),
+                      width: isSelected ? 3 : 2,
+                    ),
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: Offset(0, 2))]
+                        : null,
+                  ),
+                  child: Text(
+                    countStr,
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 13.sp,
+                      color: isSelected ? color : onSurface,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

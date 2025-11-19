@@ -18,24 +18,22 @@ class GroupFilterItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<VehicleListProvider>(context);
-    final isSelected = provider.selectedGroups.contains(title);
+    final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
+    final isSelected = provider.groupName == title;
 
     return GestureDetector(
-      onTap: () => provider.toggleGroupSelection(title),
+      onTap: () {
+        final groupId = title == 'All' ? null : title;
+        provider.setGroupFilter(groupId, title);
+      },
       child: Container(
         padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 1.h),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: AppStyles.groupItem(context),
-            ),
+            Text(title, style: AppStyles.groupItem(context)),
             Icon(
-              isSelected
-                  ? Icons.check_box_outlined
-                  : Icons.check_box_outline_blank,
+              isSelected ? Icons.check_box_outlined : Icons.check_box_outline_blank,
               color: isSelected ? primary : primary.withOpacity(0.3),
               size: 22,
             ),

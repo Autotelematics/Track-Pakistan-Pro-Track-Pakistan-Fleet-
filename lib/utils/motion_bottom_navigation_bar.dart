@@ -9,56 +9,59 @@ import 'package:trackerapp/view/dashboard.dart';
 import 'package:trackerapp/view/new_notification_screen.dart';
 import 'package:trackerapp/view/settings.dart';
 import 'package:trackerapp/view/vehicle_list_dashboard.dart';
+
 class MotionBottomNavigationBar extends StatefulWidget {
   const MotionBottomNavigationBar({super.key});
 
   @override
-  State<MotionBottomNavigationBar> createState() => _MotionBottomNavigationBarState();
+  State<MotionBottomNavigationBar> createState() =>
+      _MotionBottomNavigationBarState();
 }
 
 class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     with SingleTickerProviderStateMixin {
-  MotionTabBarController? _tabController;
-  late final MotionBottomBarProvider _provider;
+  late MotionTabBarController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<MotionBottomBarProvider>(context, listen: false);
+    final provider =
+    Provider.of<MotionBottomBarProvider>(context, listen: false);
     _tabController = MotionTabBarController(
-      initialIndex: _provider.currentIndex,
+      initialIndex: provider.currentIndex,
       length: 5,
       vsync: this,
     );
+
+    // Listen for tab index changes inside the controller
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging == false) {
+        final provider = context.read<MotionBottomBarProvider>();
+        if (provider.currentIndex != _tabController.index) {
+          provider.setIndex(_tabController.index);
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<MotionBottomBarProvider>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final currentIndex = context.watch<MotionBottomBarProvider>().currentIndex;
-
-    // Sync provider index with tab controller
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_tabController != null && _tabController!.index != currentIndex) {
-        _tabController!.index = currentIndex;
-      }
-    });
-
-    if (_tabController == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    if (_tabController.index != provider.currentIndex) {
+      _tabController.index = provider.currentIndex;
     }
+
     return Scaffold(
       bottomNavigationBar: MotionTabBar(
-        controller: _tabController!,
+        controller: _tabController,
         initialSelectedTab: "Dashboard",
         labelAlwaysVisible: true,
         labels: const [
@@ -75,35 +78,33 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
           Icons.notifications_none_outlined,
           Icons.settings_outlined,
         ],
-
         textStyle: TextStyle(
           color: AppColors.white,
           fontSize: 13.sp,
           fontWeight: FontWeight.w500,
         ),
         tabIconSize: 21.sp,
-        tabBarHeight: 7.5.h,
+        tabBarHeight: 6.5.h,
         tabIconColor: AppColors.white,
         tabIconSelectedSize: 22.sp,
-        tabSize: 6.5.h,
+        tabSize: 6.h,
         tabSelectedColor: AppColors.white,
-        tabIconSelectedColor:AppColors.primaryColor,
-        tabBarColor: isDark?theme.cardColor:AppColors.secondaryColor,
+        tabIconSelectedColor: AppColors.primaryColor,
+        tabBarColor:
+        isDark ? theme.cardColor : AppColors.secondaryColor,
         onTabItemSelected: (index) {
-          _provider.setIndex(index);
+          provider.setIndex(index);
         },
       ),
-
-      // Body - Tab Views
       body: TabBarView(
         physics: const NeverScrollableScrollPhysics(),
-        controller: _tabController!,
-        children: [
-          const NewVehicleListDashBoard(),
-          const Center(child: Text("Map")),
-          const NewDashboard(),
+        controller: _tabController,
+        children:  [
+          NewVehicleListDashBoard(),
+          Center(child: Text("Map")),
+          NewDashboard(),
           NewNotificationScreen(),
-          const ModernSettingsScreen(),
+          ModernSettingsScreen(),
         ],
       ),
     );

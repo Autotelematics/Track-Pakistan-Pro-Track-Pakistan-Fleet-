@@ -1,3 +1,5 @@
+// lib/widgets/custom_text_field.dart
+
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
@@ -7,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final String labelText;
   final IconData? prefixIcon;
   final IconData? suffixIcon;
+  final Function()? onSuffixTap; // ← NEW: Dedicated callback for suffix icon
   final TextInputType keyboardType;
   final bool obscureText;
   final Color? fillColor;
@@ -25,6 +28,7 @@ class CustomTextField extends StatelessWidget {
   final bool showShadow;
   final FontWeight? fontWeight;
   final TextAlign textAlign;
+  final Function(String)? onSubmitted; // ← For search on enter
 
   const CustomTextField({
     super.key,
@@ -32,6 +36,7 @@ class CustomTextField extends StatelessWidget {
     required this.labelText,
     this.prefixIcon,
     this.suffixIcon,
+    this.onSuffixTap,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.fillColor,
@@ -50,6 +55,7 @@ class CustomTextField extends StatelessWidget {
     this.showShadow = false,
     this.fontWeight,
     this.textAlign = TextAlign.start,
+    this.onSubmitted,
   });
 
   @override
@@ -83,6 +89,7 @@ class CustomTextField extends StatelessWidget {
         validator: validator,
         onTap: onTap,
         textAlign: textAlign,
+        onFieldSubmitted: onSubmitted,
         style: TextStyle(
           color: defaultTextColor,
           fontSize: defaultFontSize,
@@ -90,30 +97,45 @@ class CustomTextField extends StatelessWidget {
         ),
         decoration: InputDecoration(
           labelText: labelText,
-          
-          labelStyle: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
+          labelStyle: AppStyles.regularTextStyle(context).copyWith(
+            fontSize: 15.sp,
+            color: defaultLabelColor,
+          ),
           prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: defaultLabelColor, size: 18.sp)
+              ? Icon(prefixIcon, color: defaultLabelColor, size: 20.sp)
               : null,
+
+          // Suffix Icon with proper tap handling & ripple effect
           suffixIcon: suffixIcon != null
-              ? InkWell(
-            onTap: onTap,
-            child: Icon(suffixIcon, color: defaultLabelColor, size: 21.sp),
+              ? Padding(
+            padding: EdgeInsets.only(right: 2.w),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(50),
+              onTap: onSuffixTap ?? onTap, // Priority to dedicated callback
+              child: Icon(
+                suffixIcon,
+                color: defaultLabelColor,
+                size: 22.sp,
+              ),
+            ),
           )
               : null,
+
           filled: true,
           fillColor: defaultFillColor,
           contentPadding: EdgeInsets.symmetric(
             vertical: contentPaddingV ?? 1.8.h,
             horizontal: contentPaddingH ?? 4.w,
           ),
+
+          // Borders
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(defaultBorderRadius),
             borderSide: BorderSide(color: defaultBorderColor, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(defaultBorderRadius),
-            borderSide: BorderSide(color: defaultFocusedBorderColor, width: 1.5),
+            borderSide: BorderSide(color: defaultFocusedBorderColor, width: 1.8),
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(defaultBorderRadius),
@@ -125,7 +147,7 @@ class CustomTextField extends StatelessWidget {
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(defaultBorderRadius),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1.8),
           ),
         ),
       ),

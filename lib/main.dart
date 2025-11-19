@@ -6,13 +6,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
+import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/contact_us_provider.dart';
+import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/maintenance_provider.dart';
 import 'package:trackerapp/providers/settings_provider.dart';
 import 'package:trackerapp/providers/vehicle_expense_provider.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/view/splashscreen.dart';
+import 'data/repositories/vehicle_repository.dart';
 import 'providers/alert_settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/dashboard_provider.dart';
@@ -69,7 +72,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MotionBottomBarProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => VehicleListProvider()),
+        ChangeNotifierProvider(create: (_) => GetDevicesListProvider(VehicleRepository())),
+        ChangeNotifierProvider(create: (_) => GetDeviceGroupProvider()),
         ChangeNotifierProvider(create: (_) => SingleVehicleAnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => AlertSettingsProvider()),
         ChangeNotifierProvider(create: (_) => VehicleTrackingProvider()),
@@ -77,6 +81,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MaintenanceProvider()),
         ChangeNotifierProvider(create: (_) => VehicleExpenseProvider()),
         ChangeNotifierProvider(create: (_) => ContactProvider()),
+        ChangeNotifierProvider(create: (_) => AlertsProvider()),
       ],
       child: ResponsiveSizer(
         builder: (context, orientation, screenType) {
