@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-/// Modern curved header like Fiverr style
 class TopCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

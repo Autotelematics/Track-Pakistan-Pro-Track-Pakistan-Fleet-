@@ -1,65 +1,150 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/providers/contact_us_provider.dart';
+import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 class ContactGrid extends StatelessWidget {
   const ContactGrid({super.key});
 
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ContactProvider>(context);
+    final List<Widget> contactTiles = [];
+
+    // Phone
+    if (CompanyInfo.companyPhone.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.call,
+          label: "Call",
+          color: Colors.green,
+          onTap: () => _launchUrl('tel:${CompanyInfo.companyPhone}'),
+        ),
+      );
+    }
+
+    // Email
+    if (CompanyInfo.companyGmail.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.email_outlined,
+          label: "Email",
+          color: Colors.blue,
+          onTap: () => _launchUrl('mailto:${CompanyInfo.companyGmail}'),
+        ),
+      );
+    }
+
+    // Website
+    if (CompanyInfo.website.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.language,
+          label: "Website",
+          color: Colors.purple,
+          onTap: () => _launchUrl(CompanyInfo.website),
+        ),
+      );
+    }
+
+    // WhatsApp
+    if (CompanyInfo.whatsApp.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.chat,
+          label: "WhatsApp",
+          color: Colors.green[700]!,
+          onTap: () => _launchUrl('https://wa.me/${CompanyInfo.whatsApp}'),
+        ),
+      );
+    }
+
+    // Facebook
+    if (CompanyInfo.facebook.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.facebook,
+          label: "Facebook",
+          color: Colors.indigo,
+          onTap: () => _launchUrl(CompanyInfo.facebook),
+        ),
+      );
+    }
+
+    // Instagram
+    if (CompanyInfo.instagram.trim().isNotEmpty) {
+      contactTiles.add(
+        _ContactTile(
+          icon: Icons.camera_alt,
+          label: "Instagram",
+          color: Colors.pinkAccent,
+          onTap: () => _launchUrl(CompanyInfo.instagram),
+        ),
+      );
+    }
+
+    if (contactTiles.isEmpty) {
+      return Column(
+        children: [
+          verticalSpace(height: 2.h),
+          Text(
+            "No contact information available",
+            style: AppStyles.lightTextStyle(context),
+          ),
+          verticalSpace(height: 2.h),
+        ],
+      );
+    }
+
     return Wrap(
       spacing: 4.w,
       runSpacing: 2.5.h,
-      children: [
-        _ContactTile(provider: provider, index: 0, icon: Icons.call, label: "Call", color: Colors.green),
-        _ContactTile(provider: provider, index: 1, icon: Icons.email_outlined, label: "Email", color: Colors.blue),
-        _ContactTile(provider: provider, index: 2, icon: Icons.language, label: "Website", color: Colors.purple),
-        _ContactTile(provider: provider, index: 4, icon: Icons.facebook, label: "Facebook", color: Colors.indigo),
-        _ContactTile(provider: provider, index: 5, icon: Icons.camera_alt, label: "Instagram", color: Colors.pinkAccent),
-      ],
+      children: contactTiles,
     );
   }
 }
+
 class _ContactTile extends StatelessWidget {
-  final ContactProvider provider;
-  final int index;
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback onTap;
 
   const _ContactTile({
-    required this.provider,
-    required this.index,
     required this.icon,
     required this.label,
     required this.color,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final selected = provider.selectedIndex == index;
 
     return GestureDetector(
-      onTap: () => selected ? provider.clearSelection() : provider.selectIndex(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 260),
+      onTap: onTap,
+      child: Container(
         width: 26.w,
         padding: EdgeInsets.symmetric(vertical: 2.3.h),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(isDark ? 0.2 : 0.15) : Colors.transparent,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? color : (isDark ? Colors.white24 : Colors.grey[300])!,
-            width: selected ? 2 : 1.2,
+            color: isDark ? Colors.white24 : Colors.grey[300]!,
+            width: 1.2,
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 24.sp, color: selected ? color : (isDark ? Colors.white70 : color)),
+            Icon(icon, size: 24.sp, color: isDark ? Colors.white70 : color),
             verticalSpace(height: 1.2.h),
             Text(
               label,

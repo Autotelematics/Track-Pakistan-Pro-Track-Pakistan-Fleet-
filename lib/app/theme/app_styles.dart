@@ -55,7 +55,7 @@ class AppStyles {
 
   static TextStyle statusDuration(BuildContext context) =>
       lightTextStyle(context).copyWith(
-        fontSize: 12.sp,
+        fontSize: 13.sp,
         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
       );
 

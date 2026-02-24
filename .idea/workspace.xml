@@ -10,44 +10,204 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="896819a2-2024-4c02-b203-30e88c39ed61" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/data/models/get_alerts_list_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/data/repositories/alerts_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/alerts_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fuel_price_card.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/Bike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/Truck_Yellow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/bike_blue.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/bike_green.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/bike_red.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/bike_yellow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/car_blue.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/car_green.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/car_red.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/car_yellow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/facebook.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/gmail.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/instagram.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/ios/car_icon6.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/ios/end.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/ios/stops.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/privacypolicy.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/truck_blue.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/truck_green.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/truck_red.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Ambulance.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Bicycle.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Boat.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Bus.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Car.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Motorbike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black SUV.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Truck Trailer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Black Truck.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Ambulance.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Bicycle.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Boat.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Bus.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Car.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Motorbike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue SUV.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Truck Trailer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Blue Truck.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Ambulance.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Bicycle.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Boat.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Bus.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Car.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Motorbike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green SUV.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Truck Trailer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Green Truck.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Ambulance.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Bicycle.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Boat.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Bus.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Car.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Motorbike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red SUV.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Truck Trailer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Red Truck.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Ambulance.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Bicycle.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Boat.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Bus.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Car.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Motorbike.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow SUV.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Truck Trailer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/vehicle/Yellow Truck.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/websitenewa.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/whatsapp.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/svgs/car.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/app/theme/popups.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/geofence_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_dashboard_history_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_device_commands_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_device_history_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_device_live_tracking_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_device_reports_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_device_status_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_driver_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/get_reports_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/models/initial_reports.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/driver_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/geofence_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/get_device_commands_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/get_device_history_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/get_device_live_tracking_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/get_device_status_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/data/repositories/get_vehicle_reports_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/device_command_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/driver_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/get_device_history_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/get_device_reports_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/get_devices_status_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/get_geofence_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/animated_marker.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/extensions.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/geofence_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/map_for_all_vehicles_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_analytics_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_detail_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_history_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_info_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_notifications_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_report_type_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/single_vehicle_screens/single_vehicle_tracking_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/view_report_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/white_labeling/colors.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/white_labeling/contacts.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_analytics_widgets/analytics_charts.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_analytics_widgets/analytics_filter_bar.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_analytics_widgets/analytics_graph_container.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_analytics_widgets/analytics_mode_badge.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_analytics_widgets/analytics_stat_cards.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/common_widgets.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/history_bottom_sheet.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/history_custom_date_picker.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/history_filter_bar.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/history_playback_tab.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_history_widget/history_trips_tab.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_tracking_widget/common_small_widgets.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_tracking_widget/right_side_buttons.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_tracking_widget/top_bar.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/single_vehicle_tracking_widget/vehicle_bottom_card.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/top_speed_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins-dependencies" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Link_Track.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Link_Track.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/models/get_dashboard_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/models/get_dashboard_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/models/get_device_list_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/models/get_device_list_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/models/vehicle_data.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/models/vehicle_data.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/settings.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/images/change_passwod.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/images/logout.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/logout.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Podfile.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_colors.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_styles.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/models/get_alerts_list_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/models/get_alerts_list_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/models/get_device_group_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/models/get_device_group_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/repositories/alerts_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/alerts_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/auth_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/data/repositories/dashboard_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/dashboard_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/data/repositories/get_device_group_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/get_device_group_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/repositories/vehicle_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/repositories/vehicle_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/alerts_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/alerts_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/providers/auth_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/auth_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/providers/dashboard_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/dashboard_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/providers/get_device_group_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/get_device_group_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers/motion_bottom_bar_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/motion_bottom_bar_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/settings_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/settings_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/single_vehicle_analytics_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/single_vehicle_analytics_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/providers/vehicle_list_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/vehicle_list_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/vehicle_tracking_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/vehicle_tracking_provider.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/res/app_endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/app_endpoints.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/app_loading.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_loading.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/app_snackbar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_snackbar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/logout_popup.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/logout_popup.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/motion_bottom_navigation_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/preference_keys.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/preference_keys.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/shared_preference.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/shared_preference.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/top_curve_bezier.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/top_curve_bezier.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/add_maintenance_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/add_maintenance_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/analytics_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/appearance_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/setting_screens/appearance_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/contact_us_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/setting_screens/contact_us_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/notification_screen.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/single_vehicle_analytics.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/single_vehicle_analytics.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/live_tracking_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/auth_screens/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/new_notification_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/notifications_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/report_type_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/setting_screens/settings.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/single_vehicle_analytics.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/splashscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/splashscreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_expense_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/vehicle_list_dashboard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_text_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/custom_text_field.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/vehicle_tracking_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/SearchAndFilterBar.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/contact_widgets/address_footer_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/address_footer_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/contact_widgets/contact_grid_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/contact_grid_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/contact_widgets/explore_section_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/explore_section_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/contact_widgets/hero_section_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/contact_widgets/hero_section_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/custom_button.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/alert_grid.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fleet_alerts_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/distance_travelled_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fuel_price_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/fuel_price_card.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/header_widget.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/maintenance_card.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/vehicle_summary_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/dashboard_widgets/vehicle_summary_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/filter_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/maintenance_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/maintenance_field.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/vehicle_dropdown.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/maintenance_widgets/vehicle_dropdown.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/search_textfield.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/search_textfield.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_list.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_tile.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/settings_widgets/settings_menu_tile.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/filter_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/filter_button.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/group_filter_item.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/group_filter_item.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/search_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/search_bar.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/status_box.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_card.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_sensors_row.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/vehicle_list_widgets/vehicle_sensors_row.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/common_small_widgets.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/top_bar.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/vehicle_tracking_widget/vehicle_bottom_card.dart" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
@@ -81,6 +241,9 @@
     &quot;accountId&quot;: &quot;1a8b7cdc-85b9-4d41-87a9-c7238b4295b3&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -109,28 +272,28 @@
     &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
     &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/alimaitlo/Downloads/Autotel_live_new/lib/data/models&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/alimaitlo/Downloads/Autotel_live_new/assets/images&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/lib/data/models" />
       <recent name="$PROJECT_DIR$/assets/images" />
+      <recent name="$PROJECT_DIR$/assets" />
+      <recent name="$PROJECT_DIR$/lib/data/models" />
+      <recent name="$PROJECT_DIR$/lib/utils" />
       <recent name="$PROJECT_DIR$/android/app/src/main" />
-      <recent name="$PROJECT_DIR$/assets/fonts" />
-      <recent name="$PROJECT_DIR$/lib/app/routes" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/android/app" />
-      <recent name="$PROJECT_DIR$/assets/images" />
-      <recent name="$PROJECT_DIR$/lib/widgets/dashboard_widgets" />
-      <recent name="$PROJECT_DIR$/lib/providers" />
-      <recent name="$PROJECT_DIR$/lib/app" />
+      <recent name="$PROJECT_DIR$/assets/images/vehicle" />
+      <recent name="$PROJECT_DIR$/lib/view/single_vehicle_screens" />
+      <recent name="$PROJECT_DIR$/lib/view/setting_screens" />
+      <recent name="$PROJECT_DIR$/lib/view/auth_screens" />
+      <recent name="$PROJECT_DIR$/assets/svgs" />
     </key>
   </component>
   <component name="RunManager">
@@ -156,5 +319,16 @@
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.swift" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

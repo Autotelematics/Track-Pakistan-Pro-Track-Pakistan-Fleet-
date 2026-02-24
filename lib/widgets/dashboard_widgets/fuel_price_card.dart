@@ -16,8 +16,8 @@ class FuelPriceCard extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
-      margin: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+      padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 3.w),
+      margin: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -38,7 +38,7 @@ class FuelPriceCard extends StatelessWidget {
             "Fuel Prices",
             style: AppStyles.semiboldTextStyle(context),
           ),
-          verticalSpace(height: 2.h),
+          verticalSpace(height: 1.h),
 
           // Petrol Row
           Row(
@@ -57,7 +57,6 @@ class FuelPriceCard extends StatelessWidget {
               ),
             ],
           ),
-          verticalSpace(height: 1.5.h),
 
           // Diesel Row
           Row(
@@ -76,9 +75,7 @@ class FuelPriceCard extends StatelessWidget {
               ),
             ],
           ),
-          verticalSpace(height: 2.h),
           Divider(color: onSurface.withOpacity(0.2)),
-          verticalSpace(height: 1.h),
 
           // Last Updated
           Row(
@@ -87,7 +84,7 @@ class FuelPriceCard extends StatelessWidget {
               horizontalSpace(width: 3.w),
               Text(
                 "Last Updated: ${data.fuelPriceLastUpdated}",
-                style: AppStyles.regularTextStyle(context).copyWith(fontSize: 13.sp),
+                style: AppStyles.regularTextStyle(context).copyWith(fontSize: 14.sp),
               ),
             ],
           ),

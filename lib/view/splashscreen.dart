@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trackerapp/utils/motion_bottom_navigation_bar.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
-import 'package:trackerapp/view/login_screen.dart';
+import 'package:trackerapp/view/auth_screens/login_screen.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 

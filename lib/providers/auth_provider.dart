@@ -18,14 +18,13 @@ class AuthProvider extends ChangeNotifier {
     required BuildContext context,
     required String email,
     required String password,
-  })
-  async {
+  }) async {
     isLoading = true;
     notifyListeners();
     try {
       bool success = await _repo.loginApi(email: email, password: password);
       if (success) {
-        AppSnackBar.show(message: "Login Successfully");
+        AppSnackBar.success(message: "Login Successfully");
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -33,9 +32,27 @@ class AuthProvider extends ChangeNotifier {
                     MotionBottomNavigationBar()));
       }
     } catch (e) {
-      AppSnackBar.show(message: e.toString(),isError: true);
+      AppSnackBar.error(message: e.toString());
     }
+    isLoading = false;
+    notifyListeners();
+  }
 
+  //  change password
+  Future<void> changePasswordProvider({
+    required BuildContext context,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      String message = await _repo.changePasswordApi(
+          oldPassword: oldPassword, newPassword: newPassword);
+      AppSnackBar.success(message: message);
+    } catch (e) {
+      AppSnackBar.error(message: e.toString());
+    }
     isLoading = false;
     notifyListeners();
   }

@@ -11,9 +11,9 @@ import 'package:trackerapp/widgets/dashboard_widgets/header_widget.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/maintenance_card.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+import 'package:trackerapp/widgets/vehicle_list_widgets/top_speed_card.dart';
 class NewDashboard extends StatefulWidget {
   const NewDashboard({super.key});
-
   @override
   State<NewDashboard> createState() => _NewDashboardState();
 }
@@ -24,9 +24,12 @@ class _NewDashboardState extends State<NewDashboard> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _provider = Provider.of<DashboardProvider>(context, listen: false);
-      _provider.getDashboardProvider();
+      await Future.wait([
+        _provider.getDashboardProvider(),
+        _provider.getDashboardHistoryProvider(),
+      ]);
     });
   }
 
@@ -36,11 +39,12 @@ class _NewDashboardState extends State<NewDashboard> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<DashboardProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const DashboardShimmer();
+          if (provider.isLoading ||
+              provider.dashboardData == null ||
+              provider.dashboardModel == null ||
+              provider.dashboardHistoryModel == null) {
+            return const _DashboardShimmer();
           }
-
-          // Error State
           if (provider.error != null) {
             return Center(
               child: Padding(
@@ -64,7 +68,12 @@ class _NewDashboardState extends State<NewDashboard> {
                     ),
                     verticalSpace(height: 2.h),
                     ElevatedButton(
-                      onPressed: provider.getDashboardProvider,
+                      onPressed: () async {
+                        await Future.wait([
+                          provider.getDashboardProvider(),
+                          provider.getDashboardHistoryProvider(),
+                        ]);
+                      },
                       child: const Text('Retry'),
                     ),
                   ],
@@ -73,27 +82,17 @@ class _NewDashboardState extends State<NewDashboard> {
             );
           }
 
-          // Empty State
-          if (provider.dashboardData == null || provider.dashboardModel == null) {
-            return EmptyStateWidget(
-              onRetry: provider.getDashboardProvider,
-            );
-          }
-
           // Success State
-          final data = provider.dashboardData!;
           final data1 = provider.dashboardModel!;
+          final historyData = provider.dashboardHistoryModel!;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               HeaderWidget(
-                data: data,
                 currentTime: provider.getTimePeriod(),
                 data1: data1,
               ),
-              // Scrollable Content
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.zero,
@@ -105,8 +104,11 @@ class _NewDashboardState extends State<NewDashboard> {
                       verticalSpace(height: 2.h),
                       FuelPriceCard(data: data1),
                       verticalSpace(height: 2.h),
-                      DistanceTravelledCard(data: data),
+                      DistanceTravelledCard(historyData: historyData),
                       verticalSpace(height: 2.h),
+                      TopSpeedCard(historyData: historyData),
+                      verticalSpace(height: 2.h),
+
 
                     ],
                   ),
@@ -119,10 +121,8 @@ class _NewDashboardState extends State<NewDashboard> {
     );
   }
 }
-
-// Shimmer Widget
-class DashboardShimmer extends StatelessWidget {
-  const DashboardShimmer({super.key});
+class _DashboardShimmer extends StatelessWidget {
+  const _DashboardShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -148,14 +148,13 @@ class DashboardShimmer extends StatelessWidget {
                   height: 5.h,
                   width: 5.h,
                 ),
-
                 // Settings + Notification
                 Row(
                   children: [
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                       shape: BoxShape.circle,
+                        shape: BoxShape.circle,
                       ),
                       height: 2.6.h,
                       width: 2.6.h,
@@ -168,16 +167,15 @@ class DashboardShimmer extends StatelessWidget {
                       ),
                       height: 2.6.h,
                       width: 2.6.h,
-                    ),                  ],
+                    ),
+                  ],
                 ),
-
               ],
             ),
           ),
-
           // Greeting
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 8.w,vertical: 1.h),
+            margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 1.h),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -242,9 +240,9 @@ class DashboardShimmer extends StatelessWidget {
                     ),
                   ),
                   verticalSpace(height: 2.h),
-                  // Fleet Alerts Card Placeholder
+                  // Fuel Price Card Placeholder
                   Container(
-                    height: 25.h,
+                    height: 15.h,
                     margin: EdgeInsets.symmetric(horizontal: 6.w),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -257,46 +255,6 @@ class DashboardShimmer extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Empty State Widget
-class EmptyStateWidget extends StatelessWidget {
-  final VoidCallback onRetry;
-
-  const EmptyStateWidget({super.key, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 6.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.inbox_rounded,
-              size: 40.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-            verticalSpace(height: 2.h),
-            Text(
-              'No data available. Please try again.',
-              textAlign: TextAlign.center,
-              style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 16.sp,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            verticalSpace(height: 2.h),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
       ),
     );
   }

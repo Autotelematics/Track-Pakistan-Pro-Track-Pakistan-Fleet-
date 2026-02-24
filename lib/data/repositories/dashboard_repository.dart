@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/data/models/dashboard_data.dart';
+import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
 import 'package:http/http.dart' as http;
@@ -124,4 +125,25 @@ class DashboardRepository {
       totalVehicles: "300",
     );
   }
+
+  //get dashboard History
+  Future<GetDashboardHistoryModel?> getDashboardHistoryData({required String token})
+  async {
+    final url = Uri.parse(
+        "${AppUrl.baseURL}${AppUrl.getDashboardHistoryEp}user_api_hash=$token");
+    final headers = {"Content-Type": "application/json"};
+    try {
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        return GetDashboardHistoryModel.fromJson(jsonDecode(response.body));
+      } else {
+        log('Error fetching business profiles: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      log('UnExpected Error fetching business profiles: ${error.toString()}');
+      return null;
+    }
+  }
+
 }

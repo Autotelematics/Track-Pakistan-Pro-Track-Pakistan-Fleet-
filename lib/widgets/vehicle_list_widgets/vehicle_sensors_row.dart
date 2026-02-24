@@ -14,15 +14,27 @@ class VehicleStatusRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: EdgeInsets.all(.8.h),
+          padding: EdgeInsets.all(0.5.h),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
             color: AppColors.white,
-            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.12), blurRadius: 10, offset: Offset(0, 4))],
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.grey.withOpacity(0.3),
+                offset: const Offset(0, 0),
+                blurRadius: 4,
+                spreadRadius: 5,
+              ),
+            ],
           ),
-          child: Icon(icon, color: color, size: 16.sp),
+          child: Icon(
+            icon,
+            color: color,
+            size: 16.sp,
+          ),
         ),
-        horizontalSpace(width: 1.w),
+
+        horizontalSpace(width: 2.w),
         Text(value, style: TextStyle(fontSize: 14.sp, color: color, fontWeight: FontWeight.w400)),
       ],
     );
@@ -43,17 +55,25 @@ class VehicleStatusRow extends StatelessWidget {
       if (s.type == 'battery') battery = s.value?.toString() ?? 'N/A';
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 2.w),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildStatusIcon(icon: Icons.lock, color: immobilizer ? Colors.red : Colors.green, value: immobilizer ? 'On' : 'Off'),
-          _buildStatusIcon(icon: Icons.signal_cellular_alt, color: Colors.orange, value: rssi),
-          _buildStatusIcon(icon: Icons.key, color: ignition == 'On' ? Colors.green : Colors.red, value: ignition),
-          _buildStatusIcon(icon: Icons.battery_charging_full, color: charging == 'On' ? Colors.green : Colors.red, value: charging),
-          _buildStatusIcon(icon: Icons.satellite_alt_sharp, color: Colors.green, value: battery),
-        ],
+    return Container(
+      margin:  EdgeInsets.symmetric(horizontal: 4.w),
+
+      padding: EdgeInsets.symmetric(horizontal: 2.w,vertical: .4.h),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.px),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 2.w),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildStatusIcon(icon: Icons.lock, color: immobilizer ? Colors.red : Colors.green, value: immobilizer ? 'On' : 'Off'),
+            _buildStatusIcon(icon: Icons.signal_cellular_alt, color: Colors.orange, value: rssi),
+            _buildStatusIcon(icon: Icons.key, color: ignition == 'On' ? Colors.green : Colors.red, value: ignition),
+            _buildStatusIcon(icon: Icons.battery_charging_full, color: charging == 'On' ? Colors.green : Colors.red, value: charging),
+            _buildStatusIcon(icon: Icons.satellite_alt_sharp, color: Colors.green, value: battery),
+          ],
+        ),
       ),
     );
   }

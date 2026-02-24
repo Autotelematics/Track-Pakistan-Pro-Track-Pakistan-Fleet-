@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
+import 'package:trackerapp/data/models/get_device_group_model.dart';
 import 'package:trackerapp/data/repositories/vehicle_repository.dart';
 
 class GetDevicesListProvider with ChangeNotifier {
   final VehicleRepository repository;
   BuildContext? _context;
-// In GetDevicesListProvider
   bool _isFilterOpen = false;
   bool get isFilterOpen => _isFilterOpen;
 
@@ -14,32 +14,34 @@ class GetDevicesListProvider with ChangeNotifier {
     _isFilterOpen = !_isFilterOpen;
     notifyListeners();
   }
-  // State
+
   bool _isLoading = false;
   bool _showLoading = true;
   String? _error;
   GetDevicesListModel? _model;
   List<Item> _filteredVehicles = [];
 
-  // Filters
   String _filterStatus = 'all';
   String? _groupFilter;
   String? _groupName = 'All';
   String _searchQuery = '';
 
-  // Cache & Timer
   GetDevicesListModel? _lastValidModel;
+  GetDeviceGroupModel? _lastValidGroupModel;
   Timer? _timer;
 
-  // Getters
+  // Public getters
   bool get isLoading => _isLoading;
   bool get showLoading => _showLoading;
   String? get error => _error;
-  GetDevicesListModel? get vehicleData => _model;
+  GetDevicesListModel? get vehicleData => _lastValidModel;
+  GetDevicesListModel? get model => _lastValidModel; // ✅ Added this getter
   List<Item> get filteredVehicles => _filteredVehicles;
   String get searchQuery => _searchQuery;
   String get filterStatus => _filterStatus;
   String? get groupName => _groupName;
+  String? get selectedGroupId => _groupFilter;
+  bool get hasGroups => _lastValidGroupModel != null;
 
   GetDevicesListProvider(this.repository);
 
@@ -51,9 +53,7 @@ class GetDevicesListProvider with ChangeNotifier {
 
   void startPeriodicUpdates() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) {
-      fetchData(isPeriodic: true);
-    });
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => fetchData(isPeriodic: true));
   }
 
   Future<void> fetchData({bool isPeriodic = false}) async {
@@ -112,6 +112,12 @@ class GetDevicesListProvider with ChangeNotifier {
     _applyFilters();
   }
 
+  void updateGroupModel(GetDeviceGroupModel? model) {
+    _lastValidGroupModel = model;
+    if (model != null && _groupFilter != null) _applyFilters();
+    notifyListeners();
+  }
+
   void _applyFilters() {
     if (_lastValidModel?.items == null) {
       _filteredVehicles = [];
@@ -119,27 +125,48 @@ class GetDevicesListProvider with ChangeNotifier {
       return;
     }
 
-    List<Item> filtered = List.from(_lastValidModel!.items!);
+    var filtered = List<Item>.from(_lastValidModel!.items!);
 
-    // Search
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((v) =>
-      v.name?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false).toList();
+      filtered = filtered.where((v) => v.name?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false).toList();
     } else {
-      // Status Filter
+      // Status filter
       switch (_filterStatus) {
-        case 'running': filtered = filtered.where((v) => v.online == 'online').toList(); break;
-        case 'stopped': filtered = filtered.where((v) => v.online == 'ack').toList(); break;
-        case 'idle': filtered = filtered.where((v) => v.online == 'engine').toList(); break;
-        case 'offline': filtered = filtered.where((v) =>
-        v.online == 'offline' &&
-            v.time?.toLowerCase() != 'not connected' &&
-            v.time?.toLowerCase() != 'expired').toList(); break;
-        case 'nodata': filtered = filtered.where((v) =>
-        v.online == 'offline' && v.time?.toLowerCase() == 'not connected').toList(); break;
-        case 'expired': filtered = filtered.where((v) =>
-        v.online == 'offline' && v.time?.toLowerCase() == 'expired').toList(); break;
-        case 'parked': filtered = filtered.where((v) => v.online == 'black').toList(); break;
+        case 'running':
+          filtered = filtered.where((v) => v.online == 'online').toList();
+          break;
+        case 'stopped':
+          filtered = filtered.where((v) => v.online == 'ack').toList();
+          break;
+        case 'idle':
+          filtered = filtered.where((v) => v.online == 'engine').toList();
+          break;
+        case 'offline':
+          filtered = filtered.where((v) => v.online == 'offline' && v.time?.toLowerCase() != 'not connected' && v.time?.toLowerCase() != 'expired').toList();
+          break;
+        case 'nodata':
+          filtered = filtered.where((v) => v.online == 'offline' && v.time?.toLowerCase() == 'not connected').toList();
+          break;
+        case 'expired':
+          filtered = filtered.where((v) => v.online == 'offline' && v.time?.toLowerCase() == 'expired').toList();
+          break;
+        case 'parked':
+          filtered = filtered.where((v) => v.online == 'black').toList();
+          break;
+      }
+
+      // Group filter
+      if (_groupFilter != null && _lastValidGroupModel != null) {
+        final selectedGroup = _lastValidGroupModel!.items.firstWhere(
+              (group) => group.id.toString() == _groupFilter,
+          orElse: () => GetDeviceGroupModelItem(id: -1, title: '', items: []),
+        );
+        if (selectedGroup.id != -1) {
+          final groupDeviceIds = selectedGroup.items.map((item) => item.id.toString()).toSet();
+          filtered = filtered.where((v) => groupDeviceIds.contains(v.id.toString())).toList();
+        } else {
+          filtered = [];
+        }
       }
     }
 
@@ -148,25 +175,79 @@ class GetDevicesListProvider with ChangeNotifier {
   }
 
   int getCountForStatus(String status) {
-    final items = _lastValidModel?.items ?? [];
+    var items = List<Item>.from(_lastValidModel?.items ?? []);
     if (items.isEmpty) return 0;
 
-    switch (status) {
-      case 'all': return items.length;
-      case 'running': return items.where((i) => i.online == 'online').length;
-      case 'stopped': return items.where((i) => i.online == 'ack').length;
-      case 'idle': return items.where((i) => i.online == 'engine').length;
-      case 'offline': return items.where((i) =>
-      i.online == 'offline' &&
-          i.time?.toLowerCase() != 'not connected' &&
-          i.time?.toLowerCase() != 'expired').length;
-      case 'nodata': return items.where((i) =>
-      i.online == 'offline' && i.time?.toLowerCase() == 'not connected').length;
-      case 'expired': return items.where((i) =>
-      i.online == 'offline' && i.time?.toLowerCase() == 'expired').length;
-      case 'parked': return items.where((i) => i.online == 'black').length;
-      default: return 0;
+    // Apply group filter
+    if (_groupFilter != null && _lastValidGroupModel != null) {
+      final selectedGroup = _lastValidGroupModel!.items.firstWhere(
+            (group) => group.id.toString() == _groupFilter,
+        orElse: () => GetDeviceGroupModelItem(id: -1, title: '', items: []),
+      );
+      if (selectedGroup.id != -1) {
+        final groupDeviceIds = selectedGroup.items.map((item) => item.id.toString()).toSet();
+        items = items.where((device) => groupDeviceIds.contains(device.id.toString())).toList();
+      } else {
+        items = [];
+      }
     }
+
+    // Count by status
+    switch (status) {
+      case 'all':
+        return items.length;
+      case 'running':
+        return items.where((i) => i.online == 'online').length;
+      case 'stopped':
+        return items.where((i) => i.online == 'ack').length;
+      case 'idle':
+        return items.where((i) => i.online == 'engine').length;
+      case 'offline':
+        return items.where((i) => i.online == 'offline' && i.time?.toLowerCase() != 'not connected' && i.time?.toLowerCase() != 'expired').length;
+      case 'nodata':
+        return items.where((i) => i.online == 'offline' && i.time?.toLowerCase() == 'not connected').length;
+      case 'expired':
+        return items.where((i) => i.online == 'offline' && i.time?.toLowerCase() == 'expired').length;
+      case 'parked':
+        return items.where((i) => i.online == 'black').length;
+      default:
+        return 0;
+    }
+  }
+
+  String formatDuration(int seconds) {
+    if (seconds < 60) return "$seconds sec";
+    int minutes = seconds ~/ 60;
+    seconds = seconds % 60;
+    if (minutes < 60) {
+      return seconds > 0 ? "$minutes min $seconds sec" : "$minutes min";
+    }
+    int hours = minutes ~/ 60;
+    minutes = minutes % 60;
+    if (hours < 24) {
+      String hr = "$hours hr";
+      String min = minutes > 0 ? " $minutes min" : "";
+      return seconds > 0 ? "$hr$min $seconds sec" : min.isNotEmpty ? "$hr$min" : hr;
+    }
+    int days = hours ~/ 24;
+    hours = hours % 24;
+    String d = "$days d";
+    String h = hours > 0 ? " $hours h" : "";
+    String m = minutes > 0 ? " $minutes m" : "";
+    return seconds > 0 ? "$d$h$m $seconds s" : m.isNotEmpty ? "$d$h$m" : h.isNotEmpty ? "$d$h" : d;
+  }
+
+  int parseStopDuration(String duration) {
+    final regex = RegExp(r'((\d+)h)?\s*((\d+)min)?\s*((\d+)s)?');
+    final match = regex.firstMatch(duration);
+
+    if (match == null) return 0;
+
+    int hours = int.tryParse(match.group(2) ?? '0') ?? 0;
+    int minutes = int.tryParse(match.group(4) ?? '0') ?? 0;
+    int seconds = int.tryParse(match.group(6) ?? '0') ?? 0;
+
+    return hours * 3600 + minutes * 60 + seconds;
   }
 
   @override

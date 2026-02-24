@@ -6,10 +6,11 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
 import 'package:trackerapp/view/dashboard.dart';
-import 'package:trackerapp/view/new_notification_screen.dart';
-import 'package:trackerapp/view/settings.dart';
+import 'package:trackerapp/view/map_for_all_vehicles_screen.dart';
+import 'package:trackerapp/view/notifications_screen.dart';
+import 'package:trackerapp/view/setting_screens/settings.dart';
 import 'package:trackerapp/view/vehicle_list_dashboard.dart';
-
+import 'package:trackerapp/white_labeling/colors.dart';
 class MotionBottomNavigationBar extends StatefulWidget {
   const MotionBottomNavigationBar({super.key});
 
@@ -89,9 +90,9 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
         tabIconSelectedSize: 22.sp,
         tabSize: 6.h,
         tabSelectedColor: AppColors.white,
-        tabIconSelectedColor: AppColors.primaryColor,
+        tabIconSelectedColor: ConstantColor.primaryColor,
         tabBarColor:
-        isDark ? theme.cardColor : AppColors.secondaryColor,
+        isDark ? theme.cardColor : ConstantColor.secondaryColor,
         onTabItemSelected: (index) {
           provider.setIndex(index);
         },
@@ -101,7 +102,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
         controller: _tabController,
         children:  [
           NewVehicleListDashBoard(),
-          Center(child: Text("Map")),
+          MapForAllVehiclesScreen(),
           NewDashboard(),
           NewNotificationScreen(),
           ModernSettingsScreen(),

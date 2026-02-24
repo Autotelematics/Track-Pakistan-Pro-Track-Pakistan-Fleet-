@@ -1,50 +1,87 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/providers/contact_us_provider.dart';
+import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ExploreSection extends StatelessWidget {
   const ExploreSection({super.key});
 
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ContactProvider>(context, listen: false);
+    final List<Widget> cards = [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        verticalSpace(height: 3.h),
-        Text(
-          "Explore",
-          style: AppStyles.appTitleTextStyle.copyWith(fontSize: 16.sp),
-        ),
-        verticalSpace(height: 2.h),
+    // Terms and Conditions
+    if (CompanyInfo.termAndCondition.trim().isNotEmpty) {
+      cards.add(
         _ActionCard(
           title: "Terms and Conditions",
           subtitle: "Legal policies and user agreement",
           icon: Icons.gavel_outlined,
-          onTap: () => provider.selectIndex(0),
+          onTap: () => _launchUrl(CompanyInfo.termAndCondition),
         ),
-        verticalSpace(height: 1.8.h),
+      );
+    }
+
+    // Privacy Policy
+    if (CompanyInfo.privacyPolicy.trim().isNotEmpty) {
+      cards.add(
         _ActionCard(
           title: "Privacy Policy",
           subtitle: "How we protect your data",
           icon: Icons.shield_outlined,
-          onTap: () => provider.selectIndex(1),
+          onTap: () => _launchUrl(CompanyInfo.privacyPolicy),
         ),
-        verticalSpace(height: 1.8.h),
+      );
+    }
+
+    // Company News
+    if (CompanyInfo.websiteNews.trim().isNotEmpty) {
+      cards.add(
         _ActionCard(
           title: "Company News",
           subtitle: "Latest updates and announcements",
           icon: Icons.campaign_outlined,
-          onTap: () => provider.selectIndex(2),
+          onTap: () => _launchUrl(CompanyInfo.websiteNews),
         ),
-        verticalSpace(height: 3.h),
-      ],
+      );
+    }
+
+    if (cards.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final List<Widget> children = [
+      verticalSpace(height: 3.h),
+      Text(
+        "Explore",
+        style: AppStyles.appTitleTextStyle.copyWith(fontSize: 16.sp),
+      ),
+      verticalSpace(height: 2.h),
+    ];
+
+    for (int i = 0; i < cards.length; i++) {
+      if (i > 0) {
+        children.add(verticalSpace(height: 1.8.h));
+      }
+      children.add(cards[i]);
+    }
+
+    children.add(verticalSpace(height: 3.h));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 }
@@ -78,28 +115,37 @@ class _ActionCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                size: 23.sp,
-                color: isDark ? AppColors.white : AppColors.purple),
+            Icon(
+              icon,
+              size: 23.sp,
+              color: isDark ? AppColors.white : AppColors.purple,
+            ),
             horizontalSpace(width: 4.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: AppStyles.regularTextStyle(context).copyWith(
-                          color:
-                              isDark ? AppColors.white : AppColors.textBlack)),
+                  Text(
+                    title,
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      color: isDark ? AppColors.white : AppColors.textBlack,
+                    ),
+                  ),
                   verticalSpace(height: 0.5.h),
-                  Text(subtitle,
-                      style: AppStyles.lightTextStyle(context)
-                          .copyWith(color: AppColors.grey)),
+                  Text(
+                    subtitle,
+                    style: AppStyles.lightTextStyle(context).copyWith(
+                      color: AppColors.grey,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                size: 23.sp,
-                color: isDark ? Colors.grey[500] : Colors.grey[600]),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 23.sp,
+              color: isDark ? Colors.grey[500] : Colors.grey[600],
+            ),
           ],
         ),
       ),

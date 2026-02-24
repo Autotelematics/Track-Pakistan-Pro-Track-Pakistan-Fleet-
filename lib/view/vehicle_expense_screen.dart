@@ -7,6 +7,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/vehicle_expense_provider.dart';
 import 'package:trackerapp/utils/top_curve_bezier.dart';
+import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -108,8 +109,6 @@ class VehicleExpenseScreen extends StatelessWidget {
                               ),
 
                               verticalSpace(height: 2.h),
-
-                              // small horizontal date chips (static look similar to screenshot)
                               SizedBox(
                                 height: 7.h,
                                 child: ListView(
@@ -127,7 +126,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                             width: 10.w,
                                             height: 4.h,
                                             decoration: BoxDecoration(
-                                              color: isSelected ? AppColors.secondaryColor : Colors.transparent,
+                                              color: isSelected ? ConstantColor.secondaryColor : Colors.transparent,
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             alignment: Alignment.center,
@@ -152,7 +151,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                         Text('You have Spend', style: AppStyles.lightTextStyle(context).copyWith(color: AppColors.textBlack)),
                                         verticalSpace(height: 6),
                                         Text('\$${provider.monthTotal.toStringAsFixed(0)}',
-                                            style:AppStyles.boldTextStyle(context).copyWith(color: isDark?AppColors.white:AppColors.secondaryColor)),
+                                            style:AppStyles.boldTextStyle(context).copyWith(color: isDark?AppColors.white:ConstantColor.secondaryColor)),
                                         verticalSpace(height: 6),
                                         Text('this month.', style:  AppStyles.lightTextStyle(context).copyWith(color: AppColors.grey)),
                                       ],
@@ -185,7 +184,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                             widthFactor: 0.7578,
                                             child: Container(
                                               decoration: BoxDecoration(
-                                                color: AppColors.secondaryColor,
+                                                color: ConstantColor.secondaryColor,
                                                 borderRadius: BorderRadius.circular(10.px),
                                               ),
                                             ),
@@ -220,7 +219,7 @@ class VehicleExpenseScreen extends StatelessWidget {
                                   )),
                                   Text('View All', style: AppStyles.appTitleTextStyle.copyWith(
                                       fontSize: 15.sp,
-                                    color: AppColors.secondaryColor
+                                    color: ConstantColor.secondaryColor
                                   )
                                   ),
                                 ],

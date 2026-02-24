@@ -16,18 +16,24 @@ class SearchAndFilterBar extends StatelessWidget {
   final Function(String?)? onVehicleChanged;
   final Function(String?)? onAlertTypeChanged;
   final VoidCallback onSearchPressed;
+  final TextEditingController? searchController;
+  final VoidCallback? onFilterReset;
+
 
   const SearchAndFilterBar({
     super.key,
     required this.alertTypes,
-    required this.alertCounts,
     required this.vehicles,
-    this.selectedVehicle,
-    this.selectedAlertType,
-    this.onVehicleChanged,
-    this.onAlertTypeChanged,
+    required this.alertCounts,
+    required this.selectedVehicle,
+    required this.selectedAlertType,
+    required this.searchController,
+    required this.onVehicleChanged,
+    required this.onAlertTypeChanged,
     required this.onSearchPressed,
+    this.onFilterReset, // ← add this
   });
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +41,10 @@ class SearchAndFilterBar extends StatelessWidget {
     final backgroundColor = isDark
         ? Colors.grey.shade900.withOpacity(0.9)
         : Colors.white.withOpacity(0.95);
-    final iconColor = isDark ? Colors.tealAccent : Colors.teal;
+    final iconColor = AppColors.red;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 3.w), // thoda kam padding
+      padding: EdgeInsets.symmetric(horizontal: 3.w),
       child: Column(
         children: [
           // Search Field
@@ -55,6 +61,7 @@ class SearchAndFilterBar extends StatelessWidget {
               ],
             ),
             child: CustomTextField(
+              controller: searchController,
               labelText: "Search Notification",
               borderRadius: 15.px,
               fillColor: Colors.transparent,
@@ -66,7 +73,7 @@ class SearchAndFilterBar extends StatelessWidget {
 
           verticalSpace(height: 1.5.h),
 
-          // Filters – Super Safe Layout
+          // Filters Row
           Row(
             children: [
               // Vehicle Dropdown
@@ -82,9 +89,9 @@ class SearchAndFilterBar extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(width: 1.8.w), // minimum safe gap
+              SizedBox(width: 1.8.w),
 
-              // Alert Type Dropdown
+              // Alert Type Dropdown with Count
               Expanded(
                 child: _DropdownBoxWithCount(
                   hint: "Type",
@@ -98,24 +105,30 @@ class SearchAndFilterBar extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(width: 1.8.w),
+              horizontalSpace(width: 1.8.w),
 
-              // Search Button – Fixed compact size
+              // Search Button
+              // Search Button (Cross Icon)
               SizedBox(
                 width: 10.w,
                 height: 10.w,
                 child: GestureDetector(
-                  onTap: onSearchPressed,
+                  onTap: () {
+                    // Reset filters only
+                    if (onFilterReset != null) {
+                      onFilterReset!();
+                    }
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: isDark ? iconColor.withOpacity(0.15) : AppColors.white,
                       borderRadius: BorderRadius.circular(10.px),
-                      border: Border.all(color: iconColor.withOpacity(0.3), width: 1),
                     ),
-                    child: Icon(Icons.search_outlined, color: iconColor, size: 19.sp),
+                    child: Icon(Icons.cancel, color: iconColor, size: 19.sp),
                   ),
                 ),
               ),
+
             ],
           ),
         ],
@@ -123,6 +136,7 @@ class SearchAndFilterBar extends StatelessWidget {
     );
   }
 }
+
 class _DropdownBox extends StatelessWidget {
   final String hint;
   final List<String> items;
@@ -151,7 +165,11 @@ class _DropdownBox extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.px),
         boxShadow: [
-          BoxShadow(color: isDark ? Colors.black26 : Colors.grey.shade500, blurRadius: 4, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.grey.shade500,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: DropdownButtonHideUnderline(
@@ -162,24 +180,45 @@ class _DropdownBox extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 19.sp),
               horizontalSpace(width: 1.w),
-              Text(hint, style: AppStyles.lightTextStyle(context).copyWith(color: isDark ? Colors.white70 : Colors.black87)),
+              Text(
+                hint,
+                style: AppStyles.lightTextStyle(context).copyWith(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
             ],
           ),
           items: items
               .map((item) => DropdownMenuItem<String>(
             value: item,
-            child: Text(item, overflow: TextOverflow.ellipsis, style: AppStyles.lightTextStyle(context).copyWith(color: isDark ? Colors.white : Colors.black87)),
+            child: Text(
+              item,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.lightTextStyle(context).copyWith(
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
           ))
               .toList(),
           onChanged: onChanged,
           buttonStyleData: ButtonStyleData(height: 4.5.h),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
-            decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(12.px)),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12.px),
+            ),
             maxHeight: 30.h,
           ),
           iconStyleData: IconStyleData(
-            icon: Padding(padding: EdgeInsets.only(right: .5.w), child: Icon(Icons.keyboard_arrow_down_rounded, color: isDark ? Colors.white54 : Colors.black54, size: 18.sp)),
+            icon: Padding(
+              padding: EdgeInsets.only(right: .5.w),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: isDark ? Colors.white54 : Colors.black54,
+                size: 18.sp,
+              ),
+            ),
           ),
         ),
       ),
@@ -187,7 +226,7 @@ class _DropdownBox extends StatelessWidget {
   }
 }
 
-// Alert Type Dropdown with Count Badge
+// Alert Type Dropdown with Clean Count
 class _DropdownBoxWithCount extends StatelessWidget {
   final String hint;
   final List<String> items;
@@ -218,7 +257,11 @@ class _DropdownBoxWithCount extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.px),
         boxShadow: [
-          BoxShadow(color: isDark ? Colors.black26 : Colors.grey.shade500, blurRadius: 4, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.grey.shade500,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: DropdownButtonHideUnderline(
@@ -229,7 +272,12 @@ class _DropdownBoxWithCount extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 19.sp),
               horizontalSpace(width: 1.w),
-              Text(hint, style: AppStyles.lightTextStyle(context).copyWith(color: isDark ? Colors.white70 : Colors.black87)),
+              Text(
+                hint,
+                style: AppStyles.lightTextStyle(context).copyWith(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
             ],
           ),
           items: items
@@ -246,7 +294,7 @@ class _DropdownBoxWithCount extends StatelessWidget {
                     ),
                   ),
                   TextSpan(
-                    text: "  (${counts[item] ?? 0})",
+                    text: " (${counts[item] ?? 0})",
                     style: TextStyle(
                       color: item == 'All' ? Colors.blue : Colors.green,
                       fontWeight: FontWeight.w600,
@@ -262,11 +310,21 @@ class _DropdownBoxWithCount extends StatelessWidget {
           buttonStyleData: ButtonStyleData(height: 4.5.h),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
-            decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(12.px)),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12.px),
+            ),
             maxHeight: 30.h,
           ),
           iconStyleData: IconStyleData(
-            icon: Padding(padding: EdgeInsets.only(right: .5.w), child: Icon(Icons.keyboard_arrow_down_rounded, color: isDark ? Colors.white54 : Colors.black54, size: 18.sp)),
+            icon: Padding(
+              padding: EdgeInsets.only(right: .5.w),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: isDark ? Colors.white54 : Colors.black54,
+                size: 18.sp,
+              ),
+            ),
           ),
         ),
       ),

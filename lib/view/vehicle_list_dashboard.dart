@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
+import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_detail_screen.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/vehicle_list_widgets/filter_button.dart';
@@ -20,6 +23,7 @@ class NewVehicleListDashBoard extends StatefulWidget {
 
 class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
   late final GetDevicesListProvider _provider;
+  bool _hasSyncedGroups = false;
 
   @override
   void initState() {
@@ -27,6 +31,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     _provider = Provider.of<GetDevicesListProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.init(context);
+      final groupProvider = Provider.of<GetDeviceGroupProvider>(context, listen: false);
+      groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
     });
   }
 
@@ -40,12 +46,17 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Consumer<GetDevicesListProvider>(
-        builder: (context, provider, child) {
+      body: Consumer2<GetDevicesListProvider, GetDeviceGroupProvider>(
+        builder: (context, provider, groupProvider, child) {
+          if (groupProvider.model != null && !provider.hasGroups && !_hasSyncedGroups) {
+            _hasSyncedGroups = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              provider.updateGroupModel(groupProvider.model);
+            });
+          }
           return Stack(
             children: [
               _buildMainContent(context, theme, onSurface, cardColor, primary, outline),
-              // Group Filter Overlay (now real)
               _buildGroupFilterOverlay(provider, cardColor, primary, onSurface),
             ],
           );
@@ -61,21 +72,19 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
       Color cardColor,
       Color primary,
       Color outline,
-      ) {
+      )
+  {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
         if (provider.showLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return _buildShimmer(theme, onSurface, cardColor);
         }
-
         if (provider.error != null) {
           return _buildErrorState(provider, context);
         }
-
-        if (provider.vehicleData == null) {
-          return const Center(child: Text('No data available'));
+        if (provider.vehicleData == null || provider.vehicleData!.items == null || provider.vehicleData!.items!.isEmpty) {
+          return _buildEmptyState(context);
         }
-
         return Column(
           children: [
             verticalSpace(height: 6.h),
@@ -89,15 +98,129 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildStatusBoxes(GetDevicesListProvider provider, Color onSurface, Color cardColor) {
+  Widget _buildShimmer(ThemeData theme, Color onSurface, Color cardColor)
+  {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Column(
+        children: [
+          verticalSpace(height: 6.h),
+          SizedBox(
+            height: 7.7.h,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: 1.h),
+              itemCount: 7,
+              itemBuilder: (context, index) => Padding(
+                padding: EdgeInsets.symmetric(horizontal: 1.w),
+                child: Container(
+                  width: 20.w,
+                  height: 6.h,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          verticalSpace(height: 1.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 3.w),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                horizontalSpace(width: 3.w),
+                Container(
+                  height: 5.h,
+                  width: 5.h,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          verticalSpace(height: 1.h),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0),
+              itemCount: 5,
+              itemBuilder: (_, i) => Container(
+                margin: EdgeInsets.symmetric(vertical: 1.h),
+                height: 20.h,
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context)
+  {
+    final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
+    final message = provider.filterStatus == 'all' && provider.selectedGroupId == null
+        ? 'No vehicles available.'
+        : provider.selectedGroupId == null
+        ? 'No vehicles are currently ${provider.filterStatus}.'
+        : 'No vehicles available in the selected group.';
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(4.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.directions_car_outlined,
+              size: 48.sp,
+              color: Colors.grey[600],
+            ),
+            verticalSpace(height: 2.h),
+            Text(
+              message,
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+            verticalSpace(height: 2.h),
+            ElevatedButton(
+              onPressed: () {
+                provider.setGroupFilter(null, 'All');
+                provider.setFilter('all');
+                provider.updateSearchQuery('');
+              },
+              child: const Text('View All Vehicles'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBoxes(GetDevicesListProvider provider, Color onSurface, Color cardColor)
+  {
     final statuses = [
-      _StatusData(title: "All", count: provider.getCountForStatus('all'), color: Colors.blue),
-      _StatusData(title: "Running", count: provider.getCountForStatus('running'), color: Colors.green),
-      _StatusData(title: "Stopped", count: provider.getCountForStatus('stopped'), color: Colors.red),
-      _StatusData(title: "Idle", count: provider.getCountForStatus('idle'), color: Colors.orange),
-      _StatusData(title: "Offline", count: provider.getCountForStatus('offline'), color: Colors.cyan),
-      _StatusData(title: "No Data", count: provider.getCountForStatus('nodata'), color: Colors.grey),
-      _StatusData(title: "Expired", count: provider.getCountForStatus('expired'), color: Colors.purple),
+      _StatusData(title: "All", count: provider.getCountForStatus('all'), color: AppColors.brownMain),
+      _StatusData(title: "Running", count: provider.getCountForStatus('running'), color: AppColors.green),
+      _StatusData(title: "Stopped", count: provider.getCountForStatus('stopped'), color: AppColors.red),
+      _StatusData(title: "Idle", count: provider.getCountForStatus('idle'), color: AppColors.yellow),
+      _StatusData(title: "Offline", count: provider.getCountForStatus('offline'), color: AppColors.blueCyan),
+      _StatusData(title: "No Data", count: provider.getCountForStatus('nodata'), color: AppColors.grey),
+      _StatusData(title: "Expired", count: provider.getCountForStatus('expired'), color: AppColors.brown),
     ];
 
     return SizedBox(
@@ -117,7 +240,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildSearchAndFilterRow(Color primary, Color onSurface, Color outline) {
+  Widget _buildSearchAndFilterRow(Color primary, Color onSurface, Color outline)
+  {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 3.w),
       child: Row(
@@ -132,14 +256,26 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildVehicleList(GetDevicesListProvider provider, ThemeData theme) {
+  Widget _buildVehicleList(GetDevicesListProvider provider, ThemeData theme)
+  {
+    if (provider.filteredVehicles.isEmpty) {
+      return _buildEmptyState(context);
+    }
     return Expanded(
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0),
         itemCount: provider.filteredVehicles.length,
         itemBuilder: (_, i) {
           final item = provider.filteredVehicles[i];
-          return VehicleCard(vehicle: item, theme: theme);
+          return GestureDetector(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>
+                    SingleVehicleAnalytics(
+                      deviceId: provider.filteredVehicles[i].id??0,
+                      deviceName: provider.filteredVehicles[i].name??"", sensors: item.sensors??[],
+                    )));
+              },
+              child: VehicleCard(vehicle: item, theme: theme));
         },
       ),
     );
@@ -150,81 +286,71 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
       Color cardColor,
       Color primary,
       Color onSurface,
-      ) {
+      )
+  {
     return Consumer<GetDeviceGroupProvider>(
       builder: (context, groupProvider, child) {
-        // If filter is closed, show nothing
         if (!provider.isFilterOpen) return const SizedBox();
-
         final groups = groupProvider.groups;
+        return AnimatedOpacity(
+          opacity: provider.isFilterOpen ? 1 : 0,
+          duration: const Duration(milliseconds: 240),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            color: Colors.black.withOpacity(0.50),
+            child: Center(
+              child: TweenAnimationBuilder(
+                tween: Tween<double>(begin: 0.85, end: 1),
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutBack,
+                builder: (context, scale, _) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (groupProvider.isLoading)
+                          Column(
+                            children: List.generate(
+                              6,
+                                  (_) => groupItemShimmer(
+                                primary,
+                                primary.withOpacity(0.4),
+                              ),
+                            ),
+                          )
+                        else if (groupProvider.error != null)
+                          Center(
+                            child: Text(
+                              "Error: ${groupProvider.error}",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 16.sp,
+                              ),
+                            ),
+                          )
+                        else
+                          Column(
+                            children: [
+                              GroupFilterItem(
+                                title: 'All',
+                                groupId: null,
 
-        return Container(
-          color: Colors.black54,
-          child: Center(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 6.w),
-              padding: EdgeInsets.all(4.w),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "Select Group",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
+                              ),
+                              ...groups.map(
+                                    (group) => GroupFilterItem(
+                                  title: group.title,
+                                  groupId: group.id,
+
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
-                  ),
-                  verticalSpace(height: 2.h),
-
-                  // Loading state
-                  if (groupProvider.isLoading)
-                    const CircularProgressIndicator()
-
-                  // Error state
-                  else if (groupProvider.error != null)
-                    Text(
-                      "Error: ${groupProvider.error}",
-                      style: TextStyle(color: Colors.red, fontSize: 16.sp),
-                    )
-
-                  // List of group items
-                  else
-                    ...[
-                      // "All" option at the top
-                      GroupFilterItem(
-                        title: 'All',
-                        primary: primary,
-                        onSurface: onSurface,
-                      ),
-                      // Dynamically map groups
-                      ...groups.map(
-                            (group) => GroupFilterItem(
-                          title: group.name ?? 'Unnamed Group',
-                          primary: primary,
-                          onSurface: onSurface,
-                        ),
-                      ),
-                    ],
-
-                  verticalSpace(height: 2.h),
-
-                  // Close button
-                  ElevatedButton(
-                    onPressed: provider.toggleFilter,
-                    child: const Text("Close"),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
@@ -233,7 +359,49 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildErrorState(GetDevicesListProvider provider, BuildContext context) {
+  Widget groupItemShimmer(Color baseColor, Color highlightColor)
+  {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 4.w),
+      margin: EdgeInsets.symmetric(vertical: 0.6.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: baseColor.withOpacity(0.10),
+        border: Border.all(
+          color: baseColor.withOpacity(0.40),
+          width: 1,
+        ),
+      ),
+
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 14.sp,
+              decoration: BoxDecoration(
+                color: baseColor.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          SizedBox(width: 3.w),
+          Container(
+            height: 20,
+            width: 20,
+            decoration: BoxDecoration(
+              color: baseColor.withOpacity(0.25),
+              shape: BoxShape.circle,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+  Widget _buildErrorState(GetDevicesListProvider provider, BuildContext context)
+  {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 6.w),

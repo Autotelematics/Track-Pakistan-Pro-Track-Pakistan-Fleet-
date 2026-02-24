@@ -23,16 +23,14 @@ class MaintenanceCard extends StatelessWidget {
 
     // All Maintenance Count
     final allCount = valid.length.toString();
-    // Due = percent == 100 OR percent > 100
-    final due = valid.where((m) => m.percent < 100).toList();
+    final due = valid.where((m) => m.percent > 90).toList();
     final dueCount = due.length.toString();
-    // Overdue = percent > 100 OR status == "expired"
     final overdue =
     valid.where((m) =>m.percent==100|| m.percent > 100).toList();
     final overdueCount = overdue.length.toString();
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+      padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 3.w),
       margin: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
         color: cardColor,
@@ -55,11 +53,10 @@ class MaintenanceCard extends StatelessWidget {
                 "Maintenance Reminder",
                 style: AppStyles.semiboldTextStyle(context),
               ),
-
             ],
           ),
 
-          verticalSpace(height: 2.h),
+          verticalSpace(height: 1.h),
 
           /// ALL
           _maintenanceRow(
@@ -68,10 +65,8 @@ class MaintenanceCard extends StatelessWidget {
             iconColor: Colors.blue,
             count: allCount,
           ),
-          verticalSpace(height: 1.5.h),
 
           Divider(color: onSurface.withOpacity(0.2)),
-          verticalSpace(height: 1.5.h),
 
           /// DUE
           _maintenanceRow(
@@ -80,10 +75,8 @@ class MaintenanceCard extends StatelessWidget {
             iconColor: Colors.orange,
             count: dueCount,
           ),
-          verticalSpace(height: 1.5.h),
 
           Divider(color: onSurface.withOpacity(0.2)),
-          verticalSpace(height: 1.5.h),
 
           /// OVERDUE
           _maintenanceRow(
@@ -102,7 +95,8 @@ class MaintenanceCard extends StatelessWidget {
         required String title,
         required Color iconColor,
         required String count,
-      }) {
+      })
+  {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Row(
       children: [
@@ -117,7 +111,7 @@ class MaintenanceCard extends StatelessWidget {
         ),
 
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 1.2.h, vertical: 0.6.h),
+          padding: EdgeInsets.symmetric(horizontal: 1.h, vertical: 0.5.h),
           decoration: BoxDecoration(
             color: iconColor.withOpacity(0.15),
             borderRadius: BorderRadius.circular(50),

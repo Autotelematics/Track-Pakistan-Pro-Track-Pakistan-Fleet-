@@ -59,13 +59,13 @@ class AlertGrid extends StatelessWidget {
         'value': data.alertsSummary.overParking.toString(),
         'bgColor': const Color(0xFF6A1B9A),
       },
-      {
-        'icon': Icons.fence, // Custom (Geofence style)
-        'name': 'Custom',
-        'unit': 'Times',
-        'value': data.alertsSummary.custom.toString(),
-        'bgColor': const Color(0xFF2196F3),
-      },
+      // {
+      //   'icon': Icons.fence, // Custom (Geofence style)
+      //   'name': 'Custom',
+      //   'unit': 'Times',
+      //   'value': data.alertsSummary.custom.toString(),
+      //   'bgColor': const Color(0xFF2196F3),
+      // },
     ];
 
     return Column(

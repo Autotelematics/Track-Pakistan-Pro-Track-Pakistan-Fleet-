@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/white_labeling/colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -34,6 +34,14 @@ class CustomButton extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final bool useGradient = backgroundColor == null;
+    final LinearGradient primaryGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        ConstantColor.primaryColor.withOpacity(0.95),
+        ConstantColor.primaryColor.withOpacity(0.75),
+      ],
+    );
 
     return SizedBox(
       width: width,
@@ -42,7 +50,7 @@ class CustomButton extends StatelessWidget {
         onPressed: isDisabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero,
-          backgroundColor: useGradient ? Colors.transparent : backgroundColor,
+          backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -54,17 +62,14 @@ class CustomButton extends StatelessWidget {
             gradient: useGradient
                 ? (isDark
                 ? LinearGradient(
-              colors: [theme.cardColor, theme.cardColor],
-            )
-                : LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
               colors: [
-                AppColors.purple,
-                AppColors.blueCyanWithOpacity,
+                theme.cardColor,
+                theme.cardColor,
               ],
-            ))
+            )
+                : primaryGradient)
                 : null,
+
             color: useGradient ? null : backgroundColor,
           ),
           child: Container(

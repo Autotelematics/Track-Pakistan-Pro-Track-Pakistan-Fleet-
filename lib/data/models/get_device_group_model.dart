@@ -6,73 +6,61 @@ GetDeviceGroupModel getDeviceGroupModelFromJson(String str) => GetDeviceGroupMod
 String getDeviceGroupModelToJson(GetDeviceGroupModel data) => json.encode(data.toJson());
 
 class GetDeviceGroupModel {
-  final int? status;
-  final List<GetDeviceGroupModelItem>? items;
+  final int status;
+  final List<GetDeviceGroupModelItem> items;
 
   GetDeviceGroupModel({
-    this.status,
-    this.items,
+    required this.status,
+    required this.items,
   });
 
   factory GetDeviceGroupModel.fromJson(Map<String, dynamic> json) => GetDeviceGroupModel(
-    status: json["status"] as int?,
-    items: json["items"] != null
-        ? List<GetDeviceGroupModelItem>.from(json["items"].map((x) => GetDeviceGroupModelItem.fromJson(x)))
-        : null,
+    status: json["status"],
+    items: List<GetDeviceGroupModelItem>.from(json["items"].map((x) => GetDeviceGroupModelItem.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
-    "items": items != null ? List<dynamic>.from(items!.map((x) => x.toJson())) : null,
+    "items": List<dynamic>.from(items.map((x) => x.toJson())),
   };
-
-  GetDeviceGroupModel copyWith({
-    int? status,
-    List<GetDeviceGroupModelItem>? items,
-  }) => GetDeviceGroupModel(
-    status: status ?? this.status,
-    items: items ?? this.items,
-  );
 }
 
 class GetDeviceGroupModelItem {
-  final int? id;
-  final String? title;
-  final List<ItemItem>? items;
+  final int id;
+  final String title;
+  final List<ItemItem> items;
 
   GetDeviceGroupModelItem({
-    this.id,
-    this.title,
-    this.items,
+    required this.id,
+    required this.title,
+    required this.items,
   });
 
   factory GetDeviceGroupModelItem.fromJson(Map<String, dynamic> json) => GetDeviceGroupModelItem(
-    id: json["id"] as int?,
-    title: json["title"] as String?,
-    items: json["items"] != null
-        ? List<ItemItem>.from(json["items"].map((x) => ItemItem.fromJson(x)))
-        : null,
+    id: json["id"],
+    title: json["title"],
+    items: List<ItemItem>.from(json["items"].map((x) => ItemItem.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "title": title,
-    "items": items != null ? List<dynamic>.from(items!.map((x) => x.toJson())) : null,
+    "items": List<dynamic>.from(items.map((x) => x.toJson())),
   };
 }
 
 class ItemItem {
-  final int? id;
-  final String? name;
+  final int id;
+  final String name;
 
   ItemItem({
-    this.id,
-    this.name,
+    required this.id,
+    required this.name,
   });
 
   factory ItemItem.fromJson(Map<String, dynamic> json) => ItemItem(
-    id: json["id"] as int?,
-    name: json["name"] as String?,
+    id: json["id"],
+    name: json["name"],
   );
 
   Map<String, dynamic> toJson() => {

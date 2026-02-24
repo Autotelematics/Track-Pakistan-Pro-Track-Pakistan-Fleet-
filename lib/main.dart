@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +7,12 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/contact_us_provider.dart';
+import 'package:trackerapp/providers/device_command_provider.dart';
+import 'package:trackerapp/providers/driver_provider.dart';
 import 'package:trackerapp/providers/get_device_group_provider.dart';
+import 'package:trackerapp/providers/get_device_reports_provider.dart';
+import 'package:trackerapp/providers/get_devices_status_provider.dart';
+import 'package:trackerapp/providers/get_geofence_provider.dart';
 import 'package:trackerapp/providers/maintenance_provider.dart';
 import 'package:trackerapp/providers/settings_provider.dart';
 import 'package:trackerapp/providers/vehicle_expense_provider.dart';
@@ -19,12 +23,11 @@ import 'data/repositories/vehicle_repository.dart';
 import 'providers/alert_settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/get_device_history_provider.dart';
 import 'providers/motion_bottom_bar_provider.dart';
 import 'providers/single_vehicle_analytics_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/vehicle_list_provider.dart';
-
-/// GLOBAL snackBar key
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
 GlobalKey<ScaffoldMessengerState>();
 
@@ -72,8 +75,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MotionBottomBarProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => GetDevicesListProvider(VehicleRepository())),
+        ChangeNotifierProvider(
+            create: (_) => GetDevicesListProvider(VehicleRepository())),
         ChangeNotifierProvider(create: (_) => GetDeviceGroupProvider()),
+        ChangeNotifierProvider(create: (_) => DeviceHistoryProvider()),
         ChangeNotifierProvider(create: (_) => SingleVehicleAnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => AlertSettingsProvider()),
         ChangeNotifierProvider(create: (_) => VehicleTrackingProvider()),
@@ -82,6 +87,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => VehicleExpenseProvider()),
         ChangeNotifierProvider(create: (_) => ContactProvider()),
         ChangeNotifierProvider(create: (_) => AlertsProvider()),
+        ChangeNotifierProvider(create: (_) => ReportTypeProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleMapProvider()),
+        ChangeNotifierProvider(create: (_) => GeofenceProvider()),
+        ChangeNotifierProvider(create: (_) => DriverProvider()),
+        ChangeNotifierProvider(create: (_) => GetDeviceCommandsProvider()),
       ],
       child: ResponsiveSizer(
         builder: (context, orientation, screenType) {
@@ -151,14 +161,14 @@ class MyApp extends StatelessWidget {
         backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
         elevation: 0,
-        iconTheme:  IconThemeData(color: AppColors.white),
+        iconTheme: IconThemeData(color: AppColors.white),
         titleTextStyle: TextStyle(
           color: AppColors.white,
           fontSize: 18.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
-      textTheme:  TextTheme(
+      textTheme: TextTheme(
         bodyMedium: TextStyle(color: AppColors.white),
       ),
     );

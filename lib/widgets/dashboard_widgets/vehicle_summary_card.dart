@@ -69,9 +69,9 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Total Vehicles", style: AppStyles.regularTextStyle(context).copyWith(
-          fontSize: 16.sp
-        )),
+        Text("Total Vehicles",
+            style:
+                AppStyles.regularTextStyle(context).copyWith(fontSize: 16.sp)),
         verticalSpace(height: 0.5.h),
         Text(
           status.total.toString(),
@@ -81,14 +81,14 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
           ),
         ),
         verticalSpace(height: .5.h),
-        _legendItem(AppColors.red, "Offline", status.ack, 0, context),
+        _legendItem(AppColors.red, "Stopped", status.ack, 0, context),
         verticalSpace(height: 1.h),
-        _legendItem(AppColors.green, "Online", status.online, 1, context),
+        _legendItem(AppColors.green, "Running", status.online, 1, context),
         verticalSpace(height: 1.h),
         _legendItem(AppColors.yellow, "Idle", status.idle, 2, context),
         verticalSpace(height: 1.h),
         _legendItem(
-            AppColors.grey, "Not Connected", status.neverConnected, 3, context),
+            AppColors.blueCyan, "Offline", status.offline, 3, context),
       ],
     );
   }
@@ -129,15 +129,15 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
     return Container(
       key: chartKey,
       padding: EdgeInsets.only(right: 9.w),
-      height: 13.h,
-      width: 13.h,
+      height: 14.h,
+      width: 14.h,
       child: Consumer<DashboardProvider>(
         builder: (context, provider, child) {
           final selectedIndex = provider.selectedStatusIndex;
           int centerCount = status.total;
           if (selectedIndex != -1) {
             centerCount = switch (selectedIndex) {
-              0 => status.ack,
+              0 => status.offline,
               1 => status.online,
               2 => status.idle,
               3 => status.neverConnected,
@@ -183,13 +183,12 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
 
   List<ChartData> _getChartData(dynamic status, int selectedIndex) {
     final data = [
-      ChartData('Offline', status.ack.toDouble(), AppColors.red, 0),
+      ChartData('Offline', status.offline.toDouble(), AppColors.red, 0),
       ChartData('Online', status.online.toDouble(), AppColors.green, 1),
       ChartData('Idle', status.idle.toDouble(), AppColors.yellow, 2),
       ChartData(
-          'Not Connected', status.neverConnected.toDouble(), AppColors.grey, 3),
+          'Not Connected', status.neverConnected.toDouble(), AppColors.blueCyan, 3),
     ];
-
     if (selectedIndex != -1) {
       return data.map((item) {
         if (item.index != selectedIndex) {

@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trackerapp/utils/preference_keys.dart';
 class MySharedPreferences {
   static late SharedPreferences _preferences;
 
@@ -48,6 +49,11 @@ class MySharedPreferences {
 
   static List<String> getStringList(String key) {
     return _preferences.getStringList(key) ?? [];
+  }
+  static Future<void> logout() async {
+    await _preferences.remove(isLoggedInKey);
+    await _preferences.remove(authTokenKey);
+    await _preferences.clear();
   }
 
   static Future<void> clearAll() async {

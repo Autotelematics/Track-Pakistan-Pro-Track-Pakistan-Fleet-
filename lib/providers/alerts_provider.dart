@@ -20,6 +20,7 @@ class AlertsProvider with ChangeNotifier {
   // Filters
   String? _deviceIdFilter;
   String? _alertTypeFilter;
+  String? _searchQuery;
 
   // Selection
   final Set<int> _selectedAlertIds = {};
@@ -34,6 +35,21 @@ class AlertsProvider with ChangeNotifier {
   Set<int> get selectedAlertIds => _selectedAlertIds;
   bool get hasMore => _currentPage < _totalPages;
 
+  // Filtered items based on search query
+  List<Item> get filteredItems {
+    final items = model?.items ?? [];
+
+    if (_searchQuery == null || _searchQuery!.trim().isEmpty) {
+      return items;
+    }
+
+    final query = _searchQuery!.toLowerCase().trim();
+    return items.where((item) {
+      return item.deviceName.toLowerCase().contains(query) ||
+          item.message.toLowerCase().contains(query);
+    }).toList();
+  }
+
   List<String> get alertTypeList {
     final counts = model?.counts ?? {};
     final types = counts.keys.toList();
@@ -46,20 +62,25 @@ class AlertsProvider with ChangeNotifier {
     return map;
   }
 
-  // Set filters
+  // Set search query
+  void setSearchQuery(String? query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  // Set filters (without notifyListeners - will be called when fetchAlerts is triggered)
   void setDeviceFilter(int? deviceId) {
     _deviceIdFilter = deviceId?.toString();
-    notifyListeners();
   }
 
   void setAlertTypeFilter(String? type) {
     _alertTypeFilter = type == "All" ? null : type;
-    notifyListeners();
   }
 
   void clearFilters() {
     _deviceIdFilter = null;
     _alertTypeFilter = null;
+    _searchQuery = null;
     notifyListeners();
   }
 
@@ -85,6 +106,7 @@ class AlertsProvider with ChangeNotifier {
     if (isRefresh) {
       _currentPage = 1;
       _lastValidModel = null;
+      _model = null;
       _grandTotal = null;
     }
 
@@ -103,7 +125,6 @@ class AlertsProvider with ChangeNotifier {
         alertType: _alertTypeFilter,
         userApiHashKey: MySharedPreferences.getString(authTokenKey),
       );
-
       if (result != null) {
         _totalPages = (result.total / result.perPage).ceil();
 
@@ -115,10 +136,10 @@ class AlertsProvider with ChangeNotifier {
         final newItems = isRefresh
             ? result.items
             : [
-                ...?_lastValidModel?.items,
-                ...result.items.where((newItem) =>
-                    !_lastValidModel!.items.any((old) => old.id == newItem.id))
-              ];
+          ...?_lastValidModel?.items,
+          ...result.items.where((newItem) =>
+          !_lastValidModel!.items.any((old) => old.id == newItem.id))
+        ];
 
         _lastValidModel = result.copyWith(items: newItems);
         _model = _lastValidModel;
@@ -136,6 +157,18 @@ class AlertsProvider with ChangeNotifier {
       _isLoadMore = false;
       notifyListeners();
     }
+  }
+  /// Resets only the filters (device + alert type) and refreshes alerts
+  void resetFiltersOnly(BuildContext context) {
+    _deviceIdFilter = null;
+    _alertTypeFilter = null;
+    _currentPage = 1;
+    _lastValidModel = null;
+    _model = null;
+    _grandTotal = null;
+    _selectedAlertIds.clear();
+    fetchAlerts(isRefresh: true, context: context);
+    notifyListeners();
   }
 
   // Delete alerts

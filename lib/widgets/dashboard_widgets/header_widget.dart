@@ -3,20 +3,17 @@ import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/data/models/dashboard_data.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'vehicle_summary_card.dart';
 
 class HeaderWidget extends StatelessWidget {
-  final DashboardData data;
   final GetDashboardModel data1;
   final String currentTime;
 
   const HeaderWidget({
     super.key,
-    required this.data,
     required this.currentTime,
     required this.data1,
   });

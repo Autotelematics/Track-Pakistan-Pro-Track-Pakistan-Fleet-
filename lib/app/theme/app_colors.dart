@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:trackerapp/white_labeling/colors.dart';
 
 class AppColors {
-  static Color yellow = Color(0xfff2be00);
-  static Color primaryColor = Color(0xFFffc708);
-  static Color secondaryColor = Color(0xff667b7a);
-  static Color green = Color(0xff06D001);
+  static Color yellow = Colors.orange;
+  static Color brownMain = Colors.brown.shade500;
+  static Color green = Color(0xff1fbd4c);
   static Color red = Color(0xFFE83F25);
-  static Color blueCyan = Color(0xFF0065F8);
+  static Color blueCyan =  Colors.blue;
   static Color blueCyanWithOpacity = Color(0xFF0066FF).withOpacity(0.6);
   static Color grey = Color(0xffD1D3D4);
   static Color black = Color(0xff000000);
   static Color textBlack = Color(0xff1c1c1c);
   static Color purple = Color(0xFF3B0D84);
+  static Color brown = Colors.brown;
+  static Color teal = Colors.teal;
 
   static Color white = Color(0xffffffff);
   static Color scaffoldBg = Color(0xfff9fafb);
   static Color statusColor(String status) {
+
+
     switch (status) {
       case "Running":
         return AppColors.green;
@@ -40,7 +44,7 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      secondaryColor,
+      ConstantColor.secondaryColor,
       white,
     ],
   );

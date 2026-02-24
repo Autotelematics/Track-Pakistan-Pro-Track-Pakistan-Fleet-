@@ -11,10 +11,14 @@ import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/maintenance_widgets/maintenance_field.dart';
 import 'package:trackerapp/widgets/maintenance_widgets/vehicle_dropdown.dart';
 
-class AddMaintenanceScreen extends StatelessWidget {
+class AddMaintenanceScreen extends StatefulWidget {
   const AddMaintenanceScreen({super.key});
 
+  @override
+  State<AddMaintenanceScreen> createState() => _AddMaintenanceScreenState();
+}
 
+class _AddMaintenanceScreenState extends State<AddMaintenanceScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -32,14 +36,7 @@ class AddMaintenanceScreen extends StatelessWidget {
                 gradient: isDark
                     ? LinearGradient(
                     colors: [theme.cardColor, theme.cardColor])
-                    : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.purple,
-                    AppColors.blueCyanWithOpacity
-                  ],
-                ),
+                    : AppColors.mainGradient
               ),
               child: Column(
                 children: [
@@ -98,7 +95,17 @@ class AddMaintenanceScreen extends StatelessWidget {
                                       color: onSurface,
                                       fontWeight: FontWeight.w500)),
                               verticalSpace(height: 1.h),
-                              const VehicleDropdown(),
+                              DynamicDropdown(
+                                title: "Select Vehicle",
+                                hint: "Choose vehicle",
+                                items: provider.vehicles,
+                                selectedValue: provider.selectedVehicle,
+                                onChanged: (val) {
+                                  provider.selectVehicle(val);
+                                  provider.selectVehicle(val);
+                                },
+                              ),
+
                               verticalSpace(height: 2.h),
 
                               MaintenanceField(
@@ -135,8 +142,7 @@ class AddMaintenanceScreen extends StatelessWidget {
                                         title: const Text("Enter Description"),
                                         content: TextField(
                                           controller: controller,
-                                          maxLines: 4,
-                                        ),
+                                          maxLines: 4,),
                                         actions: [
                                           TextButton(
                                               onPressed: () =>
@@ -159,12 +165,14 @@ class AddMaintenanceScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     flex: 4,
-                                    child: TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: Text("Cancel",
-                                          style: TextStyle(
-                                              fontSize: 17.sp,
-                                              color: onSurface)),
+                                    child: CustomButton(
+                                      backgroundColor: Colors.transparent,
+                                      textColor: AppColors.textBlack,
+                                      text: "Cancel",
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                                      },
+                                      height: 4.5.h,
                                     ),
                                   ),
                                   Expanded(

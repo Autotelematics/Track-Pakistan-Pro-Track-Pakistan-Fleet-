@@ -1,12 +1,12 @@
-// lib/data/models/get_alerts_list_model.dart
-
 import 'dart:convert';
 
+// JSON helpers
 GetAlertsModel getAlertsModelFromJson(String str) =>
     GetAlertsModel.fromJson(json.decode(str));
 
 String getAlertsModelToJson(GetAlertsModel data) => json.encode(data.toJson());
 
+// Main model
 class GetAlertsModel {
   final int status;
   final int page;
@@ -26,53 +26,32 @@ class GetAlertsModel {
     required this.message,
   });
 
-  factory GetAlertsModel.fromJson(Map<String, dynamic> json) {
-    final itemsData = json["items"];
+  factory GetAlertsModel.fromJson(Map<String, dynamic> json) => GetAlertsModel(
+    status: json["status"] ?? 0,
+    page: json["page"] ?? 1,
+    perPage: json["per_page"] ?? 10,
+    total: json["total"] ?? 0,
+    counts: (json["counts"] as Map<String, dynamic>?)
+        ?.map((k, v) => MapEntry(k, v as int)) ??
+        {},
+    items: json["items"] != null
+        ? List<Item>.from(
+        (json["items"] as List).map((x) => Item.fromJson(x)))
+        : [],
+    message: json["message"],
+  );
 
-    List<Item> parsedItems = [];
-    int page = 1;
-    int perPage = 10;
-    int total = 0;
-    Map<String, int> counts = {};
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "page": page,
+    "per_page": perPage,
+    "total": total,
+    "counts": counts, // Directly output the map
+    "items": List<dynamic>.from(items.map((x) => x.toJson())),
+    "message": message,
+  };
 
-    if (itemsData != null) {
-      if (itemsData is Map<String, dynamic>) {
-        // Normal API response with pagination
-        page = itemsData["current_page"] ?? 1;
-        perPage = itemsData["per_page"] ?? 10;
-        total = itemsData["total"] ?? 0;
-        counts = _safeParseCounts(itemsData["counts"]);
-
-        if (itemsData["data"] != null && itemsData["data"] is List) {
-          parsedItems = List<Item>.from(
-            (itemsData["data"] as List).map((x) => Item.fromJson(x)),
-          );
-        }
-      } else if (itemsData is List) {
-        // API returns a list directly
-        parsedItems = List<Item>.from(itemsData.map((x) => Item.fromJson(x)));
-      }
-    }
-
-    return GetAlertsModel(
-      status: json["status"] ?? 0,
-      page: page,
-      perPage: perPage,
-      total: total,
-      counts: counts,
-      items: parsedItems,
-      message: json["message"],
-    );
-  }
-
-  static Map<String, int> _safeParseCounts(dynamic raw) {
-    if (raw == null) return {};
-    if (raw is Map<String, dynamic>) {
-      return raw.map((key, value) => MapEntry(key, (value as num).toInt()));
-    }
-    return {};
-  }
-
+  // Optionally, a copyWith method
   GetAlertsModel copyWith({
     int? status,
     int? page,
@@ -91,38 +70,59 @@ class GetAlertsModel {
         items: items ?? this.items,
         message: message ?? this.message,
       );
+}
+
+// Counts model
+class Counts {
+  final int offlineDuration;
+  final int ignitionDuration;
+  final int idleDuration;
+  final int moveStart;
+  final int overParking;
+  final int overSpeed;
+
+  Counts({
+    required this.offlineDuration,
+    required this.ignitionDuration,
+    required this.idleDuration,
+    required this.moveStart,
+    required this.overParking,
+    required this.overSpeed,
+  });
+
+  factory Counts.fromJson(Map<String, dynamic> json) => Counts(
+    offlineDuration: json["Offline duration"] ?? 0,
+    ignitionDuration: json["Ignition duration"] ?? 0,
+    idleDuration: json["Idle Duration"] ?? 0,
+    moveStart: json["Move Start"] ?? 0,
+    overParking: json["Over Parking"] ?? 0,
+    overSpeed: json["Over Speed"] ?? 0,
+  );
 
   Map<String, dynamic> toJson() => {
-    "status": status,
-    "page": page,
-    "per_page": perPage,
-    "total": total,
-    "counts": counts,
-    "items": {
-      "current_page": page,
-      "per_page": perPage,
-      "total": total,
-      "data": items.map((x) => x.toJson()).toList(),
-    },
-    "message": message,
+    "Offline duration": offlineDuration,
+    "Ignition duration": ignitionDuration,
+    "Idle Duration": idleDuration,
+    "Move Start": moveStart,
+    "Over Parking": overParking,
+    "Over Speed": overSpeed,
   };
 }
 
-// ---------------- Item Model ----------------
-
+// Main alert/item model (NO enum for device name!)
 class Item {
   final int id;
-  final String type;
+  final String type; // Use String instead of enum
   final DateTime? time;
   final String message;
-  String address;
+  final String address;
   final int course;
   final double latitude;
   final double longitude;
   final int speed;
   final String detail;
   final dynamic geofence;
-  final String deviceName;
+  final String deviceName; // String, not enum!
   final int deviceId;
 
   Item({
@@ -143,7 +143,7 @@ class Item {
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
     id: json["id"] ?? 0,
-    type: json["type"] ?? "",
+    type: json["type"] ?? "", // Use string directly
     time: json["time"] != null ? DateTime.tryParse(json["time"]) : null,
     message: json["message"] ?? "",
     address: json["address"] ?? "",
@@ -151,15 +151,15 @@ class Item {
     latitude: (json["latitude"] as num?)?.toDouble() ?? 0.0,
     longitude: (json["longitude"] as num?)?.toDouble() ?? 0.0,
     speed: json["speed"] ?? 0,
-    detail: json["detail"] ?? json["name"] ?? "",
+    detail: json["detail"] ?? "",
     geofence: json["geofence"],
-    deviceName: json["device_name"] ?? "Unknown",
+    deviceName: json['device_name'] ?? '', // Direct string mapping
     deviceId: json["device_id"] ?? 0,
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "type": type,
+    "type": type, // Output as string
     "time": time?.toIso8601String(),
     "message": message,
     "address": address,
@@ -169,7 +169,7 @@ class Item {
     "speed": speed,
     "detail": detail,
     "geofence": geofence,
-    "device_name": deviceName,
+    "device_name": deviceName, // Output as string
     "device_id": deviceId,
   };
 }

@@ -7,7 +7,6 @@ class GetDeviceGroupProvider with ChangeNotifier {
 
   GetDeviceGroupModel? _model;
   GetDeviceGroupModel? _lastValidModel;
-  List<ItemItem> _groups = [];
 
   bool _isLoading = false;
   bool _hasMore = true;
@@ -18,7 +17,7 @@ class GetDeviceGroupProvider with ChangeNotifier {
 
   // Getters
   GetDeviceGroupModel? get model => _model;
-  List<ItemItem> get groups => _groups;
+  List<GetDeviceGroupModelItem> get groups => _model?.items ?? [];
 
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
@@ -30,19 +29,17 @@ class GetDeviceGroupProvider with ChangeNotifier {
     _hasMore = true;
   }
 
-  Future<void> fetchDeviceGroups({bool isRefresh = false,required BuildContext context}) async {
-    print("📌 fetchDeviceGroups() called | isRefresh: $isRefresh | page: $_currentPage");
+  Future<void> fetchDeviceGroups({bool isRefresh = false, required BuildContext context}) async {
+    print("fetchDeviceGroups() called | isRefresh: $isRefresh | page: $_currentPage");
 
     if (isRefresh) {
       resetPagination();
       _model = null;
       _lastValidModel = null;
-      _groups = [];
       notifyListeners();
     }
 
     if (_isLoading || (!_hasMore && !isRefresh)) {
-      print("⛔ Prevented duplicate API call");
       return;
     }
 
@@ -50,46 +47,28 @@ class GetDeviceGroupProvider with ChangeNotifier {
       _isLoading = true;
       _isError = false;
       notifyListeners();
-
-      print("🌍 Calling API... Page $_currentPage");
-
       final result = await _repository.getDeviceGroupApi(page: _currentPage, dialogContext: context);
-
-      if (result != null && result.items != null) {
-        print("✔ API Successful. Items count: ${result.items!.length}");
-
-        _totalPages = 1; // backend does not give pages
-
+      if (result != null && result.items.isNotEmpty) {
+        _totalPages = 1;
         if (isRefresh) {
           _lastValidModel = result;
         } else {
           final existing = _lastValidModel?.items ?? [];
-          _lastValidModel = _lastValidModel?.copyWith(
-            items: [...existing, ...result.items!],
-          ) ?? result;
+          _lastValidModel = GetDeviceGroupModel(
+            status: result.status,
+            items: [...existing, ...result.items],
+          );
         }
-
         _model = _lastValidModel!;
-
-        // Flatten groups safely
-        _groups = _model!.items!
-            .expand((group) => group.items ?? [])
-            .cast<ItemItem>()
-            .toList();
-
-        print("📌 Flattened Groups Count: ${_groups.length}");
-
         _error = null;
         _currentPage++;
       } else {
-        print("❌ API returned empty or error");
         _isError = true;
         _error = "Failed to load device groups.";
       }
 
       _hasMore = _currentPage <= _totalPages;
     } catch (e) {
-      print("🔥 Exception in fetchDeviceGroups: $e");
       _isError = true;
       _error = e.toString();
     } finally {

@@ -18,128 +18,52 @@ class VehicleCard extends StatelessWidget {
     required this.theme,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final statusColor = _getStatusColor();
+  String _getColorPrefix() {
+    final onlineStatus = vehicle.online?.toLowerCase();
+    final timeLower = vehicle.time?.toLowerCase();
 
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 1.h),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.px),
-        color: theme.cardColor,
-        boxShadow: const [
-          BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              spreadRadius: 0,
-              offset: Offset(0, 3)),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 2.w),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                horizontalSpace(width: 0.5.w),
-                SizedBox(
-                  width: 16.3.w,
-                  height: 8.4.h,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      vehicle.path.toString().isNotEmpty
-                          ? '${AppUrl.baseImgURL}${vehicle.path.toString()}'
-                          : 'https://via.placeholder.com/80',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.directions_car,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.amberAccent,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+    if (onlineStatus == 'online') return 'Green';
+    if (onlineStatus == 'ack') return 'Red';
+    if (onlineStatus == 'engine') return 'Yellow';
+    if (onlineStatus == 'black') return 'Black';
 
-                horizontalSpace(width: 2.w),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset("assets/images/caricon.png",
-                              height: 2.6.h),
-                          horizontalSpace(width: 1.w),
-                          Text(
-                              vehicle.name.toString().length > 12
-                                  ? "${vehicle.name.toString().substring(0, 12)}..."
-                                  : vehicle.name.toString(),
-                              style: AppStyles.vehicleTitle(context)),
-                        ],
-                      ),
-                      verticalSpace(height: 1.h),
-                      _buildInfoText(
-                          context, "Speed : ", "${vehicle.speed ?? 0} km/h"),
-                      verticalSpace(height: 1.h),
-                      _buildStatusText(context),
-                      verticalSpace(height: 1.h),
-                      _buildInfoText(
-                          context, "Update : ", vehicle.time ?? 'N/A'),
-                      verticalSpace(height: 1.h),
+    // Offline cases
+    if (onlineStatus == 'offline') {
+      if (timeLower == 'not connected' || timeLower == 'expired') {
+        return 'Black';
+      }
+      return 'Blue';
+    }
 
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 2.w),
-                  alignment: Alignment.center,
-                  height: 3.h,
-                  width: 17.w,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: statusColor,
-                    boxShadow: [
-                      BoxShadow(
-                          color: statusColor.withOpacity(0.13),
-                          blurRadius: 6,
-                          offset: Offset(0, 3))
-                    ],
-                  ),
-                  child: Text(
-                    _getStatusLabel(),
-                    style:
-                        AppStyles.statusChip(context).copyWith(fontSize: 14.sp),
-                  ),
-                ),
-                verticalSpace(height: 1.h),
+    return 'Blue';
+  }
 
-              ],
-            ),
-            VehicleStatusRow(vehicle: vehicle), // Item pass
-            verticalSpace(height: 1.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 2.w),
-              child: Text(
-                vehicle.addr ?? '',
-                style: AppStyles.address(context),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  String? _getLocalAssetPath() {
+    final rawType = vehicle.vehicleType;
+    if (rawType == null || rawType.trim().isEmpty) return null;
+
+    final normalized = rawType.trim().toLowerCase();
+
+    const Map<String, String> typeMap = {
+      'ambulance': 'Ambulance',
+      'bicycle': 'Bicycle',
+      'boat': 'Boat',
+      'bus': 'Bus',
+      'car': 'Car',
+      'motorbike': 'Motorbike',
+      'motorcycle': 'Motorbike',
+      'suv': 'SUV',
+      'truck': 'Truck',
+      'truck trailer': 'Truck Trailer',
+      'truck_trailer': 'Truck Trailer',
+      'trailer': 'Truck Trailer',
+    };
+
+    final vehicleName = typeMap[normalized];
+    if (vehicleName == null) return null;
+
+    final color = _getColorPrefix();
+    return 'assets/images/vehicle/$color $vehicleName.png';
   }
 
   Color _getStatusColor() {
@@ -184,28 +108,167 @@ class VehicleCard extends StatelessWidget {
       RichText(
         text: TextSpan(
           children: [
-            TextSpan(text: label, style: AppStyles.infoLabel(context)),
-            TextSpan(text: value, style: AppStyles.infoValue(context)),
+            TextSpan(
+                text: label,
+                style: AppStyles.infoLabel(context).copyWith(fontSize: 16.sp)),
+            TextSpan(
+                text: value,
+                style: AppStyles.infoValue(context).copyWith(fontSize: 15.sp)),
           ],
         ),
       );
 
-  Widget _buildStatusText(BuildContext context) => RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(text: "Status : ", style: AppStyles.infoLabel(context)),
-            TextSpan(
-                text: _getStatusLabel(),
-                style: AppStyles.status(_getStatusLabel(), context)),
-            TextSpan(
-                text: "  ${_formatStopDuration()}",
-                style: AppStyles.statusDuration(context)),
-          ],
+  Widget _buildStatusText(BuildContext context, String status) => Row(
+    children: [
+      Text(
+        "Status : ",
+        style: AppStyles.infoLabel(context).copyWith(fontSize: 16.sp),
+      ),
+      Text(
+        _getStatusLabel(),
+        style: AppStyles.statusDuration(context)
+            .copyWith(fontSize: 15.sp, color: _getStatusColor()),
+      ),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = _getStatusColor();
+    final String? localAsset = _getLocalAssetPath();
+
+    // Vehicle Image Widget
+    Widget vehicleImage;
+    if (localAsset != null) {
+      vehicleImage = Transform.scale(
+        scale: 1.2,
+        child: Image.asset(
+          localAsset,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.directions_car,
+            size: 40,
+            color: Colors.grey,
+          ),
         ),
       );
+    } else {
+      final String networkUrl = vehicle.path?.isNotEmpty == true
+          ? '${AppUrl.baseImgURL}${vehicle.path}'
+          : 'https://via.placeholder.com/80';
+      vehicleImage = Image.network(
+        networkUrl,
+        width: 60,
+        height: 90,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Icon(
+          Icons.directions_car,
+          size: 40,
+          color: Colors.grey,
+        ),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.amberAccent,
+            ),
+          );
+        },
+      );
+    }
 
-  String _formatStopDuration() {
-    final duration = vehicle.stopDuration ?? "0";
-    return duration.contains("h") ? duration : "$duration sec";
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 1.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.px),
+        color: theme.cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withOpacity(0.4),
+            blurRadius: 2,
+            spreadRadius: 0,
+          ),
+        ],
+        border: Border.all(color: statusColor.withOpacity(0.7), width: 1),
+      ),
+      child: Column(
+        children: [
+          // Vehicle Name
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: .2.h),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12.px),
+                        topRight: Radius.circular(12.px)),
+                    color: statusColor.withOpacity(0.8),
+                  ),
+                  child: Text(
+                    vehicle.name.toString().length > 30
+                        ? "${vehicle.name.toString().substring(0, 30)}..."
+                        : vehicle.name.toString(),
+                    style: AppStyles.statusChip(context).copyWith(fontSize: 16.sp),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Vehicle Image + Info
+          Padding(
+            padding: EdgeInsets.only(left: 6.w, right: 0.w, top: 0.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image
+                Container(
+                  height: 12.h,
+                  alignment: Alignment.center,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: vehicleImage,
+                  ),
+                ),
+
+                horizontalSpace(width: 8.w),
+                // Info Column
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      verticalSpace(height: .8.h),
+                      _buildInfoText(
+                          context, "Speed : ", "${vehicle.speed ?? 0} km/h"),
+                      verticalSpace(height: 1.5.h),
+                      _buildStatusText(context, vehicle.online.toString()),
+                      verticalSpace(height: 1.5.h),
+                      _buildInfoText(
+                          context, "Update : ", vehicle.time ?? 'N/A'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          verticalSpace(height: 1.h),
+          VehicleStatusRow(vehicle: vehicle),
+          Padding(
+            padding: EdgeInsets.only(left: 2.w, right: 2.w, bottom: 1.5.h, top: 1.h),
+            child: Text(
+              vehicle.addr ?? 'No Address Founded',
+              style: AppStyles.address(context),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
