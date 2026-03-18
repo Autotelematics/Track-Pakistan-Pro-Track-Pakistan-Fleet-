@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/data/models/get_device_history_model.dart';
@@ -14,8 +15,9 @@ class TripSegment {
   final int tripIndex;
   final String startTime;
   final String endTime;
-  final String distance;
+  final dynamic distance;
   final String duration;
+  final dynamic topSpeed;
   final int startRouteIndex;
   final int endRouteIndex;
   final LatLng? startLatLng;
@@ -27,6 +29,7 @@ class TripSegment {
     required this.endTime,
     required this.distance,
     required this.duration,
+    required this.topSpeed,
     required this.startRouteIndex,
     required this.endRouteIndex,
     this.startLatLng,
@@ -235,14 +238,17 @@ class DeviceHistoryProvider extends ChangeNotifier {
     int? activeTripStartIndex;
     double activeTripDistanceKm = 0.0;
     int activeTripDurationSec = 0;
+    double activeTripTopSpeed = 0.0;
     _TimeInfo? pendingStop;
     int pendingStopRouteIndex = 0;
 
     for (var historyItem in _deviceHistoryModel!.history) {
       if (historyItem.status == 1) {
-        final moveStart = _extractTimeInfo(historyItem.items, preferLast: false);
+        final moveStart =
+            _extractTimeInfo(historyItem.items, preferLast: false);
         if (pendingStop != null) {
-          final diffSec = pendingStop.dateTime != null && moveStart.dateTime != null
+          final diffSec = pendingStop.dateTime != null &&
+                  moveStart.dateTime != null
               ? moveStart.dateTime!.difference(pendingStop.dateTime!).inSeconds
               : 0;
           final parkedDurationSec = diffSec > 0 ? diffSec : 0;
@@ -267,6 +273,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
         activeTripStartIndex ??= prevLen;
         activeTripDistanceKm += historyItem.distance;
         activeTripDurationSec += historyItem.timeSeconds ?? 0;
+        final currentTopSpeed = historyItem.topSpeed is num
+            ? (historyItem.topSpeed as num).toDouble()
+            : double.tryParse('${historyItem.topSpeed ?? 0}') ?? 0.0;
+
+        if (currentTopSpeed > activeTripTopSpeed) {
+          activeTripTopSpeed = currentTopSpeed;
+        }
       } else if (historyItem.status == 2) {
         // status 2: stop event, this closes one trip (move -> stop = 1 trip)
         _stopCount++;
@@ -288,6 +301,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
             endTime: endItem.rawTime ?? endItem.time ?? '—',
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
+            topSpeed: activeTripTopSpeed,
             startRouteIndex: segStart,
             endRouteIndex: segEnd,
             startLatLng: LatLng(startItem.lat, startItem.lng),
@@ -299,9 +313,11 @@ class DeviceHistoryProvider extends ChangeNotifier {
           activeTripStartIndex = null;
           activeTripDistanceKm = 0.0;
           activeTripDurationSec = 0;
+          activeTripTopSpeed = 0.0;
         }
         pendingStop = _extractTimeInfo(historyItem.items, preferLast: false);
-        pendingStopRouteIndex = _routeList.isNotEmpty ? _routeList.length - 1 : 0;
+        pendingStopRouteIndex =
+            _routeList.isNotEmpty ? _routeList.length - 1 : 0;
       } else if (historyItem.status == 3) {
         // status 3: first packet of selected range
         _startPacketLatLng = _extractNormalizedPoint(
@@ -335,6 +351,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
             endTime: endItem.rawTime ?? endItem.time ?? '—',
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
+            topSpeed: activeTripTopSpeed,
             startRouteIndex: segStart,
             endRouteIndex: segEnd,
             startLatLng: LatLng(startItem.lat, startItem.lng),
@@ -346,6 +363,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
           activeTripStartIndex = null;
           activeTripDistanceKm = 0.0;
           activeTripDurationSec = 0;
+          activeTripTopSpeed = 0.0;
         }
       } else if (historyItem.status == 5) {
         _processAlertItems(historyItem);
@@ -365,6 +383,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
         endTime: endItem.rawTime ?? endItem.time ?? '—',
         distance: activeTripDistanceKm.toStringAsFixed(2),
         duration: _formatDuration(activeTripDurationSec),
+        topSpeed: activeTripTopSpeed,
         startRouteIndex: segStart,
         endRouteIndex: segEnd,
         startLatLng: LatLng(startItem.lat, startItem.lng),
@@ -388,12 +407,12 @@ class DeviceHistoryProvider extends ChangeNotifier {
   }
 
   void _processMovingItems(List<LocationItem> items) {
-    LatLng? previous =
-        _polyLatLng.isNotEmpty ? _polyLatLng.last : null;
+    LatLng? previous = _polyLatLng.isNotEmpty ? _polyLatLng.last : null;
     for (var item in items) {
       final point = _normalizedPoint(item, previous: previous);
       if (point == null) continue;
-      final normalizedItem = _copyWithLatLng(item, point.latitude, point.longitude);
+      final normalizedItem =
+          _copyWithLatLng(item, point.latitude, point.longitude);
       _routeList.add(normalizedItem);
       _polyLatLng.add(point);
       previous = point;
@@ -441,8 +460,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   void _processStoppedItems(List<LocationItem> items) {
     if (items.isEmpty) return;
-    final previous =
-        _parkedLatLngs.isNotEmpty ? _parkedLatLngs.last : null;
+    final previous = _parkedLatLngs.isNotEmpty ? _parkedLatLngs.last : null;
     final point = _normalizedPoint(items[0], previous: previous);
     if (point == null) return;
     final isDuplicate = _parkedLatLngs.isNotEmpty &&
@@ -656,10 +674,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
   // ── Static markers ─────────────────────────────────────────────────────────
   void _setStartAndEndMarkers() {
     if (_routeList.isEmpty || _startIcon == null || _endIcon == null) return;
-    _mapMarkers.removeWhere(
-            (m) => m.markerId == const MarkerId('start') || m.markerId == const MarkerId('end'));
-    final startPos = _startPacketLatLng ?? LatLng(_routeList.first.lat, _routeList.first.lng);
-    final endPos = _endPacketLatLng ?? LatLng(_routeList.last.lat, _routeList.last.lng);
+    _mapMarkers.removeWhere((m) =>
+        m.markerId == const MarkerId('start') ||
+        m.markerId == const MarkerId('end'));
+    final startPos = _startPacketLatLng ??
+        LatLng(_routeList.first.lat, _routeList.first.lng);
+    final endPos =
+        _endPacketLatLng ?? LatLng(_routeList.last.lat, _routeList.last.lng);
 
     _mapMarkers.add(Marker(
       markerId: const MarkerId('start'),
@@ -793,7 +814,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
       ..strokeWidth = 4;
     canvas.drawCircle(center, radius, borderPaint);
 
-    final glyph = icon != null ? String.fromCharCode(icon.codePoint) : (letter ?? '');
+    final glyph =
+        icon != null ? String.fromCharCode(icon.codePoint) : (letter ?? '');
     final textStyle = TextStyle(
       color: letterColor,
       fontSize: icon != null ? 42 : 36,
@@ -813,7 +835,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
       ),
     );
 
-    final image = await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final image =
+        await recorder.endRecording().toImage(size.toInt(), size.toInt());
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) {
       return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);

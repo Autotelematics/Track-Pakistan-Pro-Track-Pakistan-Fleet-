@@ -189,11 +189,20 @@ class TripCard extends StatelessWidget {
                   SizedBox(height: 0.8.h),
                   Wrap(
                     spacing: 2.w,
+                    runSpacing: 0.6.h,
                     children: [
                       MiniChip(
-                          icon: Icons.straighten, label: '${trip.distance} km'),
+                        icon: Icons.straighten,
+                        label: '${trip.distance} km',
+                      ),
                       MiniChip(
-                          icon: Icons.timer_outlined, label: trip.duration),
+                        icon: Icons.timer_outlined,
+                        label: trip.duration,
+                      ),
+                      MiniChip(
+                        icon: Icons.speed_rounded,
+                        label: '${trip.topSpeed} km/h',
+                      ),
                     ],
                   ),
                 ],
@@ -342,7 +351,7 @@ class ParkedCard extends StatelessWidget {
                   Wrap(
                     spacing: 2.w,
                     children: [
-                      const MiniChip(icon: Icons.straighten, label: '0.00 km'),
+                      // const MiniChip(icon: Icons.straighten, label: '0.00 km'),
                       MiniChip(
                           icon: Icons.timer_outlined, label: parked.duration),
                     ],
