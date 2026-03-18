@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/white_labeling/contacts.dart';
@@ -59,7 +60,7 @@ class ContactGrid extends StatelessWidget {
     if (CompanyInfo.whatsApp.trim().isNotEmpty) {
       contactTiles.add(
         _ContactTile(
-          icon: Icons.chat,
+          icon: FontAwesomeIcons.whatsapp,
           label: "WhatsApp",
           color: Colors.green[700]!,
           onTap: () => _launchUrl('https://wa.me/${CompanyInfo.whatsApp}'),
@@ -83,7 +84,7 @@ class ContactGrid extends StatelessWidget {
     if (CompanyInfo.instagram.trim().isNotEmpty) {
       contactTiles.add(
         _ContactTile(
-          icon: Icons.camera_alt,
+          icon: FontAwesomeIcons.instagram,
           label: "Instagram",
           color: Colors.pinkAccent,
           onTap: () => _launchUrl(CompanyInfo.instagram),
@@ -97,7 +98,7 @@ class ContactGrid extends StatelessWidget {
           verticalSpace(height: 2.h),
           Text(
             "No contact information available",
-            style: AppStyles.lightTextStyle(context),
+            style: AppStyles.lightTextStyle(context).copyWith(fontSize: 14.sp),
           ),
           verticalSpace(height: 2.h),
         ],
@@ -105,8 +106,9 @@ class ContactGrid extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: 4.w,
-      runSpacing: 2.5.h,
+      alignment: WrapAlignment.center,
+      spacing: 5.w,
+      runSpacing: 1.6.h,
       children: contactTiles,
     );
   }
@@ -128,27 +130,36 @@ class _ContactTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 26.w,
-        padding: EdgeInsets.symmetric(vertical: 2.3.h),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark ? Colors.white24 : Colors.grey[300]!,
-            width: 1.2,
-          ),
-        ),
+      child: SizedBox(
+        width: 22.w,
         child: Column(
           children: [
-            Icon(icon, size: 24.sp, color: isDark ? Colors.white70 : color),
-            verticalSpace(height: 1.2.h),
+            Container(
+              width: 13.w,
+              height: 13.w,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: isDark ? 0.22 : 0.14),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon,
+                  size: 19.sp,
+                  color: isDark ? Colors.white.withValues(alpha: .9) : color),
+            ),
+            verticalSpace(height: 0.8.h),
             Text(
               label,
-              style: AppStyles.regularTextStyle(context).copyWith(fontSize: 16.sp),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 13.2.sp,
+                color: onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

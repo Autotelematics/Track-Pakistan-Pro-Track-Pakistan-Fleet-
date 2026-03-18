@@ -26,44 +26,59 @@ class GroupFilterItem extends StatelessWidget {
 
     final bool isSelected =
         (title == 'All' && selectedId == null) ||
-            (currentId != null && selectedId == currentId);
+        (currentId != null && selectedId == currentId);
 
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         provider.setGroupFilter(currentId, title);
         final grp = Provider.of<GetDeviceGroupProvider>(context, listen: false);
         provider.updateGroupModel(grp.model);
       },
-      child: Row(
-        children: [
-          Container(
-            height: 2.h,
-            width: 2.h,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected
-                    ? ConstantColor.primaryColor
-                    : Colors.grey.shade500,
-                width: isSelected ? 6 : 1.6,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(horizontal: 3.1.w, vertical: 1.15.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? ConstantColor.primaryColor.withOpacity(.09)
+              : Colors.transparent,
+          border: Border.all(
+            color: isSelected
+                ? ConstantColor.primaryColor.withOpacity(.45)
+                : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 2.05.h,
+              width: 2.05.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? ConstantColor.primaryColor
+                      : Colors.grey.shade500,
+                  width: isSelected ? 5 : 1.4,
+                ),
               ),
             ),
-          ),
-
-          horizontalSpace(width: 4.w),
-          Expanded(
-            child: Text(
-              title,
-              style: AppStyles.groupItem(context).copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected
-                    ? ConstantColor.primaryColor
-                    : AppColors.textBlack.withOpacity(0.75),
-                fontSize: 15.5.sp,
+            horizontalSpace(width: 3.2.w),
+            Expanded(
+              child: Text(
+                title,
+                style: AppStyles.groupItem(context).copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? ConstantColor.primaryColor
+                      : AppColors.textBlack.withOpacity(0.78),
+                  fontSize: 14.8.sp,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

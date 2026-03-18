@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -6,10 +5,6 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
-import 'package:trackerapp/widgets/custom_button.dart';
-import 'package:trackerapp/widgets/get_horizontal_space.dart';
-
-import 'group_filter_item.dart';
 
 class FilterButton extends StatelessWidget {
   final Color onSurface;
@@ -25,152 +20,169 @@ class FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
-        return GestureDetector(
+        final hasActiveFilter = provider.selectedGroupId != null;
+        return InkWell(
+          borderRadius: BorderRadius.circular(14),
           onTap: () {
-            _showFilterSheet(context, primary, onSurface);
-            if (provider.isFilterOpen) {
-              final groupProvider =
-                  Provider.of<GetDeviceGroupProvider>(context, listen: false);
-              groupProvider.fetchDeviceGroups(
-                  isRefresh: true, context: context);
-            } else {
-              if (kDebugMode) {
-                print("Filter closed → No API call");
-              }
-            }
+            _showFilterMenu(context, primary, onSurface);
           },
           child: Container(
             height: 5.h,
-            width: 5.h,
+            width: 13.w,
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: hasActiveFilter
+                  ? primary.withOpacity(0.14)
+                  : primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: hasActiveFilter
+                    ? primary.withOpacity(0.6)
+                    : onSurface.withOpacity(0.15),
+              ),
             ),
-            child: Image.asset("assets/images/filter.png"),
+            child: Stack(
+              children: [
+                Center(
+                  child: Icon(
+                    Icons.tune_rounded,
+                    size: 18.5.sp,
+                    color: hasActiveFilter ? primary : onSurface,
+                  ),
+                ),
+                if (hasActiveFilter)
+                  Positioned(
+                    right: 2.4.w,
+                    top: 1.1.h,
+                    child: Container(
+                      width: .9.h,
+                      height: .9.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.1),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  void _showFilterSheet(
+  Future<void> _showFilterMenu(
       BuildContext context, Color primary, Color onSurface) async {
     final provider =
         Provider.of<GetDevicesListProvider>(context, listen: false);
     final groupProvider =
         Provider.of<GetDeviceGroupProvider>(context, listen: false);
-    groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
+    await groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
 
-    await showModalBottomSheet(
+    if (!context.mounted) return;
+
+    final button = context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (button == null || overlay == null) return;
+
+    final buttonTopLeft = button.localToGlobal(Offset.zero, ancestor: overlay);
+    final buttonRect = Rect.fromLTWH(
+      buttonTopLeft.dx,
+      buttonTopLeft.dy,
+      button.size.width,
+      button.size.height,
+    );
+
+    final selected = await showMenu<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(top: 1.h),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(22)),
-              border: Border.all(color: primary, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: primary.withOpacity(0.35),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                  offset: const Offset(0, -3),
-                ),
-              ],
-            ),
-            child: DraggableScrollableSheet(
-              expand: false,
-              builder: (_, controller) {
-                return Consumer<GetDeviceGroupProvider>(
-                  builder: (context, groupProvider, child) {
-                    return Padding(
-                      padding: EdgeInsets.only(left: 5.w,right: 5.w,top:1.h ,bottom: 3.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Filter",
-                                style:AppStyles.appTitleTextStyle.copyWith(
-                                  fontSize: 18.sp
-                                )
-                              ),
-                              IconButton(
-                                onPressed: () => Navigator.pop(context),
-                                icon: const Icon(Icons.close, size: 26),
-                              ),
-                            ],
-                          ),
-                          if (groupProvider.isLoading)
-                            const Center(child: CircularProgressIndicator())
-                          else
-                            Expanded(
-                              child: ListView(
-                                padding: EdgeInsets.zero,
-                                controller: controller,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 3.h,top: 1.h),
-                                    child: GroupFilterItem(
-                                      title: 'All',
-                                      groupId: null,
-                                    ),
-                                  ),
-                                  ...groupProvider.groups.map(
-                                    (group) => Padding(
-                                      padding: EdgeInsets.only(bottom: 3.h),
-                                      child: GroupFilterItem(
-                                        title: group.title,
-                                        groupId: group.id,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomButton(
-                                  text: "Reset",
-                                  textColor: AppColors.textBlack,
-                                  onPressed: () {
-                                    provider.setGroupFilter(null, 'All');
-                                    Navigator.pop(context);
-                                  },
-                                  backgroundColor: Colors.transparent,
-                                ),
-                              ),
-                              horizontalSpace(width: 6.w),
-                              Expanded(
-                                child: CustomButton(
-                                  height: 4.5.h,
-                                  text: "Apply",
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  backgroundColor: AppColors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
+      elevation: 10,
+      color: Theme.of(context).cardColor,
+      constraints: BoxConstraints(
+        minWidth: 44.w,
+        maxWidth: 58.w,
+        maxHeight: 38.h,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: onSurface.withOpacity(.14)),
+      ),
+      position: RelativeRect.fromLTRB(
+        buttonRect.left,
+        buttonRect.bottom + .55.h,
+        overlay.size.width - buttonRect.right,
+        overlay.size.height - (buttonRect.bottom + .55.h),
+      ),
+      items: [
+        PopupMenuItem<String>(
+          value: '__all__',
+          child: _menuRow(
+            context,
+            label: 'All Groups',
+            isSelected: provider.selectedGroupId == null,
+            onSurface: onSurface,
+            primary: primary,
+          ),
+        ),
+        ...groupProvider.groups.map(
+          (group) => PopupMenuItem<String>(
+            value: group.id.toString(),
+            child: _menuRow(
+              context,
+              label: group.title,
+              isSelected: provider.selectedGroupId == group.id.toString(),
+              onSurface: onSurface,
+              primary: primary,
             ),
           ),
-        );
-      },
+        ),
+      ],
+    );
+
+    if (!context.mounted || selected == null) return;
+
+    if (selected == '__all__') {
+      provider.setGroupFilter(null, 'All');
+    } else {
+      var selectedTitle = 'Group';
+      for (final group in groupProvider.groups) {
+        if (group.id.toString() == selected) {
+          selectedTitle = group.title;
+          break;
+        }
+      }
+      provider.setGroupFilter(selected, selectedTitle);
+    }
+    provider.updateGroupModel(groupProvider.model);
+  }
+
+  Widget _menuRow(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required Color onSurface,
+    required Color primary,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+          size: 17.sp,
+          color: isSelected ? primary : onSurface.withOpacity(.42),
+        ),
+        SizedBox(width: 2.2.w),
+        Expanded(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              color: isSelected ? primary : onSurface.withOpacity(.82),
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,7 +1,5 @@
-
-
-
 class GetDashboardModel {
+  final String userEmail;
   final StatusCounts statusCounts;
   final AlertsSummary alertsSummary;
   final List<MaintenanceItem> maintenance;
@@ -10,6 +8,7 @@ class GetDashboardModel {
   final String fuelPriceLastUpdated;
 
   GetDashboardModel({
+    required this.userEmail,
     required this.statusCounts,
     required this.alertsSummary,
     required this.maintenance,
@@ -20,17 +19,24 @@ class GetDashboardModel {
 
   factory GetDashboardModel.fromJson(Map<String, dynamic> json) {
     return GetDashboardModel(
+      userEmail: (json["user_email"] ?? "").toString(),
       statusCounts:
-      StatusCounts.fromJson(json["status_counts"] ?? <String, dynamic>{}),
+          StatusCounts.fromJson(json["status_counts"] ?? <String, dynamic>{}),
       alertsSummary:
-      AlertsSummary.fromJson(json["alerts_summary"] ?? <String, dynamic>{}),
+          AlertsSummary.fromJson(json["alerts_summary"] ?? <String, dynamic>{}),
       maintenance: (json["maintenance"] as List? ?? [])
           .map((e) => MaintenanceItem.fromJson(e ?? {}))
           .toList(),
-      petrolPrice: (json["petrol_price"] ?? 0).toDouble(),
-      dieselPrice: (json["diesel_price"] ?? 0).toDouble(),
-      fuelPriceLastUpdated: json["fuel_price_last_updated"] ?? "",
+      petrolPrice: _toDouble(json["petrol_price"]),
+      dieselPrice: _toDouble(json["diesel_price"]),
+      fuelPriceLastUpdated: (json["fuel_price_last_updated"] ?? "").toString(),
     );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
   }
 }
 
@@ -75,6 +81,8 @@ class AlertsSummary {
   final int offlineDuration;
   final int overSpeed;
   final int overParking;
+  final int zoneIn;
+  final int zoneOut;
 
   AlertsSummary({
     required this.total,
@@ -85,24 +93,37 @@ class AlertsSummary {
     required this.offlineDuration,
     required this.overSpeed,
     required this.overParking,
+    required this.zoneIn,
+    required this.zoneOut,
   });
 
   factory AlertsSummary.fromJson(Map<String, dynamic> json) {
     return AlertsSummary(
-      total: json["total"] ?? 0,
-      custom: json["Custom"] ?? 0,
-      idleDuration: json["Idle Duration"] ?? 0,
-      ignitionDuration: json["Ignition duration"] ?? 0,
-      moveStart: json["Move Start"] ?? 0,
-      offlineDuration: json["Offline duration"] ?? 0,
-      overSpeed: json["Over Speed"] ?? 0,
-      overParking: json["Over Parking"] ?? 0,
+      total: _toInt(json["total"]),
+      custom: _toInt(json["Custom"]),
+      idleDuration: _toInt(json["Idle Duration"]),
+      ignitionDuration: _toInt(json["Ignition duration"]),
+      moveStart: _toInt(json["Move Start"]),
+      offlineDuration: _toInt(json["Offline duration"]),
+      overSpeed: _toInt(json["Over Speed"]),
+      overParking: _toInt(json["Over Parking"]),
+      zoneIn: _toInt(json["Zone in"]),
+      zoneOut: _toInt(json["Zone out"]),
     );
+  }
+
+  static int _toInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString()) ?? 0;
   }
 }
 
 class MaintenanceItem {
+  final int deviceId;
   final String device;
+  final int serviceId;
   final String name;
   final double interval;
   final String lastService;
@@ -111,9 +132,21 @@ class MaintenanceItem {
   final double left;
   final String status;
   final String description;
+  final String expirationBy;
+  final String type;
+  final String typeLabel;
+  final String unit;
+  final String expiresDate;
+  final String remindDate;
+  final int? daysTotal;
+  final int? daysElapsed;
+  final int? daysLeft;
+  final int expired;
 
   MaintenanceItem({
+    required this.deviceId,
     required this.device,
+    required this.serviceId,
     required this.name,
     required this.interval,
     required this.lastService,
@@ -122,19 +155,62 @@ class MaintenanceItem {
     required this.left,
     required this.status,
     required this.description,
+    required this.expirationBy,
+    required this.type,
+    required this.typeLabel,
+    required this.unit,
+    required this.expiresDate,
+    required this.remindDate,
+    required this.daysTotal,
+    required this.daysElapsed,
+    required this.daysLeft,
+    required this.expired,
   });
 
   factory MaintenanceItem.fromJson(Map<String, dynamic> json) {
     return MaintenanceItem(
-      device: json["device"] ?? "",
-      name: json["name"] ?? "",
-      interval: (json["interval"] ?? 0).toDouble(),
-      lastService: json["last_service"] ?? "",
-      current: (json["current"] ?? 0).toDouble(),
-      percent: (json["percent"] ?? 0).toDouble(),
-      left: (json["left"] ?? 0).toDouble(),
-      status: json["status"] ?? "",
-      description: json["description"] ?? "",
+      deviceId: _toInt(json["device_id"]),
+      device: (json["device"] ?? "").toString(),
+      serviceId: _toInt(json["service_id"]),
+      name: (json["name"] ?? "").toString(),
+      interval: _toDouble(json["interval"]),
+      lastService: (json["last_service"] ?? "").toString(),
+      current: _toDouble(json["current"]),
+      percent: _toDouble(json["percent"]),
+      left: _toDouble(json["left"]),
+      status: (json["status"] ?? "").toString(),
+      description: (json["description"] ?? "").toString(),
+      expirationBy: (json["expiration_by"] ?? "").toString(),
+      type: (json["type"] ?? "").toString(),
+      typeLabel: (json["type_label"] ?? "").toString(),
+      unit: (json["unit"] ?? "").toString(),
+      expiresDate: (json["expires_date"] ?? "").toString(),
+      remindDate: (json["remind_date"] ?? "").toString(),
+      daysTotal: _toNullableInt(json["days_total"]),
+      daysElapsed: _toNullableInt(json["days_elapsed"]),
+      daysLeft: _toNullableInt(json["days_left"]),
+      expired: _toInt(json["expired"]),
     );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static int _toInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString()) ?? 0;
+  }
+
+  static int? _toNullableInt(dynamic value) {
+    if (value == null) return null;
+    final parsed = _toInt(value);
+    if (value.toString().trim().isEmpty) return null;
+    return parsed;
   }
 }

@@ -32,7 +32,15 @@ class AuthProvider extends ChangeNotifier {
                     MotionBottomNavigationBar()));
       }
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      final message = e.toString().replaceFirst("Exception: ", "").trim();
+      final isMobileAccessDenied =
+          message == AuthRepository.mobileAccessDeniedMessage;
+      AppSnackBar.error(
+        message: message,
+        duration: isMobileAccessDenied
+            ? const Duration(seconds: 7)
+            : const Duration(seconds: 2),
+      );
     }
     isLoading = false;
     notifyListeners();

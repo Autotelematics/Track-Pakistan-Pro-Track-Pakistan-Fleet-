@@ -4,12 +4,25 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/alert_settings_provider.dart';
-import 'package:trackerapp/utils/top_curve_bezier.dart';
-import 'package:trackerapp/widgets/get_horizontal_space.dart';
-import 'package:trackerapp/widgets/get_vertical_space.dart';
+import 'package:trackerapp/white_labeling/colors.dart';
+import 'package:trackerapp/widgets/custom_button.dart';
 
-class AlertSettingsScreen extends StatelessWidget {
+class AlertSettingsScreen extends StatefulWidget {
   const AlertSettingsScreen({super.key});
+
+  @override
+  State<AlertSettingsScreen> createState() => _AlertSettingsScreenState();
+}
+
+class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<AlertSettingsProvider>().fetchUserAlertSettings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,113 +31,80 @@ class AlertSettingsScreen extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? LinearGradient(colors: [theme.cardColor, theme.cardColor])
-              :AppColors.mainGradient
-        ),
-        child: Column(
-          children: [
-            verticalSpace(height: 7.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5.w),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back, color:isDark? onSurface:AppColors.white,),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Flexible(child: Container()),
-                  Text(
-                    "Alert Settings",
-                    style: AppStyles.boldTextStyle(context).copyWith(
-                      color:isDark? onSurface:AppColors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  horizontalSpace(width: 10.w),
-                  Flexible(child: Container()),
-
-                ],
-              ),
-            ),
-
-            verticalSpace(height: 4.h),
-
-            /// MAIN BODY
-            Expanded(
-              child: ClipPath(
-                clipper: TopCurveClipper(),
-                child: Container(
-
-                  decoration: BoxDecoration(
-                    gradient: isDark
-                        ? LinearGradient(
-                      colors: [
-                       theme.scaffoldBackgroundColor,
-                       theme.scaffoldBackgroundColor,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    )
-                        : LinearGradient(
-                      colors: [
-                        Colors.white,
-                        Colors.grey.shade100,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 2.h),
-                  child: Consumer<AlertSettingsProvider>(
-                    builder: (context, provider, child) {
-                      return ListView(
-                        padding: EdgeInsets.only(top: 3.h),
-                        children: [
-                          _tile(context, "Excess Parking", provider.excessParking, () => provider.toggle("excessParking")),
-                          _tile(context, "Offline Duration", provider.offlineDuration, () => provider.toggle("offlineDuration")),
-                          _tile(context, "Ignition ON", provider.ignitionOn, () => provider.toggle("ignitionOn")),
-                          _tile(context, "Ignition OFF", provider.ignitionOff, () => provider.toggle("ignitionOff")),
-                          _tile(context, "Fence Exit", provider.fenceExit, () => provider.toggle("fenceExit")),
-                          _tile(context, "Overspeed", provider.overspeed, () => provider.toggle("overspeed")),
-
-                          if (provider.overspeed) ...[
-                            SizedBox(height: 1.h),
-                            Text(
-                              "Speed Limit: ${provider.overspeedLimit.toInt()} km/h",
-                              style: AppStyles.regularTextStyle(context)
-                                  .copyWith(color: onSurface),
-                            ),
-                            Slider(
-                              value: provider.overspeedLimit,
-                              min: 0,
-                              max: 200,
-                              onChanged: provider.updateOverspeed,
-                            ),
-                            SizedBox(height: 2.h),
-                          ],
-
-                          _tile(context, "Stop Duration", provider.stopDuration, () => provider.toggle("stopDuration")),
-                          _tile(context, "Power Disconnected", provider.powerDisconnected, () => provider.toggle("powerDisconnected")),
-                          _tile(context, "Idle Duration", provider.idleDuration, () => provider.toggle("idleDuration")),
-                        ],
-                      );
-                    },
-                  ),
+      appBar: AppBar(
+        title: const Text("Alert Setting"),
+        elevation: 0,
+        backgroundColor:
+            isDark ? theme.scaffoldBackgroundColor : AppColors.blueCyan,
+      ),
+      body: Consumer<AlertSettingsProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return Center(
+              child:
+                  CircularProgressIndicator(color: ConstantColor.primaryColor),
+            );
+          }
+          if (provider.errorMessage != null) {
+            return Center(
+              child: Text(
+                provider.errorMessage!,
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  color: onSurface.withValues(alpha: .75),
                 ),
               ),
-            ),
-          ],
+            );
+          }
+          if (provider.alertItems.isEmpty) {
+            return Center(
+              child: Text(
+                "No alerts found",
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  color: onSurface.withValues(alpha: .75),
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 10.h),
+            itemCount: provider.alertItems.length,
+            itemBuilder: (context, index) {
+              final item = provider.alertItems[index];
+              return _tile(
+                context,
+                item.name,
+                item.assigned,
+                () => provider.toggleAlertItem(index),
+              );
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(4.w, 0, 4.w, 1.2.h),
+          child: Consumer<AlertSettingsProvider>(
+            builder: (context, provider, child) {
+              return provider.isSyncing
+                  ? const Center(child: CircularProgressIndicator())
+                  : CustomButton(
+                      text: "Save",
+                      onPressed: () async {
+                        final ok = await provider.syncUserAlertSettings();
+                        if (!mounted) return;
+                        if (ok) Navigator.of(this.context).pop();
+                      },
+                    );
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _tile(BuildContext context, String title, bool value, VoidCallback onTap) {
+  Widget _tile(
+      BuildContext context, String title, bool value, VoidCallback onTap) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -138,19 +118,19 @@ class AlertSettingsScreen extends StatelessWidget {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: .04),
               blurRadius: 4,
               offset: const Offset(0, 2),
             )
         ],
       ),
       child: ListTile(
+        onTap: onTap,
         title: Text(
           title,
-          style: AppStyles.regularTextStyle(context)
-              .copyWith(color: onSurface),
+          style: AppStyles.regularTextStyle(context).copyWith(color: onSurface),
         ),
-        trailing: Switch(
+        trailing: Checkbox(
           value: value,
           activeColor: theme.primaryColor,
           onChanged: (_) => onTap(),

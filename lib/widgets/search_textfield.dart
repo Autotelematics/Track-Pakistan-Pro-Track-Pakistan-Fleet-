@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:trackerapp/widgets/custom_text_field.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
-class SearchAndFilterBar extends StatelessWidget {
+class SearchAndFilterBar extends StatefulWidget {
   final List<String> alertTypes;
   final Map<String, int> alertCounts;
   final List<String> vehicles;
@@ -16,9 +15,14 @@ class SearchAndFilterBar extends StatelessWidget {
   final Function(String?)? onVehicleChanged;
   final Function(String?)? onAlertTypeChanged;
   final VoidCallback onSearchPressed;
+  final ValueChanged<String>? onPresetSelected;
+  final String? selectedPreset;
+  final VoidCallback? onFromDateTap;
+  final VoidCallback? onToDateTap;
+  final String? fromDateLabel;
+  final String? toDateLabel;
   final TextEditingController? searchController;
   final VoidCallback? onFilterReset;
-
 
   const SearchAndFilterBar({
     super.key,
@@ -31,107 +35,333 @@ class SearchAndFilterBar extends StatelessWidget {
     required this.onVehicleChanged,
     required this.onAlertTypeChanged,
     required this.onSearchPressed,
+    this.onPresetSelected,
+    this.selectedPreset,
+    this.onFromDateTap,
+    this.onToDateTap,
+    this.fromDateLabel,
+    this.toDateLabel,
     this.onFilterReset, // ← add this
   });
 
+  @override
+  State<SearchAndFilterBar> createState() => _SearchAndFilterBarState();
+}
+
+class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
+  bool _isCollapsed = false;
+
+  void _toggleCollapsed() {
+    setState(() {
+      _isCollapsed = !_isCollapsed;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final backgroundColor = isDark
-        ? Colors.grey.shade900.withOpacity(0.9)
-        : Colors.white.withOpacity(0.95);
+        ? Colors.grey.shade900.withValues(alpha: 0.9)
+        : Colors.white.withValues(alpha: 0.95);
     final iconColor = AppColors.red;
+    final panelColor = isDark
+        ? Colors.black.withValues(alpha: 0.22)
+        : Colors.white.withValues(alpha: 0.18);
+    final panelBorder = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.white.withValues(alpha: 0.45);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 3.w),
-      child: Column(
-        children: [
-          // Search Field
-          Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(16.px),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark ? Colors.black26 : Colors.grey.shade500,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: CustomTextField(
-              controller: searchController,
-              labelText: "Search Notification",
-              borderRadius: 15.px,
-              fillColor: Colors.transparent,
-              suffixIcon: Icons.search_outlined,
-              onSuffixTap: onSearchPressed,
-              onSubmitted: (_) => onSearchPressed(),
-            ),
-          ),
-
-          verticalSpace(height: 1.5.h),
-
-          // Filters Row
-          Row(
-            children: [
-              // Vehicle Dropdown
-              Expanded(
-                child: _DropdownBox(
-                  hint: "Vehicle",
-                  items: vehicles,
-                  selectedValue: selectedVehicle,
-                  icon: Icons.directions_car_rounded,
-                  onChanged: onVehicleChanged,
-                  iconColor: iconColor,
-                  backgroundColor: backgroundColor,
-                ),
-              ),
-
-              SizedBox(width: 1.8.w),
-
-              // Alert Type Dropdown with Count
-              Expanded(
-                child: _DropdownBoxWithCount(
-                  hint: "Type",
-                  items: alertTypes,
-                  counts: alertCounts,
-                  selectedValue: selectedAlertType,
-                  icon: Icons.notifications_active_outlined,
-                  onChanged: onAlertTypeChanged,
-                  iconColor: iconColor,
-                  backgroundColor: backgroundColor,
-                ),
-              ),
-
-              horizontalSpace(width: 1.8.w),
-
-              // Search Button
-              // Search Button (Cross Icon)
-              SizedBox(
-                width: 10.w,
-                height: 10.w,
-                child: GestureDetector(
-                  onTap: () {
-                    // Reset filters only
-                    if (onFilterReset != null) {
-                      onFilterReset!();
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? iconColor.withOpacity(0.15) : AppColors.white,
-                      borderRadius: BorderRadius.circular(10.px),
-                    ),
-                    child: Icon(Icons.cancel, color: iconColor, size: 19.sp),
-                  ),
-                ),
-              ),
-
-            ],
+    return Container(
+      padding: EdgeInsets.fromLTRB(3.2.w, 1.4.h, 3.2.w, 1.4.h),
+      decoration: BoxDecoration(
+        color: panelColor,
+        borderRadius: BorderRadius.circular(16.px),
+        border: Border.all(color: panelBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.1),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: _toggleCollapsed,
+            borderRadius: BorderRadius.circular(10.px),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: .1.h),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    color: Colors.white.withValues(alpha: .92),
+                    size: 18.sp,
+                  ),
+                  horizontalSpace(width: 1.6.w),
+                  Text(
+                    'Notification Filters',
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      fontSize: 14.sp,
+                      color: Colors.white.withValues(alpha: .96),
+                    ),
+                  ),
+                  horizontalSpace(width: 1.2.w),
+                  Icon(
+                    _isCollapsed
+                        ? Icons.keyboard_arrow_down_rounded
+                        : Icons.keyboard_arrow_up_rounded,
+                    color: Colors.white.withValues(alpha: .86),
+                    size: 18.sp,
+                  ),
+                  const Spacer(),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10.px),
+                      onTap: widget.onFilterReset,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 2.w, vertical: .3.h),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.close_rounded,
+                              color: Colors.white.withValues(alpha: .88),
+                              size: 16.5.sp,
+                            ),
+                            horizontalSpace(width: .7.w),
+                            Text(
+                              'Reset',
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: 13.5.sp,
+                                color: Colors.white.withValues(alpha: .9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            child: _isCollapsed
+                ? const SizedBox.shrink()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      verticalSpace(height: 1.1.h),
+                      Text(
+                        'Search By Vehicle And Type',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.sp,
+                          color: Colors.white.withValues(alpha: .82),
+                        ),
+                      ),
+                      verticalSpace(height: .55.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DropdownBox(
+                              hint: "Vehicle",
+                              items: widget.vehicles,
+                              selectedValue: widget.selectedVehicle,
+                              icon: Icons.directions_car_rounded,
+                              onChanged: widget.onVehicleChanged,
+                              iconColor: iconColor,
+                              backgroundColor: backgroundColor,
+                            ),
+                          ),
+                          SizedBox(width: 1.8.w),
+                          Expanded(
+                            child: _DropdownBoxWithCount(
+                              hint: "Type",
+                              items: widget.alertTypes,
+                              counts: widget.alertCounts,
+                              selectedValue: widget.selectedAlertType,
+                              icon: Icons.notifications_active_outlined,
+                              onChanged: widget.onAlertTypeChanged,
+                              iconColor: iconColor,
+                              backgroundColor: backgroundColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      verticalSpace(height: 1.0.h),
+                      Text(
+                        'Search By Date Range',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.sp,
+                          color: Colors.white.withValues(alpha: .82),
+                        ),
+                      ),
+                      verticalSpace(height: .55.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DateTile(
+                              label: widget.fromDateLabel ?? 'From Date',
+                              icon: Icons.event,
+                              iconColor: iconColor,
+                              backgroundColor: backgroundColor,
+                              onTap: widget.onFromDateTap,
+                              isDark: isDark,
+                            ),
+                          ),
+                          SizedBox(width: 1.8.w),
+                          Expanded(
+                            child: _DateTile(
+                              label: widget.toDateLabel ?? 'To Date',
+                              icon: Icons.event_available,
+                              iconColor: iconColor,
+                              backgroundColor: backgroundColor,
+                              onTap: widget.onToDateTap,
+                              isDark: isDark,
+                            ),
+                          ),
+                          SizedBox(width: 1.8.w),
+                          _QuickFilterButton(
+                            selectedPreset: widget.selectedPreset,
+                            onPresetSelected: widget.onPresetSelected,
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickFilterButton extends StatelessWidget {
+  final String? selectedPreset;
+  final ValueChanged<String>? onPresetSelected;
+  final bool isDark;
+
+  const _QuickFilterButton({
+    required this.selectedPreset,
+    required this.onPresetSelected,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: (value) => onPresetSelected?.call(value),
+      itemBuilder: (context) => const [
+        PopupMenuItem<String>(value: 'Today', child: Text('Today')),
+        PopupMenuItem<String>(value: 'Yesterday', child: Text('Yesterday')),
+        PopupMenuItem<String>(value: '7 Days', child: Text('7 Days')),
+        PopupMenuItem<String>(value: '30 Days', child: Text('30 Days')),
+      ],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.px)),
+      child: Container(
+        width: 12.w,
+        height: 4.8.h,
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.grey.shade900.withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(12.px),
+          border: Border.all(
+            color: selectedPreset == null
+                ? (isDark
+                    ? Colors.white.withValues(alpha: .14)
+                    : Colors.black.withValues(alpha: .08))
+                : AppColors.red.withValues(alpha: .75),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black26 : Colors.grey.shade500,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(
+            Icons.filter_alt_rounded,
+            size: 18.sp,
+            color: selectedPreset == null
+                ? AppColors.red.withValues(alpha: .8)
+                : AppColors.red,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+  final Color backgroundColor;
+  final VoidCallback? onTap;
+  final bool isDark;
+
+  const _DateTile({
+    required this.label,
+    required this.icon,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.onTap,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.px),
+      child: Container(
+        height: 4.8.h,
+        padding: EdgeInsets.symmetric(horizontal: 3.w),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12.px),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black26 : Colors.grey.shade500,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 17.sp),
+            horizontalSpace(width: 1.2.w),
+            Expanded(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: AppStyles.lightTextStyle(context).copyWith(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                  fontSize: 13.2.sp,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_drop_down_rounded,
+              color: isDark ? Colors.white54 : Colors.black54,
+              size: 20.sp,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -184,26 +414,44 @@ class _DropdownBox extends StatelessWidget {
                 hint,
                 style: AppStyles.lightTextStyle(context).copyWith(
                   color: isDark ? Colors.white70 : Colors.black87,
+                  fontSize: 14.sp,
                 ),
               ),
             ],
           ),
           items: items
               .map((item) => DropdownMenuItem<String>(
-            value: item,
-            child: Text(
-              item,
-              overflow: TextOverflow.ellipsis,
-              style: AppStyles.lightTextStyle(context).copyWith(
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-          ))
+                    value: item,
+                    child: Text(
+                      item,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppStyles.lightTextStyle(context).copyWith(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ))
+              .toList(),
+          selectedItemBuilder: (context) => items
+              .map(
+                (item) => Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    item,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.lightTextStyle(context).copyWith(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              )
               .toList(),
           onChanged: onChanged,
           buttonStyleData: ButtonStyleData(height: 4.5.h),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
+            offset: const Offset(0, -4),
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(12.px),
@@ -276,40 +524,70 @@ class _DropdownBoxWithCount extends StatelessWidget {
                 hint,
                 style: AppStyles.lightTextStyle(context).copyWith(
                   color: isDark ? Colors.white70 : Colors.black87,
+                  fontSize: 14.sp,
                 ),
               ),
             ],
           ),
           items: items
               .map((item) => DropdownMenuItem<String>(
-            value: item,
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: item,
-                    style: AppStyles.lightTextStyle(context).copyWith(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontWeight: FontWeight.w500,
+                    value: item,
+                    child: RichText(
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: item,
+                            style: AppStyles.lightTextStyle(context).copyWith(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                          TextSpan(
+                            text: " (${counts[item] ?? 0})",
+                            style: AppStyles.lightTextStyle(context).copyWith(
+                              color: item == 'All' ? Colors.blue : Colors.green,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ))
+              .toList(),
+          selectedItemBuilder: (context) => items
+              .map(
+                (item) => Align(
+                  alignment: Alignment.centerLeft,
+                  child: RichText(
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: item,
+                          style: AppStyles.lightTextStyle(context).copyWith(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        TextSpan(
+                          text: " (${counts[item] ?? 0})",
+                          style: AppStyles.lightTextStyle(context).copyWith(
+                            color: item == 'All' ? Colors.blue : Colors.green,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  TextSpan(
-                    text: " (${counts[item] ?? 0})",
-                    style: TextStyle(
-                      color: item == 'All' ? Colors.blue : Colors.green,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ))
+                ),
+              )
               .toList(),
           onChanged: onChanged,
           buttonStyleData: ButtonStyleData(height: 4.5.h),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
+            offset: const Offset(0, -4),
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(12.px),

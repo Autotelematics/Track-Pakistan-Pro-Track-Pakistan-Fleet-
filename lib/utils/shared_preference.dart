@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
+
 class MySharedPreferences {
   static late SharedPreferences _preferences;
 
@@ -43,6 +44,7 @@ class MySharedPreferences {
   static removeKey(String key) {
     return _preferences.remove(key);
   }
+
   static Future<bool> setStringList(String key, List<String> value) {
     return _preferences.setStringList(key, value);
   }
@@ -50,10 +52,24 @@ class MySharedPreferences {
   static List<String> getStringList(String key) {
     return _preferences.getStringList(key) ?? [];
   }
+
   static Future<void> logout() async {
     await _preferences.remove(isLoggedInKey);
     await _preferences.remove(authTokenKey);
-    await _preferences.clear();
+    await _preferences.remove(userIdKey);
+    await _preferences.remove(userNameKey);
+    await _preferences.remove(userEmailKey);
+    await _preferences.remove(userTypeKey);
+    await _preferences.remove(canChangePasswordKey);
+    await _preferences.remove(canSendCommandViewKey);
+    await _preferences.remove(latestFcmTokenKey);
+    await _preferences.remove(lastSyncedFcmTokenKey);
+    await _preferences.remove(lastSyncedFcmUserHashKey);
+    await _preferences.remove(isImpersonatingAsUserKey);
+    await _preferences.remove(adminOriginalAuthTokenKey);
+    await _preferences.remove(adminOriginalUserIdKey);
+    await _preferences.remove(adminOriginalUserEmailKey);
+    await _preferences.remove(adminOriginalUserTypeKey);
   }
 
   static Future<void> clearAll() async {

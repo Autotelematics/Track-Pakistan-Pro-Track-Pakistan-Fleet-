@@ -1,0 +1,2806 @@
+diff --git a/lib/.DS_Store b/lib/.DS_Store
+index 1caf055..a6c5311 100644
+Binary files a/lib/.DS_Store and b/lib/.DS_Store differ
+diff --git a/lib/data/repositories/dashboard_repository.dart b/lib/data/repositories/dashboard_repository.dart
+index cead43c..690e853 100644
+--- a/lib/data/repositories/dashboard_repository.dart
++++ b/lib/data/repositories/dashboard_repository.dart
+@@ -1,3 +1,4 @@
++import 'dart:async';
+ import 'dart:convert';
+ import 'dart:developer';
+ import 'package:flutter/material.dart';
+@@ -15,13 +16,18 @@ class DashboardRepository {
+         "${AppUrl.baseURL}${AppUrl.getDashboardEp}user_api_hash=$token");
+     final headers = {"Content-Type": "application/json"};
+     try {
+-      final response = await http.get(url, headers: headers);
++      final response = await http
++          .get(url, headers: headers)
++          .timeout(const Duration(seconds: 20));
+       if (response.statusCode == 200) {
+         return GetDashboardModel.fromJson(jsonDecode(response.body));
+       } else {
+         log('Error fetching business profiles: ${response.body}');
+         return null;
+       }
++    } on TimeoutException {
++      log('Timeout fetching dashboard data');
++      return null;
+     } catch (error) {
+       log('UnExpected Error fetching business profiles: ${error.toString()}');
+       return null;
+@@ -133,13 +139,18 @@ class DashboardRepository {
+         "${AppUrl.baseURL}${AppUrl.getDashboardHistoryEp}user_api_hash=$token");
+     final headers = {"Content-Type": "application/json"};
+     try {
+-      final response = await http.get(url, headers: headers);
++      final response = await http
++          .get(url, headers: headers)
++          .timeout(const Duration(seconds: 20));
+       if (response.statusCode == 200) {
+         return GetDashboardHistoryModel.fromJson(jsonDecode(response.body));
+       } else {
+         log('Error fetching business profiles: ${response.body}');
+         return null;
+       }
++    } on TimeoutException {
++      log('Timeout fetching dashboard history');
++      return null;
+     } catch (error) {
+       log('UnExpected Error fetching business profiles: ${error.toString()}');
+       return null;
+diff --git a/lib/providers/alerts_provider.dart b/lib/providers/alerts_provider.dart
+index 278e72c..e0ad823 100644
+--- a/lib/providers/alerts_provider.dart
++++ b/lib/providers/alerts_provider.dart
+@@ -21,6 +21,7 @@ class AlertsProvider with ChangeNotifier {
+   String? _deviceIdFilter;
+   String? _alertTypeFilter;
+   String? _searchQuery;
++  String? _pendingAlertTypeLabel;
+ 
+   // Selection
+   final Set<int> _selectedAlertIds = {};
+@@ -34,6 +35,8 @@ class AlertsProvider with ChangeNotifier {
+   int get totalPages => _totalPages;
+   Set<int> get selectedAlertIds => _selectedAlertIds;
+   bool get hasMore => _currentPage < _totalPages;
++  String? get alertTypeFilter => _alertTypeFilter;
++  String? get pendingAlertTypeLabel => _pendingAlertTypeLabel;
+ 
+   // Filtered items based on search query
+   List<Item> get filteredItems {
+@@ -77,6 +80,16 @@ class AlertsProvider with ChangeNotifier {
+     _alertTypeFilter = type == "All" ? null : type;
+   }
+ 
++  void setPendingAlertTypeLabel(String? label) {
++    _pendingAlertTypeLabel = label;
++    notifyListeners();
++  }
++
++  void clearPendingAlertTypeLabel() {
++    _pendingAlertTypeLabel = null;
++    notifyListeners();
++  }
++
+   void clearFilters() {
+     _deviceIdFilter = null;
+     _alertTypeFilter = null;
+@@ -209,4 +222,4 @@ class AlertsProvider with ChangeNotifier {
+     if (_isLoadMore || !hasMore || _isLoading) return;
+     await fetchAlerts(context: context);
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/lib/providers/dashboard_provider.dart b/lib/providers/dashboard_provider.dart
+index 4fa78e0..dabcd3e 100644
+--- a/lib/providers/dashboard_provider.dart
++++ b/lib/providers/dashboard_provider.dart
+@@ -1,7 +1,7 @@
+ import 'package:flutter/material.dart';
+ import 'package:trackerapp/data/models/dashboard_data.dart';
+-import 'package:trackerapp/data/models/get_dashboard_model.dart';
+ import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
++import 'package:trackerapp/data/models/get_dashboard_model.dart';
+ import 'package:trackerapp/data/repositories/dashboard_repository.dart';
+ import 'package:trackerapp/utils/app_snackbar.dart';
+ import 'package:trackerapp/utils/preference_keys.dart';
+@@ -34,32 +34,27 @@ class DashboardProvider with ChangeNotifier {
+ 
+   final token = MySharedPreferences.getString(authTokenKey);
+ 
+-  DashboardProvider()
+-  {
++  DashboardProvider() {
+     fetchData();
+   }
+ 
+-  void setSelectedStatusIndex(int index)
+-  {
++  void setSelectedStatusIndex(int index) {
+     _selectedStatusIndex = index;
+     notifyListeners();
+   }
+ 
+-  void clearSelection()
+-  {
++  void clearSelection() {
+     _selectedStatusIndex = -1;
+     notifyListeners();
+   }
+ 
+-  void setTouchedIndex(int index)
+-  {
++  void setTouchedIndex(int index) {
+     _touchedIndex = index;
+     notifyListeners();
+   }
+ 
+   // Fetch Dashboard main data
+-  Future<void> getDashboardProvider()
+-  async {
++  Future<void> getDashboardProvider() async {
+     if (_dashboardModel == null) {
+       _isLoading = true;
+       notifyListeners();
+@@ -85,8 +80,7 @@ class DashboardProvider with ChangeNotifier {
+   }
+ 
+   // Fetch Dashboard history data
+-  Future<void> getDashboardHistoryProvider()
+-  async {
++  Future<void> getDashboardHistoryProvider() async {
+     if (_dashboardHistoryModel != null) return;
+ 
+     _isLoading = true;
+@@ -111,8 +105,7 @@ class DashboardProvider with ChangeNotifier {
+   }
+ 
+   // Fetch Dashboard dummy data
+-  Future<void> fetchData()
+-  async {
++  Future<void> fetchData() async {
+     try {
+       _dashboardData = await _repository.fetchDashboardData();
+       _error = null;
+@@ -124,8 +117,7 @@ class DashboardProvider with ChangeNotifier {
+   }
+ 
+   // Get greeting based on time
+-  String getTimePeriod()
+-  {
++  String getTimePeriod() {
+     final hour = DateTime.now().hour;
+     if (hour >= 5 && hour < 12) return "Good Morning";
+     if (hour >= 12 && hour < 17) return "Good Afternoon";
+diff --git a/lib/view/.DS_Store b/lib/view/.DS_Store
+index c7fa339..6e6b39b 100644
+Binary files a/lib/view/.DS_Store and b/lib/view/.DS_Store differ
+diff --git a/lib/view/dashboard.dart b/lib/view/dashboard.dart
+index a21684b..0a27d7f 100644
+--- a/lib/view/dashboard.dart
++++ b/lib/view/dashboard.dart
+@@ -12,6 +12,7 @@ import 'package:trackerapp/widgets/dashboard_widgets/maintenance_card.dart';
+ import 'package:trackerapp/widgets/get_horizontal_space.dart';
+ import 'package:trackerapp/widgets/get_vertical_space.dart';
+ import 'package:trackerapp/widgets/vehicle_list_widgets/top_speed_card.dart';
++
+ class NewDashboard extends StatefulWidget {
+   const NewDashboard({super.key});
+   @override
+@@ -24,12 +25,10 @@ class _NewDashboardState extends State<NewDashboard> {
+   @override
+   void initState() {
+     super.initState();
+-    WidgetsBinding.instance.addPostFrameCallback((_) async {
++    WidgetsBinding.instance.addPostFrameCallback((_) {
+       _provider = Provider.of<DashboardProvider>(context, listen: false);
+-      await Future.wait([
+-        _provider.getDashboardProvider(),
+-        _provider.getDashboardHistoryProvider(),
+-      ]);
++      _provider.getDashboardProvider();
++      _provider.getDashboardHistoryProvider();
+     });
+   }
+ 
+@@ -39,13 +38,45 @@ class _NewDashboardState extends State<NewDashboard> {
+       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+       body: Consumer<DashboardProvider>(
+         builder: (context, provider, child) {
+-          if (provider.isLoading ||
+-              provider.dashboardData == null ||
+-              provider.dashboardModel == null ||
+-              provider.dashboardHistoryModel == null) {
++          if (provider.dashboardModel == null) {
++            if (provider.error != null) {
++              return Center(
++                child: Padding(
++                  padding: EdgeInsets.symmetric(horizontal: 6.w),
++                  child: Column(
++                    mainAxisAlignment: MainAxisAlignment.center,
++                    children: [
++                      Icon(
++                        Icons.error_outline,
++                        size: 40.sp,
++                        color: Theme.of(context).colorScheme.error,
++                      ),
++                      verticalSpace(height: 2.h),
++                      Text(
++                        'Error: ${provider.error}',
++                        textAlign: TextAlign.center,
++                        style: AppStyles.regularTextStyle(context).copyWith(
++                          fontSize: 16.sp,
++                          color: Theme.of(context).colorScheme.error,
++                        ),
++                      ),
++                      verticalSpace(height: 2.h),
++                      ElevatedButton(
++                        onPressed: () {
++                          provider.getDashboardProvider();
++                          provider.getDashboardHistoryProvider();
++                        },
++                        child: const Text('Retry'),
++                      ),
++                    ],
++                  ),
++                ),
++              );
++            }
+             return const _DashboardShimmer();
+           }
+-          if (provider.error != null) {
++
++          if (provider.error != null && provider.dashboardModel != null) {
+             return Center(
+               child: Padding(
+                 padding: EdgeInsets.symmetric(horizontal: 6.w),
+@@ -68,11 +99,9 @@ class _NewDashboardState extends State<NewDashboard> {
+                     ),
+                     verticalSpace(height: 2.h),
+                     ElevatedButton(
+-                      onPressed: () async {
+-                        await Future.wait([
+-                          provider.getDashboardProvider(),
+-                          provider.getDashboardHistoryProvider(),
+-                        ]);
++                      onPressed: () {
++                        provider.getDashboardProvider();
++                        provider.getDashboardHistoryProvider();
+                       },
+                       child: const Text('Retry'),
+                     ),
+@@ -84,7 +113,7 @@ class _NewDashboardState extends State<NewDashboard> {
+ 
+           // Success State
+           final data1 = provider.dashboardModel!;
+-          final historyData = provider.dashboardHistoryModel!;
++          final historyData = provider.dashboardHistoryModel;
+ 
+           return Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+@@ -99,17 +128,20 @@ class _NewDashboardState extends State<NewDashboard> {
+                   child: Column(
+                     children: [
+                       AlertGrid(data: data1),
+-                      verticalSpace(height: 2.h),
++                      verticalSpace(height: 1.h),
+                       MaintenanceCard(data: data1),
+-                      verticalSpace(height: 2.h),
++                      verticalSpace(height: 1.h),
+                       FuelPriceCard(data: data1),
+-                      verticalSpace(height: 2.h),
+-                      DistanceTravelledCard(historyData: historyData),
+-                      verticalSpace(height: 2.h),
+-                      TopSpeedCard(historyData: historyData),
+-                      verticalSpace(height: 2.h),
+-
+-
++                      verticalSpace(height: 1.h),
++                      if (historyData != null) ...[
++                        DistanceTravelledCard(historyData: historyData),
++                        verticalSpace(height: 1.h),
++                        TopSpeedCard(historyData: historyData),
++                        verticalSpace(height: 1.h),
++                      ] else ...[
++                        _HistoryCardsLoadingPlaceholder(),
++                        verticalSpace(height: 1.h),
++                      ],
+                     ],
+                   ),
+                 ),
+@@ -121,6 +153,37 @@ class _NewDashboardState extends State<NewDashboard> {
+     );
+   }
+ }
++
++class _HistoryCardsLoadingPlaceholder extends StatelessWidget {
++  const _HistoryCardsLoadingPlaceholder();
++
++  @override
++  Widget build(BuildContext context) {
++    final cardColor = Theme.of(context).cardColor;
++    return Column(
++      children: [
++        Container(
++          height: 20.h,
++          margin: EdgeInsets.symmetric(horizontal: 5.w),
++          decoration: BoxDecoration(
++            color: cardColor.withOpacity(0.6),
++            borderRadius: BorderRadius.circular(24),
++          ),
++        ),
++        verticalSpace(height: 2.h),
++        Container(
++          height: 17.h,
++          margin: EdgeInsets.symmetric(horizontal: 5.w),
++          decoration: BoxDecoration(
++            color: cardColor.withOpacity(0.6),
++            borderRadius: BorderRadius.circular(24),
++          ),
++        ),
++      ],
++    );
++  }
++}
++
+ class _DashboardShimmer extends StatelessWidget {
+   const _DashboardShimmer({super.key});
+ 
+@@ -210,7 +273,7 @@ class _DashboardShimmer extends StatelessWidget {
+                       childAspectRatio: 1.8,
+                       children: List.generate(
+                         6,
+-                            (index) => Container(
++                        (index) => Container(
+                           decoration: BoxDecoration(
+                             color: Colors.white,
+                             borderRadius: BorderRadius.circular(12),
+diff --git a/lib/view/notifications_screen.dart b/lib/view/notifications_screen.dart
+index f098d51..78cfac0 100644
+--- a/lib/view/notifications_screen.dart
++++ b/lib/view/notifications_screen.dart
+@@ -5,7 +5,8 @@ import 'package:shimmer/shimmer.dart';
+ import 'package:trackerapp/app/theme/app_colors.dart';
+ import 'package:trackerapp/app/theme/app_styles.dart';
+ import 'package:trackerapp/data/models/get_alerts_list_model.dart';
+-import 'package:trackerapp/data/models/get_device_list_model.dart' as DeviceModel;
++import 'package:trackerapp/data/models/get_device_list_model.dart'
++    as DeviceModel;
+ import 'package:trackerapp/providers/alerts_provider.dart';
+ import 'package:trackerapp/providers/vehicle_list_provider.dart';
+ import 'package:trackerapp/utils/top_curve_bezier.dart';
+@@ -26,6 +27,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+   final TextEditingController _searchController = TextEditingController();
+   int? _selectedDeviceId;
+   String? _selectedAlertType = 'All';
++  bool _isApplyingPendingAlertType = false;
+   late final GetDevicesListProvider _provider;
+ 
+   @override
+@@ -35,12 +37,14 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+     _provider = Provider.of<GetDevicesListProvider>(context, listen: false);
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+       _provider.init(context);
+-      final groupProvider = Provider.of<GetDeviceGroupProvider>(context, listen: false);
++      final groupProvider =
++          Provider.of<GetDeviceGroupProvider>(context, listen: false);
+       groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
+     });
+     // Initial fetch
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+-      final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
++      final alertsProvider =
++          Provider.of<AlertsProvider>(context, listen: false);
+       if (alertsProvider.model == null) {
+         alertsProvider.fetchAlerts(isRefresh: true, context: context);
+       }
+@@ -78,6 +82,76 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+     alertsProvider.fetchAlerts(isRefresh: true, context: context);
+   }
+ 
++  String _normalizeAlertType(String value) =>
++      value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
++
++  String? _resolveAlertType(String requested, List<String> availableTypes) {
++    if (availableTypes.contains(requested)) return requested;
++
++    final normalizedRequested = _normalizeAlertType(requested);
++    for (final type in availableTypes) {
++      if (_normalizeAlertType(type) == normalizedRequested) return type;
++    }
++
++    String token = '';
++    final lower = requested.toLowerCase();
++    if (lower.contains('speed')) token = 'speed';
++    if (lower.contains('idle')) token = 'idle';
++    if (lower.contains('ignition') || lower.contains('engine'))
++      token = 'ignition';
++    if (lower.contains('move') || lower.contains('motion')) token = 'move';
++    if (lower.contains('offline')) token = 'offline';
++    if (lower.contains('parking')) token = 'parking';
++
++    if (token.isNotEmpty) {
++      for (final type in availableTypes) {
++        if (_normalizeAlertType(type).contains(token)) return type;
++      }
++    }
++
++    for (final type in availableTypes) {
++      final normalizedType = _normalizeAlertType(type);
++      if (normalizedType.contains(normalizedRequested) ||
++          normalizedRequested.contains(normalizedType)) {
++        return type;
++      }
++    }
++
++    return null;
++  }
++
++  void _tryApplyPendingAlertType(
++    AlertsProvider alertsProvider,
++    List<String> alertTypes,
++  ) {
++    final pendingType = alertsProvider.pendingAlertTypeLabel;
++    if (pendingType == null ||
++        alertsProvider.model == null ||
++        alertTypes.isEmpty ||
++        _isApplyingPendingAlertType) {
++      return;
++    }
++
++    _isApplyingPendingAlertType = true;
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      if (!mounted) return;
++      final resolvedType =
++          _resolveAlertType(pendingType, alertTypes) ?? pendingType;
++
++      alertsProvider.clearPendingAlertTypeLabel();
++      setState(() {
++        _selectedDeviceId = null;
++        _selectedAlertType = resolvedType;
++      });
++      alertsProvider.setDeviceFilter(null);
++      alertsProvider
++          .setAlertTypeFilter(resolvedType == 'All' ? null : resolvedType);
++      alertsProvider.fetchAlerts(isRefresh: true, context: context);
++
++      _isApplyingPendingAlertType = false;
++    });
++  }
++
+   Widget _buildShimmerList() {
+     return Shimmer.fromColors(
+       baseColor: Colors.grey[300]!,
+@@ -92,7 +166,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+             borderRadius: BorderRadius.circular(12),
+           ),
+           child: ListTile(
+-            leading: const CircleAvatar(radius: 20, backgroundColor: Colors.white),
++            leading:
++                const CircleAvatar(radius: 20, backgroundColor: Colors.white),
+             title: Container(height: 16, color: Colors.white),
+             subtitle: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+@@ -143,8 +218,10 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                   builder: (context, alertsProvider, devicesProvider, child) {
+                     final alertTypes = alertsProvider.alertTypeList;
+                     final alertCounts = alertsProvider.alertTypeCounts;
++                    _tryApplyPendingAlertType(alertsProvider, alertTypes);
+ 
+-                    final List<DeviceModel.Item> devices = devicesProvider.model?.items ?? [];
++                    final List<DeviceModel.Item> devices =
++                        devicesProvider.model?.items ?? [];
+ 
+                     final vehicleItems = [
+                       'All Vehicles',
+@@ -156,9 +233,10 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                     } else {
+                       try {
+                         final device = devices.firstWhere(
+-                              (d) => d.id == _selectedDeviceId,
++                          (d) => d.id == _selectedDeviceId,
+                         );
+-                        selectedVehicleName = device.name ?? 'Device ${device.id}';
++                        selectedVehicleName =
++                            device.name ?? 'Device ${device.id}';
+                       } catch (e) {
+                         selectedVehicleName = 'All Vehicles';
+                         _selectedDeviceId = null;
+@@ -166,9 +244,13 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                     }
+ 
+                     // Safe alert type selection
+-                    String? selectedAlertType = alertTypes.contains(_selectedAlertType)
+-                        ? _selectedAlertType
+-                        : (alertTypes.isNotEmpty ? alertTypes.first : null);
++                    final activeAlertType = _selectedAlertType ??
++                        alertsProvider.alertTypeFilter ??
++                        'All';
++                    String? selectedAlertType =
++                        alertTypes.contains(activeAlertType)
++                            ? activeAlertType
++                            : (alertTypes.isNotEmpty ? alertTypes.first : null);
+ 
+                     return SearchAndFilterBar(
+                       alertTypes: alertTypes,
+@@ -184,7 +266,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                           } else {
+                             try {
+                               final device = devices.firstWhere(
+-                                    (d) => (d.name ?? 'Device ${d.id}') == val,
++                                (d) => (d.name ?? 'Device ${d.id}') == val,
+                               );
+                               _selectedDeviceId = device.id;
+                             } catch (e) {
+@@ -201,9 +283,9 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                         });
+                       },
+                       onSearchPressed: _applyFilters,
+-
+                       onFilterReset: () {
+-                        final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
++                        final alertsProvider =
++                            Provider.of<AlertsProvider>(context, listen: false);
+                         alertsProvider.resetFiltersOnly(context);
+                         setState(() {
+                           _selectedDeviceId = null;
+@@ -212,7 +294,6 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                         _applyFilters();
+                       },
+                     );
+-
+                   },
+                 ),
+               ),
+@@ -227,18 +308,18 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                     decoration: BoxDecoration(
+                       gradient: isDark
+                           ? LinearGradient(
+-                        colors: [
+-                          theme.scaffoldBackgroundColor,
+-                          theme.scaffoldBackgroundColor
+-                        ],
+-                        begin: Alignment.topCenter,
+-                        end: Alignment.bottomCenter,
+-                      )
++                              colors: [
++                                theme.scaffoldBackgroundColor,
++                                theme.scaffoldBackgroundColor
++                              ],
++                              begin: Alignment.topCenter,
++                              end: Alignment.bottomCenter,
++                            )
+                           : LinearGradient(
+-                        colors: [Colors.white, Colors.grey.shade100],
+-                        begin: Alignment.topCenter,
+-                        end: Alignment.bottomCenter,
+-                      ),
++                              colors: [Colors.white, Colors.grey.shade100],
++                              begin: Alignment.topCenter,
++                              end: Alignment.bottomCenter,
++                            ),
+                     ),
+                     padding: EdgeInsets.symmetric(horizontal: 4.w),
+                     child: Column(
+@@ -261,7 +342,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                               builder: (context, provider, child) {
+                                 if (provider.selectedAlertIds.isNotEmpty) {
+                                   return IconButton(
+-                                    icon: const Icon(Icons.delete, color: Colors.red),
++                                    icon: const Icon(Icons.delete,
++                                        color: Colors.red),
+                                     onPressed: () async {
+                                       final confirm = await showDialog<bool>(
+                                         context: context,
+@@ -271,24 +353,26 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                               "Delete ${provider.selectedAlertIds.length} alert(s)?"),
+                                           actions: [
+                                             TextButton(
+-                                                onPressed: () =>
+-                                                    Navigator.pop(context, false),
++                                                onPressed: () => Navigator.pop(
++                                                    context, false),
+                                                 child: const Text("Cancel")),
+                                             TextButton(
+                                               onPressed: () {
+                                                 Navigator.pop(context, true);
+                                               },
+                                               child: const Text("Delete",
+-                                                  style: TextStyle(color: Colors.red)),
++                                                  style: TextStyle(
++                                                      color: Colors.red)),
+                                             ),
+                                           ],
+                                         ),
+                                       );
+                                       if (confirm == true) {
+-                                        final success =
+-                                        await provider.deleteSelectedAlerts();
++                                        final success = await provider
++                                            .deleteSelectedAlerts();
+                                         if (context.mounted && success) {
+-                                          ScaffoldMessenger.of(context).showSnackBar(
++                                          ScaffoldMessenger.of(context)
++                                              .showSnackBar(
+                                             const SnackBar(
+                                                 content: Text(
+                                                     "Alerts deleted successfully")),
+@@ -312,7 +396,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                             onRefresh: _onRefresh,
+                             child: Consumer<AlertsProvider>(
+                               builder: (context, provider, child) {
+-                                if (provider.isLoading && provider.model == null) {
++                                if (provider.isLoading &&
++                                    provider.model == null) {
+                                   return _buildShimmerList();
+                                 }
+ 
+@@ -326,18 +411,19 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                 if (items.isEmpty) {
+                                   return Center(
+                                       child: Text(
+-                                        _searchController.text.isNotEmpty
+-                                            ? "No alerts match your search"
+-                                            : "No alerts found",
+-                                      ));
++                                    _searchController.text.isNotEmpty
++                                        ? "No alerts match your search"
++                                        : "No alerts found",
++                                  ));
+                                 }
+ 
+                                 return ListView.builder(
+                                   controller: _scrollController,
+-                                  physics: const AlwaysScrollableScrollPhysics(),
++                                  physics:
++                                      const AlwaysScrollableScrollPhysics(),
+                                   padding: EdgeInsets.zero,
+-                                  itemCount:
+-                                  items.length + (provider.isLoadMore ? 1 : 0),
++                                  itemCount: items.length +
++                                      (provider.isLoadMore ? 1 : 0),
+                                   itemBuilder: (context, index) {
+                                     if (index == items.length) {
+                                       return Padding(
+@@ -358,32 +444,38 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                     }
+ 
+                                     final Item alert = items[index];
+-                                    final bool isSelected =
+-                                    provider.selectedAlertIds.contains(alert.id);
++                                    final bool isSelected = provider
++                                        .selectedAlertIds
++                                        .contains(alert.id);
+ 
+                                     return GestureDetector(
+                                       onLongPress: () =>
+                                           provider.toggleSelection(alert.id),
+                                       onTap: () {
+-                                        if (provider.selectedAlertIds.isNotEmpty) {
++                                        if (provider
++                                            .selectedAlertIds.isNotEmpty) {
+                                           provider.toggleSelection(alert.id);
+                                         }
+                                       },
+                                       child: AnimatedContainer(
+-                                        duration: const Duration(milliseconds: 200),
++                                        duration:
++                                            const Duration(milliseconds: 200),
+                                         margin: EdgeInsets.only(bottom: 1.5.h),
+                                         decoration: BoxDecoration(
+                                           color: cardColor,
+-                                          borderRadius: BorderRadius.circular(12),
++                                          borderRadius:
++                                              BorderRadius.circular(12),
+                                           border: isSelected
+                                               ? Border.all(
+-                                              color: Colors.red, width: 2)
++                                                  color: Colors.red, width: 2)
+                                               : null,
+                                           boxShadow: [
+                                             BoxShadow(
+                                               color: isDark
+-                                                  ? Colors.black.withOpacity(0.4)
+-                                                  : Colors.black.withOpacity(0.08),
++                                                  ? Colors.black
++                                                      .withOpacity(0.4)
++                                                  : Colors.black
++                                                      .withOpacity(0.08),
+                                               blurRadius: 12,
+                                               offset: const Offset(0, 4),
+                                             ),
+@@ -393,12 +485,15 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                           leading: CircleAvatar(
+                                             radius: 20,
+                                             backgroundColor: isDark
+-                                                ? Colors.redAccent.withOpacity(0.15)
+-                                                : Colors.redAccent.withOpacity(0.1),
++                                                ? Colors.redAccent
++                                                    .withOpacity(0.15)
++                                                : Colors.redAccent
++                                                    .withOpacity(0.1),
+                                             child: Icon(
+                                               isSelected
+                                                   ? Icons.check_circle
+-                                                  : Icons.notifications_active_outlined,
++                                                  : Icons
++                                                      .notifications_active_outlined,
+                                               color: isSelected
+                                                   ? Colors.green
+                                                   : Colors.redAccent,
+@@ -406,8 +501,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                           ),
+                                           title: Text(
+                                             alert.deviceName,
+-                                            style:
+-                                            AppStyles.regularTextStyle(context)
++                                            style: AppStyles.regularTextStyle(
++                                                    context)
+                                                 .copyWith(
+                                               color: onSurface,
+                                               fontWeight: FontWeight.w500,
+@@ -415,7 +510,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                           ),
+                                           subtitle: Column(
+                                             crossAxisAlignment:
+-                                            CrossAxisAlignment.start,
++                                                CrossAxisAlignment.start,
+                                             children: [
+                                               Text(
+                                                 alert.message,
+@@ -426,15 +521,16 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+                                               verticalSpace(height: 0.3.h),
+                                               Text(
+                                                 alert.time
+-                                                    ?.toLocal()
+-                                                    .toString()
+-                                                    .split('.')
+-                                                    .first ??
++                                                        ?.toLocal()
++                                                        .toString()
++                                                        .split('.')
++                                                        .first ??
+                                                     "No time",
+-                                                style:
+-                                                AppStyles.lightTextStyle(context)
++                                                style: AppStyles.lightTextStyle(
++                                                        context)
+                                                     .copyWith(
+-                                                  color: onSurface.withOpacity(0.6),
++                                                  color: onSurface
++                                                      .withOpacity(0.6),
+                                                   fontSize: 13.sp,
+                                                 ),
+                                               ),
+@@ -465,4 +561,4 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/lib/widgets/dashboard_widgets/alert_grid.dart b/lib/widgets/dashboard_widgets/alert_grid.dart
+index 9647452..3938d52 100644
+--- a/lib/widgets/dashboard_widgets/alert_grid.dart
++++ b/lib/widgets/dashboard_widgets/alert_grid.dart
+@@ -1,7 +1,10 @@
+ import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
+ import 'package:responsive_sizer/responsive_sizer.dart';
+ import 'package:trackerapp/app/theme/app_styles.dart';
+ import 'package:trackerapp/data/models/get_dashboard_model.dart';
++import 'package:trackerapp/providers/alerts_provider.dart';
++import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
+ import 'package:trackerapp/widgets/get_horizontal_space.dart';
+ import 'package:trackerapp/widgets/get_vertical_space.dart';
+ 
+@@ -15,7 +18,10 @@ class AlertGrid extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final cardColor = Theme.of(context).cardColor;
++    final theme = Theme.of(context);
++    final cardColor = theme.cardColor;
++    final onSurface = theme.colorScheme.onSurface;
++    final isDark = theme.brightness == Brightness.dark;
+     final alerts = [
+       {
+         'icon': Icons.speed,
+@@ -23,6 +29,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.overSpeed.toString(),
+         'bgColor': const Color(0xFFFFC107),
++        'isCritical': true,
+       },
+       {
+         'icon': Icons.timer_outlined,
+@@ -30,6 +37,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.idleDuration.toString(),
+         'bgColor': const Color(0xFFFF9800),
++        'isCritical': false,
+       },
+       {
+         'icon': Icons.power_settings_new,
+@@ -37,6 +45,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.ignitionDuration.toString(),
+         'bgColor': const Color(0xFFEF5350),
++        'isCritical': false,
+       },
+       {
+         'icon': Icons.directions_car,
+@@ -44,6 +53,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.moveStart.toString(),
+         'bgColor': const Color(0xFF4CAF50),
++        'isCritical': false,
+       },
+       {
+         'icon': Icons.signal_wifi_off,
+@@ -51,6 +61,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.offlineDuration.toString(),
+         'bgColor': const Color(0xFF009688),
++        'isCritical': false,
+       },
+       {
+         'icon': Icons.local_parking,
+@@ -58,6 +69,7 @@ class AlertGrid extends StatelessWidget {
+         'unit': 'Times',
+         'value': data.alertsSummary.overParking.toString(),
+         'bgColor': const Color(0xFF6A1B9A),
++        'isCritical': true,
+       },
+       // {
+       //   'icon': Icons.fence, // Custom (Geofence style)
+@@ -68,119 +80,261 @@ class AlertGrid extends StatelessWidget {
+       // },
+     ];
+ 
+-    return Column(
+-      children: [
+-        _alertFilterRow(context),
+-        verticalSpace(height: .6.h),
+-
+-        Padding(
+-          padding: EdgeInsets.symmetric(horizontal: 6.w),
+-          child: GridView.builder(
++    return Container(
++      margin: EdgeInsets.symmetric(horizontal: 5.w),
++      padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.2.h),
++      decoration: BoxDecoration(
++        color: cardColor,
++        borderRadius: BorderRadius.circular(24),
++        boxShadow: [
++          BoxShadow(
++            color: isDark
++                ? Colors.black.withOpacity(0.55)
++                : Colors.black.withOpacity(0.12),
++            blurRadius: isDark ? 14 : 10,
++            offset: const Offset(0, 4),
++          ),
++        ],
++      ),
++      child: Column(
++        children: [
++          _alertFilterRow(context),
++          verticalSpace(height: .7.h),
++          GridView.builder(
+             padding: EdgeInsets.zero,
+             shrinkWrap: true,
+             physics: const NeverScrollableScrollPhysics(),
+             itemCount: alerts.length,
+-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+-              crossAxisCount: 2,
+-              crossAxisSpacing: 12,
+-              mainAxisSpacing: 12,
+-              childAspectRatio: 1.85,
++            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
++              crossAxisCount: 3,
++              crossAxisSpacing: 2.2.w,
++              mainAxisSpacing: .9.h,
++              childAspectRatio: 1.25,
+             ),
+             itemBuilder: (context, index) {
+               final item = alerts[index];
++              return _AlertTile(
++                index: index,
++                item: item,
++                cardColor: cardColor,
++                onSurface: onSurface,
++                isDark: isDark,
++                onTap: () => _openAlertsByType(context, item['name'] as String),
++              );
++            },
++          ),
++        ],
++      ),
++    );
++  }
++
++  Widget _alertFilterRow(BuildContext context) {
++    return Row(
++      children: [
++        Text(
++          "Alerts Count",
++          style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
++        ),
++        const Spacer(),
++        InkWell(
++          borderRadius: BorderRadius.circular(6),
++          onTap: () => _openAllAlerts(context),
++          child: Padding(
++            padding: EdgeInsets.symmetric(horizontal: .6.w, vertical: .2.h),
++            child: Text(
++              "Total: ${data.alertsSummary.total}",
++              style: AppStyles.semiboldTextStyle(context).copyWith(
++                fontSize: 13.2.sp,
++              ),
++            ),
++          ),
++        ),
++      ],
++    );
++  }
++
++  void _openAlertsByType(BuildContext context, String alertType) {
++    final alertsProvider = context.read<AlertsProvider>();
++    alertsProvider.setPendingAlertTypeLabel(alertType);
++    context.read<MotionBottomBarProvider>().setIndex(3);
++  }
++
++  void _openAllAlerts(BuildContext context) {
++    final alertsProvider = context.read<AlertsProvider>();
++    alertsProvider.clearPendingAlertTypeLabel();
++    alertsProvider.setDeviceFilter(null);
++    alertsProvider.setAlertTypeFilter(null);
++    alertsProvider.setSearchQuery('');
++    alertsProvider.fetchAlerts(isRefresh: true, context: context);
++    context.read<MotionBottomBarProvider>().setIndex(3);
++  }
++}
++
++class _AlertTile extends StatefulWidget {
++  final int index;
++  final Map<String, Object> item;
++  final Color cardColor;
++  final Color onSurface;
++  final bool isDark;
++  final VoidCallback onTap;
++
++  const _AlertTile({
++    required this.index,
++    required this.item,
++    required this.cardColor,
++    required this.onSurface,
++    required this.isDark,
++    required this.onTap,
++  });
++
++  @override
++  State<_AlertTile> createState() => _AlertTileState();
++}
++
++class _AlertTileState extends State<_AlertTile> {
++  bool _visible = false;
++  bool _pressed = false;
++  bool _isNavigating = false;
+ 
+-              return Container(
++  @override
++  void initState() {
++    super.initState();
++    Future.delayed(Duration(milliseconds: 70 * widget.index), () {
++      if (mounted) setState(() => _visible = true);
++    });
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final bgColor = widget.item['bgColor'] as Color;
++    final tintStrength = widget.isDark ? 0.18 : 0.09;
++    final tileColor = Color.lerp(widget.cardColor, bgColor, tintStrength)!;
++    final isCritical = (widget.item['isCritical'] as bool?) ?? false;
++
++    return AnimatedSlide(
++      duration: const Duration(milliseconds: 420),
++      curve: Curves.easeOutCubic,
++      offset: _visible ? Offset.zero : const Offset(0, 0.08),
++      child: AnimatedOpacity(
++        duration: const Duration(milliseconds: 420),
++        curve: Curves.easeOut,
++        opacity: _visible ? 1 : 0,
++        child: AnimatedScale(
++          duration: const Duration(milliseconds: 190),
++          curve: Curves.easeOutCubic,
++          scale: _pressed ? 0.965 : 1,
++          child: Material(
++            color: tileColor,
++            borderRadius: BorderRadius.circular(16.px),
++            child: InkWell(
++              borderRadius: BorderRadius.circular(16.px),
++              splashColor: bgColor.withOpacity(0.20),
++              highlightColor: bgColor.withOpacity(0.10),
++              onHighlightChanged: (v) => setState(() => _pressed = v),
++              onTap: () async {
++                if (_isNavigating) return;
++                _isNavigating = true;
++                setState(() => _pressed = true);
++                await Future.delayed(const Duration(milliseconds: 130));
++                if (mounted) {
++                  setState(() => _pressed = false);
++                }
++                widget.onTap();
++                _isNavigating = false;
++              },
++              child: Container(
+                 padding: EdgeInsets.symmetric(
+-                  vertical: 1.6.h,
+-                  horizontal: 3.w,
++                  vertical: .75.h,
++                  horizontal: 2.3.w,
+                 ),
+                 decoration: BoxDecoration(
+-                  color: cardColor,
+-                  borderRadius: BorderRadius.circular(14.px),
+-                  boxShadow: const [
++                  borderRadius: BorderRadius.circular(16.px),
++                  border: Border.all(color: widget.onSurface.withOpacity(0.08)),
++                  boxShadow: [
+                     BoxShadow(
+-                      color: Colors.black12,
+-                      blurRadius: 6,
+-                      spreadRadius: 0,
+-                      offset: Offset(0, 3),
++                      color: widget.isDark
++                          ? Colors.black.withOpacity(_pressed ? 0.18 : 0.30)
++                          : Colors.black.withOpacity(_pressed ? 0.025 : 0.05),
++                      blurRadius: _pressed ? 2 : 6,
++                      offset: Offset(0, _pressed ? 1 : 2),
+                     ),
+                   ],
+                 ),
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                child: Stack(
+                   children: [
+-                    Row(
+-                      children: [
+-                        Container(
+-                          padding: const EdgeInsets.all(8),
+-                          decoration: BoxDecoration(
+-                            color: item['bgColor'] as Color,
+-                            borderRadius: BorderRadius.circular(6.px),
+-                          ),
+-                          child: Icon(
+-                            item['icon'] as IconData,
+-                            size: 2.8.h,
+-                            color: Colors.white,
+-                          ),
+-                        ),
+-                        horizontalSpace(width: 1.h),
+-                        Expanded(
+-                          child: Text(
+-                            item['name'] as String,
+-                            style: AppStyles.regularTextStyle(context).copyWith(
+-                              fontSize: 15.sp
+-                            ),
+-                          ),
+-                        ),
+-                      ],
++                    Positioned(
++                      top: 20,
++                      right: -5,
++                      child: Icon(
++                        widget.item['icon'] as IconData,
++                        size: 5.2.h,
++                        color: bgColor.withOpacity(0.20),
++                      ),
+                     ),
+-
+-                    Padding(
+-                      padding: EdgeInsets.only(left: .5.h),
+-                      child: RichText(
+-                        text: TextSpan(
++                    Column(
++                      crossAxisAlignment: CrossAxisAlignment.start,
++                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                      children: [
++                        Row(
++                          crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+-                            TextSpan(
+-                              text: '${item['value']}  ',
+-                              style: AppStyles.regularTextStyle(context)
+-                                  .copyWith(fontSize: 15.sp),
+-                            ),
+-                            TextSpan(
+-                              text: item['unit'] as String,
+-                              style: AppStyles.regularTextStyle(context)
+-                                  .copyWith(fontSize: 14.sp),
++                            Expanded(
++                              child: Text(
++                                widget.item['name'] as String,
++                                maxLines: 2,
++                                textAlign: TextAlign.right,
++                                style: AppStyles.regularTextStyle(context)
++                                    .copyWith(fontSize: 12.4.sp),
++                              ),
+                             ),
++                            if (isCritical) ...[
++                              horizontalSpace(width: .6.w),
++                              Container(
++                                margin: EdgeInsets.only(top: .2.h),
++                                height: .7.h,
++                                width: .7.h,
++                                decoration: BoxDecoration(
++                                  color: const Color(0xFFDC2626),
++                                  shape: BoxShape.circle,
++                                  boxShadow: [
++                                    BoxShadow(
++                                      color: const Color(0xFFDC2626)
++                                          .withOpacity(0.35),
++                                      blurRadius: 6,
++                                    ),
++                                  ],
++                                ),
++                              ),
++                            ],
+                           ],
+                         ),
+-                      ),
++                        RichText(
++                          text: TextSpan(
++                            children: [
++                              TextSpan(
++                                text: '${widget.item['value']}',
++                                style: AppStyles.semiboldTextStyle(context)
++                                    .copyWith(
++                                  fontSize: 13.6.sp,
++                                  fontWeight: FontWeight.w800,
++                                ),
++                              ),
++                              TextSpan(
++                                text: '  ${widget.item['unit']}',
++                                style: AppStyles.regularTextStyle(context)
++                                    .copyWith(fontSize: 10.8.sp),
++                              ),
++                            ],
++                          ),
++                        ),
++                      ],
+                     ),
+                   ],
+                 ),
+-              );
+-            },
++              ),
++            ),
+           ),
+         ),
+-      ],
+-    );
+-  }
+-
+-  Widget _alertFilterRow(BuildContext context) {
+-    return Padding(
+-      padding: EdgeInsets.symmetric(horizontal: 9.w),
+-      child: Row(
+-        children: [
+-          Text(
+-            "Alerts Count",
+-            style: AppStyles.semiboldTextStyle(context),
+-          ),
+-          const Spacer(),
+-          Text(
+-            "(${data.alertsSummary.total.toString()})",
+-            style: AppStyles.semiboldTextStyle(context)
+-                .copyWith(fontSize: 14.sp),
+-          ),
+-        ],
+       ),
+     );
+   }
+diff --git a/lib/widgets/dashboard_widgets/distance_travelled_card.dart b/lib/widgets/dashboard_widgets/distance_travelled_card.dart
+index 6ba526f..30d0f21 100644
+--- a/lib/widgets/dashboard_widgets/distance_travelled_card.dart
++++ b/lib/widgets/dashboard_widgets/distance_travelled_card.dart
+@@ -1,4 +1,5 @@
+ import 'dart:async';
++
+ import 'package:fl_chart/fl_chart.dart';
+ import 'package:flutter/material.dart';
+ import 'package:responsive_sizer/responsive_sizer.dart';
+@@ -62,21 +63,25 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final onSurface = Theme.of(context).colorScheme.onSurface;
+-    final surface = Theme.of(context).colorScheme.surface;
++    final theme = Theme.of(context);
++    final onSurface = theme.colorScheme.onSurface;
++    final cardColor = theme.cardColor;
++    final isDark = theme.brightness == Brightness.dark;
+     final maxY = _getMaxY();
+ 
+     return Container(
+-      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+-      margin: EdgeInsets.symmetric(horizontal: 6.w),
++      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
++      margin: EdgeInsets.symmetric(horizontal: 5.w),
+       decoration: BoxDecoration(
+-        color: surface,
+-        borderRadius: BorderRadius.circular(16),
+-        boxShadow: const [
++        color: cardColor,
++        borderRadius: BorderRadius.circular(24),
++        boxShadow: [
+           BoxShadow(
+-            color: Colors.black12,
+-            blurRadius: 10,
+-            offset: Offset(0, 4),
++            color: isDark
++                ? Colors.black.withOpacity(0.55)
++                : Colors.black.withOpacity(0.12),
++            blurRadius: isDark ? 14 : 10,
++            offset: const Offset(0, 4),
+           ),
+         ],
+       ),
+@@ -85,21 +90,55 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+         children: [
+           Text(
+             "Distance Travelled",
+-            style: AppStyles.semiboldTextStyle(context),
++            style:
++                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+           ),
+-          verticalSpace(height: 1.5.h),
++          verticalSpace(height: 1.1.h),
+           _buildStatRow(context),
+-          verticalSpace(height: 2.h),
+-          SizedBox(
+-            height: 220,
++          verticalSpace(height: 1.5.h),
++          Container(
++            height: 24.h,
++            padding: EdgeInsets.only(
++              left: 2.w,
++              right: 2.w,
++              top: 1.2.h,
++              bottom: .6.h,
++            ),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(18),
++              border: Border.all(color: onSurface.withOpacity(0.08)),
++              gradient: LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: isDark
++                    ? [
++                        Colors.white.withOpacity(0.02),
++                        Colors.white.withOpacity(0.01),
++                      ]
++                    : [
++                        Colors.white.withOpacity(0.95),
++                        Colors.grey.shade50,
++                      ],
++              ),
++              boxShadow: [
++                BoxShadow(
++                  color: isDark
++                      ? Colors.black.withOpacity(0.25)
++                      : Colors.black.withOpacity(0.05),
++                  blurRadius: 8,
++                  offset: const Offset(0, 3),
++                ),
++              ],
++            ),
+             child: BarChart(
+               BarChartData(
+                 maxY: maxY,
+-                barTouchData: BarTouchData(enabled: true),
++                alignment: BarChartAlignment.spaceAround,
++                barTouchData: _buildTouchData(context, isDark),
+                 titlesData: _buildTitlesData(onSurface),
+                 gridData: _buildGridData(onSurface),
+                 borderData: FlBorderData(show: false),
+-                barGroups: _buildBarGroups(),
++                barGroups: _buildBarGroups(onSurface),
+               ),
+             ),
+           ),
+@@ -109,37 +148,39 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+   }
+ 
+   Widget _buildStatRow(BuildContext context) => Row(
+-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-    children: [
+-      _statColumn(
+-        context,
+-        "Total Distance",
+-        "${widget.historyData.summary.totalDistanceKm} km",
+-      ),
+-      _statColumn(
+-        context,
+-        "Average Distance",
+-        "${widget.historyData.summary.averageDistanceKm} km",
+-      ),
+-    ],
+-  );
+-
+-  Widget _statColumn(BuildContext context, String label, String value) => Column(
+-    crossAxisAlignment: CrossAxisAlignment.start,
+-    children: [
+-      Text(
+-        label,
+-        style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
+-      ),
+-      Text(
+-        value,
+-        style: AppStyles.lightTextStyle(context).copyWith(
+-          fontSize: 15.sp,
+-          fontWeight: FontWeight.w700,
+-        ),
+-      ),
+-    ],
+-  );
++        mainAxisAlignment: MainAxisAlignment.spaceBetween,
++        children: [
++          _statColumn(
++            context,
++            "Total Distance",
++            "${widget.historyData.summary.totalDistanceKm} km",
++          ),
++          _statColumn(
++            context,
++            "Average Distance",
++            "${widget.historyData.summary.averageDistanceKm} km",
++          ),
++        ],
++      );
++
++  Widget _statColumn(BuildContext context, String label, String value) =>
++      Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            label,
++            style:
++                AppStyles.regularTextStyle(context).copyWith(fontSize: 14.sp),
++          ),
++          Text(
++            value,
++            style: AppStyles.lightTextStyle(context).copyWith(
++              fontSize: 14.sp,
++              fontWeight: FontWeight.w700,
++            ),
++          ),
++        ],
++      );
+ 
+   FlTitlesData _buildTitlesData(Color onSurface) {
+     final yInterval = _getYInterval();
+@@ -151,7 +192,8 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+           reservedSize: 36,
+           getTitlesWidget: (value, meta) {
+             final index = value.toInt();
+-            if (index < 0 || index >= _barLabels.length) return const SizedBox();
++            if (index < 0 || index >= _barLabels.length)
++              return const SizedBox();
+             return SideTitleWidget(
+               meta: meta,
+               child: Text(
+@@ -172,7 +214,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+           getTitlesWidget: (value, meta) => Text(
+             '${value.toInt()}',
+             style: AppStyles.regularTextStyle(context).copyWith(
+-              fontSize: 13.sp,
++              fontSize: 12.sp,
+             ),
+           ),
+         ),
+@@ -182,37 +224,82 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
+     );
+   }
+ 
++  BarTouchData _buildTouchData(BuildContext context, bool isDark) {
++    return BarTouchData(
++      enabled: true,
++      handleBuiltInTouches: true,
++      touchTooltipData: BarTouchTooltipData(
++        tooltipBorderRadius: BorderRadius.circular(12),
++        tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
++        tooltipMargin: 10,
++        fitInsideHorizontally: true,
++        fitInsideVertically: true,
++        getTooltipColor: (_) =>
++            isDark ? const Color(0xFF1F2937) : const Color(0xFF111827),
++        getTooltipItem: (group, groupIndex, rod, rodIndex) {
++          final index = group.x.toInt();
++          final label = index >= 0 && index < _barLabels.length
++              ? _barLabels[index]
++              : "Vehicle";
++          return BarTooltipItem(
++            '${_shortenLabel(label)}\n',
++            AppStyles.semiboldTextStyle(context).copyWith(
++              color: Colors.white,
++              fontSize: 12.sp,
++            ),
++            children: [
++              TextSpan(
++                text: '${rod.toY.toStringAsFixed(1)} km',
++                style: AppStyles.regularTextStyle(context).copyWith(
++                  color: Colors.white.withOpacity(0.92),
++                  fontSize: 11.5.sp,
++                ),
++              ),
++            ],
++          );
++        },
++      ),
++    );
++  }
++
+   FlGridData _buildGridData(Color onSurface) {
+     final yInterval = _getYInterval();
+     return FlGridData(
+       show: true,
+       drawHorizontalLine: true,
+-      drawVerticalLine: true,
++      drawVerticalLine: false,
+       horizontalInterval: yInterval,
+-      verticalInterval: 1,
+       getDrawingHorizontalLine: (value) => FlLine(
+-        color: onSurface.withOpacity(0.3),
+-        strokeWidth: 1,
+-      ),
+-      getDrawingVerticalLine: (value) => FlLine(
+-        color: onSurface.withOpacity(0.3),
+-        strokeWidth: 1,
++        color: onSurface.withOpacity(0.16),
++        strokeWidth: 1.1,
+       ),
+     );
+   }
+ 
+-  List<BarChartGroupData> _buildBarGroups() => List.generate(
+-    _barValues.length,
++  List<BarChartGroupData> _buildBarGroups(Color onSurface) => List.generate(
++        _barValues.length,
+         (i) => BarChartGroupData(
+-      x: i,
+-      barRods: [
+-        BarChartRodData(
+-          toY: _isVisible[i] ? _barValues[i] : 0.0,
+-          width: 18,
+-          color: Colors.blue,
+-          borderRadius: BorderRadius.circular(4),
++          x: i,
++          barsSpace: 4,
++          barRods: [
++            BarChartRodData(
++              toY: _isVisible[i] ? _barValues[i] : 0.0,
++              width: 14,
++              gradient: LinearGradient(
++                begin: Alignment.bottomCenter,
++                end: Alignment.topCenter,
++                colors: i.isEven
++                    ? [const Color(0xFF3B82F6), const Color(0xFF22D3EE)]
++                    : [const Color(0xFF6366F1), const Color(0xFFA78BFA)],
++              ),
++              borderRadius: BorderRadius.circular(7),
++              backDrawRodData: BackgroundBarChartRodData(
++                show: true,
++                toY: _getMaxY(),
++                color: onSurface.withOpacity(0.06),
++              ),
++            ),
++          ],
+         ),
+-      ],
+-    ),
+-  );
+-}
+\ No newline at end of file
++      );
++}
+diff --git a/lib/widgets/dashboard_widgets/fuel_price_card.dart b/lib/widgets/dashboard_widgets/fuel_price_card.dart
+index 53a3857..bcf5563 100644
+--- a/lib/widgets/dashboard_widgets/fuel_price_card.dart
++++ b/lib/widgets/dashboard_widgets/fuel_price_card.dart
+@@ -12,84 +12,172 @@ class FuelPriceCard extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final cardColor = Theme.of(context).cardColor;
+-    final onSurface = Theme.of(context).colorScheme.onSurface;
++    final theme = Theme.of(context);
++    final cardColor = theme.cardColor;
++    final onSurface = theme.colorScheme.onSurface;
++    final isDark = theme.brightness == Brightness.dark;
+ 
+     return Container(
+-      padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 3.w),
+-      margin: EdgeInsets.symmetric(horizontal: 6.w),
++      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
++      margin: EdgeInsets.symmetric(horizontal: 5.w),
+       decoration: BoxDecoration(
+         color: cardColor,
+-        borderRadius: BorderRadius.circular(12),
+-        boxShadow: const [
++        borderRadius: BorderRadius.circular(24),
++        boxShadow: [
+           BoxShadow(
+-            color: Colors.black12,
+-            blurRadius: 6,
+-            spreadRadius: 0,
+-            offset: Offset(0, 3),
++            color: isDark
++                ? Colors.black.withOpacity(0.55)
++                : Colors.black.withOpacity(0.12),
++            blurRadius: isDark ? 14 : 10,
++            offset: const Offset(0, 4),
+           ),
+         ],
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          // Header
+           Text(
+             "Fuel Prices",
+-            style: AppStyles.semiboldTextStyle(context),
++            style:
++                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+           ),
+-          verticalSpace(height: 1.h),
+-
+-          // Petrol Row
+-          Row(
+-            children: [
+-              Icon(Icons.local_gas_station, color: Colors.green, size: 20.sp),
+-              horizontalSpace(width: 3.w),
+-              Expanded(
+-                child: Text(
+-                  "Petrol",
+-                  style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
+-                ),
++          verticalSpace(height: 1.3.h),
++          Container(
++            padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.h),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(18),
++              border: Border.all(color: onSurface.withOpacity(0.08)),
++              gradient: LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: isDark
++                    ? [
++                        Colors.white.withOpacity(0.02),
++                        Colors.white.withOpacity(0.01),
++                      ]
++                    : [
++                        Colors.white.withOpacity(0.95),
++                        Colors.grey.shade50,
++                      ],
+               ),
+-              Text(
+-                "${data.petrolPrice.toStringAsFixed(2)} PKR",
+-                style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+-              ),
+-            ],
+-          ),
+-
+-          // Diesel Row
+-          Row(
+-            children: [
+-              Icon(Icons.local_gas_station, color: Colors.orange, size: 20.sp),
+-              horizontalSpace(width: 3.w),
+-              Expanded(
+-                child: Text(
+-                  "Diesel",
+-                  style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
++              boxShadow: [
++                BoxShadow(
++                  color: isDark
++                      ? Colors.black.withOpacity(0.25)
++                      : Colors.black.withOpacity(0.05),
++                  blurRadius: 8,
++                  offset: const Offset(0, 3),
+                 ),
+-              ),
+-              Text(
+-                "${data.dieselPrice.toStringAsFixed(2)} PKR",
+-                style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+-              ),
+-            ],
+-          ),
+-          Divider(color: onSurface.withOpacity(0.2)),
+-
+-          // Last Updated
+-          Row(
+-            children: [
+-              Icon(Icons.update, color: Colors.blue, size: 18.sp),
+-              horizontalSpace(width: 3.w),
+-              Text(
+-                "Last Updated: ${data.fuelPriceLastUpdated}",
+-                style: AppStyles.regularTextStyle(context).copyWith(fontSize: 14.sp),
+-              ),
+-            ],
++              ],
++            ),
++            child: Column(
++              children: [
++                _fuelRow(
++                  context,
++                  label: "Petrol",
++                  price: "${data.petrolPrice.toStringAsFixed(2)} PKR",
++                  accent: const Color(0xFF16A34A),
++                ),
++                Divider(height: 1.6.h, color: onSurface.withOpacity(0.12)),
++                _fuelRow(
++                  context,
++                  label: "Diesel",
++                  price: "${data.dieselPrice.toStringAsFixed(2)} PKR",
++                  accent: const Color(0xFFF59E0B),
++                ),
++                Divider(height: 1.6.h, color: onSurface.withOpacity(0.12)),
++                Row(
++                  children: [
++                    // Container(
++                    //   height: 3.h,
++                    //   width: 3.h,
++                    //   decoration: BoxDecoration(
++                    //     color: const Color(0xFF2563EB).withOpacity(0.14),
++                    //     borderRadius: BorderRadius.circular(8),
++                    //   ),
++                    //   // child: Icon(
++                    //   //   Icons.update,
++                    //   //   color: const Color(0xFF2563EB),
++                    //   //   size: 15.sp,
++                    //   // ),
++                    // ),
++                    horizontalSpace(width: 1.w),
++                    Expanded(
++                      child: Text(
++                        "Last Updated",
++                        style: AppStyles.regularTextStyle(context).copyWith(
++                          fontSize: 12.sp,
++                          fontWeight: FontWeight.w600,
++                        ),
++                      ),
++                    ),
++                    Container(
++                      padding: EdgeInsets.symmetric(
++                          horizontal: 2.4.w, vertical: 0.45.h),
++                      // decoration: BoxDecoration(
++                      //   color: onSurface.withOpacity(0.08),
++                      //   // borderRadius: BorderRadius.circular(20),
++                      // ),
++                      child: Text(
++                        data.fuelPriceLastUpdated,
++                        style: AppStyles.regularTextStyle(context)
++                            .copyWith(fontSize: 11.2.sp),
++                      ),
++                    ),
++                  ],
++                ),
++              ],
++            ),
+           ),
+         ],
+       ),
+     );
+   }
++
++  Widget _fuelRow(
++    BuildContext context, {
++    required String label,
++    required String price,
++    required Color accent,
++  }) {
++    final onSurface = Theme.of(context).colorScheme.onSurface;
++    return Row(
++      children: [
++        Container(
++          height: 3.3.h,
++          width: 3.3.h,
++          decoration: BoxDecoration(
++            color: accent.withOpacity(0.14),
++            borderRadius: BorderRadius.circular(10),
++          ),
++          child: Icon(Icons.local_gas_station, color: accent, size: 17.sp),
++        ),
++        horizontalSpace(width: 2.2.w),
++        Expanded(
++          child: Text(
++            label,
++            style: AppStyles.regularTextStyle(context).copyWith(
++              fontSize: 14.sp,
++              fontWeight: FontWeight.w600,
++            ),
++          ),
++        ),
++        Container(
++          padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 0.45.h),
++          decoration: BoxDecoration(
++            color: accent.withOpacity(0.12),
++            borderRadius: BorderRadius.circular(24),
++            border: Border.all(color: accent.withOpacity(0.30)),
++          ),
++          child: Text(
++            price,
++            style: AppStyles.semiboldTextStyle(context).copyWith(
++              fontSize: 11.8.sp,
++              color: onSurface,
++            ),
++          ),
++        ),
++      ],
++    );
++  }
+ }
+diff --git a/lib/widgets/dashboard_widgets/header_widget.dart b/lib/widgets/dashboard_widgets/header_widget.dart
+index 73fe1ec..1379a3d 100644
+--- a/lib/widgets/dashboard_widgets/header_widget.dart
++++ b/lib/widgets/dashboard_widgets/header_widget.dart
+@@ -6,6 +6,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
+ import 'package:trackerapp/data/models/get_dashboard_model.dart';
+ import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
+ import 'package:trackerapp/widgets/get_vertical_space.dart';
++
+ import 'vehicle_summary_card.dart';
+ 
+ class HeaderWidget extends StatelessWidget {
+@@ -24,7 +25,7 @@ class HeaderWidget extends StatelessWidget {
+     final isDark = theme.brightness == Brightness.dark;
+ 
+     return SizedBox(
+-      height: 42.h,
++      height: 38.h,
+       width: 100.w,
+       child: Stack(
+         children: [
+diff --git a/lib/widgets/dashboard_widgets/maintenance_card.dart b/lib/widgets/dashboard_widgets/maintenance_card.dart
+index 6fcf432..25087f7 100644
+--- a/lib/widgets/dashboard_widgets/maintenance_card.dart
++++ b/lib/widgets/dashboard_widgets/maintenance_card.dart
+@@ -15,8 +15,10 @@ class MaintenanceCard extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final cardColor = Theme.of(context).cardColor;
+-    final onSurface = Theme.of(context).colorScheme.onSurface;
++    final theme = Theme.of(context);
++    final cardColor = theme.cardColor;
++    final onSurface = theme.colorScheme.onSurface;
++    final isDark = theme.brightness == Brightness.dark;
+ 
+     // Ignore items where current = 0
+     final valid = data.maintenance.where((m) => m.current != 0).toList();
+@@ -25,65 +27,86 @@ class MaintenanceCard extends StatelessWidget {
+     final allCount = valid.length.toString();
+     final due = valid.where((m) => m.percent > 90).toList();
+     final dueCount = due.length.toString();
+-    final overdue =
+-    valid.where((m) =>m.percent==100|| m.percent > 100).toList();
++    final overdue = valid.where((m) => m.percent == 100 || m.percent > 100).toList();
+     final overdueCount = overdue.length.toString();
+ 
+     return Container(
+-      padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 3.w),
+-      margin: EdgeInsets.symmetric(horizontal: 6.w),
++      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
++      margin: EdgeInsets.symmetric(horizontal: 5.w),
+       decoration: BoxDecoration(
+         color: cardColor,
+-        borderRadius: BorderRadius.circular(12),
+-        boxShadow: const [
++        borderRadius: BorderRadius.circular(24),
++        boxShadow: [
+           BoxShadow(
+-            color: Colors.black12,
+-            blurRadius: 6,
+-            spreadRadius: 0,
+-            offset: Offset(0, 3),
++            color: isDark
++                ? Colors.black.withOpacity(0.55)
++                : Colors.black.withOpacity(0.12),
++            blurRadius: isDark ? 14 : 10,
++            offset: const Offset(0, 4),
+           ),
+         ],
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Row(
+-            children: [
+-              Text(
+-                "Maintenance Reminder",
+-                style: AppStyles.semiboldTextStyle(context),
+-              ),
+-            ],
+-          ),
+-
+-          verticalSpace(height: 1.h),
+-
+-          /// ALL
+-          _maintenanceRow(
+-            context,
+-            title: "All",
+-            iconColor: Colors.blue,
+-            count: allCount,
+-          ),
+-
+-          Divider(color: onSurface.withOpacity(0.2)),
+-
+-          /// DUE
+-          _maintenanceRow(
+-            context,
+-            title: "Due",
+-            iconColor: Colors.orange,
+-            count: dueCount,
++          Text(
++            "Maintenance Reminder",
++            style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+           ),
+-
+-          Divider(color: onSurface.withOpacity(0.2)),
+-
+-          /// OVERDUE
+-          _maintenanceRow(
+-            context,
+-            title: "Overdue",
+-            iconColor: Colors.red,
+-            count: overdueCount,
++          verticalSpace(height: 1.3.h),
++          Container(
++            padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.h),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(18),
++              border: Border.all(color: onSurface.withOpacity(0.08)),
++              gradient: LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: isDark
++                    ? [
++                        Colors.white.withOpacity(0.02),
++                        Colors.white.withOpacity(0.01),
++                      ]
++                    : [
++                        Colors.white.withOpacity(0.95),
++                        Colors.grey.shade50,
++                      ],
++              ),
++              boxShadow: [
++                BoxShadow(
++                  color: isDark
++                      ? Colors.black.withOpacity(0.25)
++                      : Colors.black.withOpacity(0.05),
++                  blurRadius: 8,
++                  offset: const Offset(0, 3),
++                ),
++              ],
++            ),
++            child: Column(
++              children: [
++                _maintenanceRow(
++                  context,
++                  title: "All",
++                  iconColor: const Color(0xFF2563EB),
++                  count: allCount,
++                ),
++                Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
++                _maintenanceRow(
++                  context,
++                  title: "Due",
++                  iconColor: const Color(0xFFF59E0B),
++                  count: dueCount,
++                ),
++                Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
++                _maintenanceRow(
++                  context,
++                  title: "Overdue",
++                  iconColor: const Color(0xFFDC2626),
++                  count: overdueCount,
++                  isCritical: true,
++                ),
++              ],
++            ),
+           ),
+         ],
+       ),
+@@ -91,44 +114,62 @@ class MaintenanceCard extends StatelessWidget {
+   }
+ 
+   Widget _maintenanceRow(
+-      BuildContext context, {
+-        required String title,
+-        required Color iconColor,
+-        required String count,
+-      })
+-  {
++    BuildContext context, {
++    required String title,
++    required Color iconColor,
++    required String count,
++    bool isCritical = false,
++  }) {
+     final onSurface = Theme.of(context).colorScheme.onSurface;
+     return Row(
+       children: [
+-        Icon(title=="All"?Icons.build_circle:Icons.calendar_month, color: iconColor, size: 20.sp),
+-        horizontalSpace(width: 3.w),
++        Container(
++          height: 3.3.h,
++          width: 3.3.h,
++          decoration: BoxDecoration(
++            color: iconColor.withOpacity(0.14),
++            borderRadius: BorderRadius.circular(10),
++          ),
++          child: Icon(
++            title == "All" ? Icons.build_circle : Icons.calendar_month,
++            color: iconColor,
++            size: 17.sp,
++          ),
++        ),
++        horizontalSpace(width: 2.2.w),
+ 
+         Expanded(
+           child: Text(
+             title,
+-            style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
++            style: AppStyles.regularTextStyle(context).copyWith(
++              fontSize: 14.sp,
++              fontWeight: isCritical ? FontWeight.w700 : FontWeight.w600,
++            ),
+           ),
+         ),
+ 
+         Container(
+-          padding: EdgeInsets.symmetric(horizontal: 1.h, vertical: 0.5.h),
++          padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0.45.h),
+           decoration: BoxDecoration(
+-            color: iconColor.withOpacity(0.15),
+-            borderRadius: BorderRadius.circular(50),
++            color: iconColor.withOpacity(isCritical ? 0.18 : 0.12),
++            borderRadius: BorderRadius.circular(30),
++            border: Border.all(color: iconColor.withOpacity(0.28)),
+           ),
+           child: Text(
+-            count,
++            '$count Items',
+             style: AppStyles.regularTextStyle(context)
+-                .copyWith(fontWeight: FontWeight.w700, fontSize: 14.sp),
++                .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5.sp),
+           ),
+         ),
+ 
+-        horizontalSpace(width: 1.h),
++        horizontalSpace(width: .7.h),
+ 
+         Icon(
+           Icons.arrow_forward_ios_rounded,
+-          size: 18.sp,
+-          color: onSurface.withOpacity(0.5),
++          size: 15.sp,
++          color: isCritical
++              ? iconColor.withOpacity(0.85)
++              : onSurface.withOpacity(0.45),
+         ),
+       ],
+     );
+diff --git a/lib/widgets/dashboard_widgets/vehicle_summary_card.dart b/lib/widgets/dashboard_widgets/vehicle_summary_card.dart
+index f8978bf..f6e5534 100644
+--- a/lib/widgets/dashboard_widgets/vehicle_summary_card.dart
++++ b/lib/widgets/dashboard_widgets/vehicle_summary_card.dart
+@@ -18,48 +18,123 @@ class VehicleSummaryCard extends StatefulWidget {
+   State<VehicleSummaryCard> createState() => _VehicleSummaryCardState();
+ }
+ 
+-class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
+-  Key chartKey = UniqueKey();
++class _VehicleSummaryCardState extends State<VehicleSummaryCard>
++    with TickerProviderStateMixin {
++  AnimationController? _entryController;
++  AnimationController? _introExplodeController;
++  Animation<double> _chartScale = const AlwaysStoppedAnimation<double>(1.0);
++  Animation<double> _chartOpacity = const AlwaysStoppedAnimation<double>(1.0);
++  Animation<double> _introExplodeOffset =
++      const AlwaysStoppedAnimation<double>(0.0);
++  bool _introExplodeDone = false;
+ 
+   @override
+-  void didUpdateWidget(covariant VehicleSummaryCard oldWidget) {
+-    super.didUpdateWidget(oldWidget);
+-    setState(() {
+-      chartKey = UniqueKey();
++  void initState() {
++    super.initState();
++    _entryController = AnimationController(
++      vsync: this,
++      duration: const Duration(milliseconds: 520),
++    );
++    _chartScale = Tween<double>(
++      begin: 0.9,
++      end: 1.0,
++    ).animate(
++      CurvedAnimation(parent: _entryController!, curve: Curves.easeOutBack),
++    );
++    _chartOpacity = CurvedAnimation(
++      parent: _entryController!,
++      curve: Curves.easeOut,
++    );
++    _entryController!.forward();
++
++    _introExplodeController = AnimationController(
++      vsync: this,
++      duration: const Duration(milliseconds: 980),
++    );
++    _introExplodeOffset = TweenSequence<double>([
++      TweenSequenceItem(
++        tween: Tween<double>(begin: 0, end: 14).chain(
++          CurveTween(curve: Curves.easeOutCubic),
++        ),
++        weight: 58,
++      ),
++      TweenSequenceItem(
++        tween: Tween<double>(begin: 14, end: 0).chain(
++          CurveTween(curve: Curves.easeInOutCubic),
++        ),
++        weight: 42,
++      ),
++    ]).animate(_introExplodeController!);
++    _introExplodeController!.forward().whenComplete(() {
++      if (!mounted) return;
++      setState(() => _introExplodeDone = true);
+     });
+   }
+ 
++  @override
++  void dispose() {
++    _entryController?.dispose();
++    _introExplodeController?.dispose();
++    super.dispose();
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final theme = Theme.of(context);
+     final isDark = theme.brightness == Brightness.dark;
+ 
+-    return Container(
+-      padding: EdgeInsets.all(4.w),
+-      decoration: BoxDecoration(
+-        color: theme.cardColor,
+-        borderRadius: BorderRadius.circular(24),
+-        boxShadow: [
+-          BoxShadow(
+-            color: isDark
+-                ? Colors.black.withOpacity(0.6)
+-                : Colors.black.withOpacity(0.15),
+-            blurRadius: 10,
+-            offset: const Offset(0, 4),
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final isCompact = constraints.maxWidth < 335;
++        return Container(
++          padding: EdgeInsets.symmetric(
++            horizontal: 4.w,
++            vertical: 1.h, // smaller vertical padding
+           ),
+-          if (isDark)
+-            BoxShadow(
+-                color: theme.colorScheme.primary.withOpacity(0.2),
+-                blurRadius: 16),
+-        ],
+-      ),
+-      child: Row(
+-        children: [
+-          _buildLegend(context),
+-          const Spacer(),
+-          _buildPieChart(context),
+-        ],
+-      ),
++          decoration: BoxDecoration(
++            color: theme.cardColor,
++            borderRadius: BorderRadius.circular(24),
++            boxShadow: [
++              BoxShadow(
++                color: isDark
++                    ? Colors.black.withOpacity(0.6)
++                    : Colors.black.withOpacity(0.15),
++                blurRadius: 10,
++                offset: const Offset(0, 4),
++              ),
++              if (isDark)
++                BoxShadow(
++                  color: theme.colorScheme.primary.withOpacity(0.2),
++                  blurRadius: 16,
++                ),
++            ],
++          ),
++          child: isCompact
++              ? Column(
++                  children: [
++                    Align(
++                      alignment: Alignment.centerLeft,
++                      child: SizedBox(
++                        width: double.infinity,
++                        child: _buildLegend(context),
++                      ),
++                    ),
++                    verticalSpace(height: 1.2.h),
++                    _buildPieChart(context),
++                  ],
++                )
++              : Row(
++                  children: [
++                    SizedBox(
++                      width: 43.w,
++                      child: _buildLegend(context),
++                    ),
++                    const Spacer(),
++                    _buildPieChart(context),
++                  ],
++                ),
++        );
++      },
+     );
+   }
+ 
+@@ -69,32 +144,25 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+-        Text("Total Vehicles",
+-            style:
+-                AppStyles.regularTextStyle(context).copyWith(fontSize: 16.sp)),
+-        verticalSpace(height: 0.5.h),
+-        Text(
+-          status.total.toString(),
+-          style: AppStyles.boldTextStyle(context).copyWith(
+-            fontSize: 17.sp,
+-            fontWeight: FontWeight.w900,
+-          ),
+-        ),
+-        verticalSpace(height: .5.h),
++        // verticalSpace(height: .0.h),
+         _legendItem(AppColors.red, "Stopped", status.ack, 0, context),
+         verticalSpace(height: 1.h),
+         _legendItem(AppColors.green, "Running", status.online, 1, context),
+         verticalSpace(height: 1.h),
+         _legendItem(AppColors.yellow, "Idle", status.idle, 2, context),
+         verticalSpace(height: 1.h),
+-        _legendItem(
+-            AppColors.blueCyan, "Offline", status.offline, 3, context),
++        _legendItem(AppColors.blueCyan, "Offline", status.offline, 3, context),
+       ],
+     );
+   }
+ 
+   Widget _legendItem(
+-      Color color, String label, int count, int index, BuildContext context) {
++    Color color,
++    String label,
++    int count,
++    int index,
++    BuildContext context,
++  ) {
+     final provider = context.read<DashboardProvider>();
+ 
+     return GestureDetector(
+@@ -103,22 +171,42 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
+           provider.selectedStatusIndex == index ? -1 : index,
+         );
+       },
+-      child: Container(
+-        color: Colors.transparent,
+-        child: Row(
+-          children: [
+-            Container(
+-              height: 2.2.h,
+-              width: 2.2.h,
+-              decoration: BoxDecoration(
+-                  color: color, borderRadius: BorderRadius.circular(6)),
++      child: Row(
++        children: [
++          Container(
++            height: 2.2.h,
++            width: 2.2.h,
++            decoration: BoxDecoration(
++              color: color,
++              borderRadius: BorderRadius.circular(6),
+             ),
+-            horizontalSpace(width: 2.w),
+-            Text("$label $count",
+-                style: AppStyles.lightTextStyle(context)
+-                    .copyWith(fontSize: 14.sp)),
+-          ],
+-        ),
++          ),
++          horizontalSpace(width: 2.w),
++          Expanded(
++            child: Text.rich(
++              TextSpan(
++                children: [
++                  TextSpan(
++                    text: "$label   ",
++                    style: AppStyles.lightTextStyle(context).copyWith(
++                      fontSize: 13.sp,
++                      fontWeight: FontWeight.w500, // lighter label
++                    ),
++                  ),
++                  TextSpan(
++                    text: "$count",
++                    style: AppStyles.boldTextStyle(context).copyWith(
++                      fontSize: 14.sp,
++                      fontWeight: FontWeight.w800, // stronger count
++                    ),
++                  ),
++                ],
++              ),
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++            ),
++          ),
++        ],
+       ),
+     );
+   }
+@@ -126,84 +214,160 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard> {
+   Widget _buildPieChart(BuildContext context) {
+     final status = widget.data1.statusCounts;
+ 
+-    return Container(
+-      key: chartKey,
+-      padding: EdgeInsets.only(right: 9.w),
+-      height: 14.h,
+-      width: 14.h,
+-      child: Consumer<DashboardProvider>(
+-        builder: (context, provider, child) {
+-          final selectedIndex = provider.selectedStatusIndex;
+-          int centerCount = status.total;
+-          if (selectedIndex != -1) {
+-            centerCount = switch (selectedIndex) {
+-              0 => status.offline,
+-              1 => status.online,
+-              2 => status.idle,
+-              3 => status.neverConnected,
+-              _ => status.total,
+-            };
+-          }
+-
+-          return SfCircularChart(
+-            legend: const Legend(isVisible: false),
+-            series: <DoughnutSeries<ChartData, String>>[
+-              DoughnutSeries<ChartData, String>(
+-                dataSource: _getChartData(status, selectedIndex),
+-                xValueMapper: (ChartData data, _) => data.x,
+-                yValueMapper: (ChartData data, _) => data.y,
+-                pointColorMapper: (ChartData data, _) => data.color,
+-                innerRadius: '55%',
+-                radius: '240%',
+-                animationDuration: 1000,
+-                enableTooltip: false,
+-                onPointTap: (ChartPointDetails details) {
+-                  final index = details.pointIndex!;
+-                  provider.setSelectedStatusIndex(index);
+-                },
+-                dataLabelSettings: const DataLabelSettings(isVisible: false),
++    return FadeTransition(
++      opacity: _chartOpacity,
++      child: ScaleTransition(
++        scale: _chartScale,
++        child: Container(
++          height: 16.h,
++          width: 16.h,
++          decoration: BoxDecoration(
++            shape: BoxShape.circle,
++            boxShadow: [
++              BoxShadow(
++                color: Colors.black.withOpacity(0.15),
++                blurRadius: 25,
++                spreadRadius: 3,
++                offset: const Offset(0, 6),
+               ),
+             ],
+-            annotations: <CircularChartAnnotation>[
+-              CircularChartAnnotation(
+-                widget: Text(
+-                  centerCount.toString(),
+-                  style: AppStyles.boldTextStyle(context).copyWith(
+-                    fontSize: 17.sp,
+-                    fontWeight: FontWeight.w900,
+-                  ),
++          ),
++          child: Consumer<DashboardProvider>(
++            builder: (context, provider, child) {
++              final selectedIndex = provider.selectedStatusIndex;
++              final isIntroActive = !_introExplodeDone;
++
++              final (centerLabel, centerCount) = switch (selectedIndex) {
++                0 => ('Stopped', status.ack),
++                1 => ('Running', status.online),
++                2 => ('Idle', status.idle),
++                3 => ('Offline', status.offline),
++                _ => ('Total', status.total),
++              };
++
++              if (isIntroActive) {
++                return AnimatedBuilder(
++                  animation: _introExplodeOffset,
++                  builder: (context, _) {
++                    return _buildChart(
++                      context: context,
++                      status: status,
++                      centerLabel: centerLabel,
++                      centerCount: centerCount,
++                      explodeOffset: _introExplodeOffset.value,
++                      explode: true,
++                      explodeAll: true,
++                      explodeIndex: 0,
++                      provider: provider,
++                    );
++                  },
++                );
++              }
++
++              return TweenAnimationBuilder<double>(
++                duration: const Duration(milliseconds: 360),
++                curve: Curves.easeOutCubic,
++                tween: Tween<double>(end: selectedIndex == -1 ? 0.0 : 14.0),
++                builder: (context, explodeOffset, _) {
++                  return _buildChart(
++                    context: context,
++                    status: status,
++                    centerLabel: centerLabel,
++                    centerCount: centerCount,
++                    explodeOffset: explodeOffset,
++                    explode: selectedIndex != -1,
++                    explodeAll: false,
++                    explodeIndex: selectedIndex == -1 ? 0 : selectedIndex,
++                    provider: provider,
++                  );
++                },
++              );
++            },
++          ),
++        ),
++      ),
++    );
++  }
++
++  Widget _buildChart({
++    required BuildContext context,
++    required dynamic status,
++    required String centerLabel,
++    required int centerCount,
++    required double explodeOffset,
++    required bool explode,
++    required bool explodeAll,
++    required int explodeIndex,
++    required DashboardProvider provider,
++  }) {
++    return SfCircularChart(
++      legend: const Legend(isVisible: false),
++      series: <DoughnutSeries<ChartData, String>>[
++        DoughnutSeries<ChartData, String>(
++          dataSource: _getChartData(status),
++          xValueMapper: (d, _) => d.x,
++          yValueMapper: (d, _) => d.y,
++          pointColorMapper: (d, _) => d.color,
++          innerRadius: '55%',
++          radius: '100%',
++          animationDuration: 0,
++          explode: explode,
++          explodeAll: explodeAll,
++          explodeIndex: explodeIndex,
++          explodeOffset: '${explodeOffset.toStringAsFixed(1)}%',
++          strokeWidth: 1.5,
++          strokeColor: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.1),
++          onPointTap: (details) {
++            final index = details.pointIndex ?? -1;
++            if (index == -1) return;
++
++            provider.setSelectedStatusIndex(
++              provider.selectedStatusIndex == index ? -1 : index,
++            );
++          },
++          dataLabelSettings: const DataLabelSettings(isVisible: false),
++        ),
++      ],
++      annotations: <CircularChartAnnotation>[
++        CircularChartAnnotation(
++          widget: Column(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Text(
++                '$centerCount',
++                style: AppStyles.boldTextStyle(context).copyWith(
++                  fontSize: 15.sp,
++                  fontWeight: FontWeight.w800,
++                ),
++              ),
++              SizedBox(height: 0.0.h),
++              Text(
++                centerLabel,
++                style: AppStyles.regularTextStyle(context).copyWith(
++                  fontSize: 12.sp,
++                  fontWeight: FontWeight.w600,
+                 ),
+               ),
+             ],
+-          );
+-        },
+-      ),
++          ),
++        ),
++      ],
+     );
+   }
+ 
+-  List<ChartData> _getChartData(dynamic status, int selectedIndex) {
+-    final data = [
+-      ChartData('Offline', status.offline.toDouble(), AppColors.red, 0),
+-      ChartData('Online', status.online.toDouble(), AppColors.green, 1),
++  List<ChartData> _getChartData(dynamic status) {
++    return [
++      ChartData('Stopped', status.ack.toDouble(), AppColors.red, 0),
++      ChartData('Running', status.online.toDouble(), AppColors.green, 1),
+       ChartData('Idle', status.idle.toDouble(), AppColors.yellow, 2),
+-      ChartData(
+-          'Not Connected', status.neverConnected.toDouble(), AppColors.blueCyan, 3),
++      ChartData('Offline', status.offline.toDouble(), AppColors.blueCyan, 3),
+     ];
+-    if (selectedIndex != -1) {
+-      return data.map((item) {
+-        if (item.index != selectedIndex) {
+-          return ChartData(
+-              item.x, 0.001, item.color.withOpacity(0.15), item.index);
+-        }
+-        return item;
+-      }).toList();
+-    }
+-    return data;
+   }
+ }
+ 
+ class ChartData {
+   ChartData(this.x, this.y, this.color, this.index);
++
+   final String x;
+   final double y;
+   final Color color;
+diff --git a/lib/widgets/vehicle_list_widgets/top_speed_card.dart b/lib/widgets/vehicle_list_widgets/top_speed_card.dart
+index e54d0a7..a8fe3f7 100644
+--- a/lib/widgets/vehicle_list_widgets/top_speed_card.dart
++++ b/lib/widgets/vehicle_list_widgets/top_speed_card.dart
+@@ -1,10 +1,8 @@
+ import 'dart:async';
+ import 'package:flutter/material.dart';
+ import 'package:responsive_sizer/responsive_sizer.dart';
+-import 'package:trackerapp/app/theme/app_colors.dart';
+ import 'package:trackerapp/app/theme/app_styles.dart';
+ import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
+-import 'package:trackerapp/white_labeling/colors.dart';
+ import 'package:trackerapp/widgets/get_vertical_space.dart';
+ 
+ class TopSpeedCard extends StatefulWidget {
+@@ -15,12 +13,17 @@ class TopSpeedCard extends StatefulWidget {
+ }
+ class _TopSpeedCardState extends State<TopSpeedCard> {
+   late List<bool> _visibleBars;
++
+   @override
+   void initState() {
+     super.initState();
+-    _visibleBars = List.generate(widget.historyData.summary.topSpeeds.length, (_) => false);
++    _visibleBars = List.generate(
++      widget.historyData.summary.topSpeeds.length,
++      (_) => false,
++    );
+     _animateBars();
+   }
++
+   void _animateBars() {
+     for (int i = 0; i < _visibleBars.length; i++) {
+       Timer(Duration(milliseconds: i * 300), () {
+@@ -30,22 +33,29 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
+       });
+     }
+   }
++
+   @override
+   Widget build(BuildContext context) {
++    final theme = Theme.of(context);
++    final isDark = theme.brightness == Brightness.dark;
++    final onSurface = theme.colorScheme.onSurface;
+     final topSpeeds = widget.historyData.summary.topSpeeds;
+     if (topSpeeds.isEmpty) return const SizedBox.shrink();
+-    const fixedMaxSpeed = 200;
++    final maxSpeed = _getMaxSpeed(topSpeeds);
++    final observedMaxSpeed = _getObservedMaxSpeed(topSpeeds);
+     return Container(
+-      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
+-      margin: EdgeInsets.symmetric(horizontal: 6.w),
++      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
++      margin: EdgeInsets.symmetric(horizontal: 5.w),
+       decoration: BoxDecoration(
+-        color: Theme.of(context).colorScheme.surface,
+-        borderRadius: BorderRadius.circular(16),
+-        boxShadow: const [
++        color: theme.cardColor,
++        borderRadius: BorderRadius.circular(24),
++        boxShadow: [
+           BoxShadow(
+-            color: Colors.black12,
+-            blurRadius: 10,
+-            offset: Offset(0, 4),
++            color: isDark
++                ? Colors.black.withOpacity(0.55)
++                : Colors.black.withOpacity(0.12),
++            blurRadius: isDark ? 14 : 10,
++            offset: const Offset(0, 4),
+           )
+         ],
+       ),
+@@ -54,13 +64,49 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
+         children: [
+           Text(
+             "Top Speed Vehicles",
+-            style:AppStyles.semiboldTextStyle(context),
++            style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+           ),
+-          verticalSpace(height: 1.8.h),
+-          Column(
+-            children: List.generate(
+-              topSpeeds.length.clamp(0, 5),
+-                  (i) => _speedBar(context, topSpeeds[i], i, fixedMaxSpeed),
++          verticalSpace(height: 1.4.h),
++          Container(
++            padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.1.h),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(18),
++              border: Border.all(color: onSurface.withOpacity(0.08)),
++              gradient: LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: isDark
++                    ? [
++                        Colors.white.withOpacity(0.02),
++                        Colors.white.withOpacity(0.01),
++                      ]
++                    : [
++                        Colors.white.withOpacity(0.95),
++                        Colors.grey.shade50,
++                      ],
++              ),
++              boxShadow: [
++                BoxShadow(
++                  color: isDark
++                      ? Colors.black.withOpacity(0.25)
++                      : Colors.black.withOpacity(0.05),
++                  blurRadius: 8,
++                  offset: const Offset(0, 3),
++                ),
++              ],
++            ),
++            child: Column(
++              children: List.generate(
++                topSpeeds.length.clamp(0, 5),
++                (i) => _speedRow(
++                  context,
++                  topSpeeds[i],
++                  i,
++                  maxSpeed,
++                  observedMaxSpeed,
++                  onSurface,
++                ),
++              ),
+             ),
+           ),
+         ],
+@@ -68,68 +114,148 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
+     );
+   }
+ 
+-  Widget _speedBar(BuildContext context, dynamic item, int index, int maxSpeed) {
+-    final gradientColors = [
+-      [Color(0xffA2D15B), Color(0xff5D6D27)],
+-      [Color(0xff4A90E2), Color(0xff003B73)],
+-      [Color(0xffE7C977), Color(0xff7A6323)],
++  Widget _speedRow(
++    BuildContext context,
++    dynamic item,
++    int index,
++    int maxSpeed,
++    double observedMaxSpeed,
++    Color onSurface,
++  ) {
++    final gradients = [
++      [const Color(0xFF3B82F6), const Color(0xFF22D3EE)],
++      [const Color(0xFF6366F1), const Color(0xFFA78BFA)],
++      [const Color(0xFF10B981), const Color(0xFF34D399)],
++      [const Color(0xFFF59E0B), const Color(0xFFF97316)],
++      [const Color(0xFFEF4444), const Color(0xFFFB7185)],
+     ];
+-    double percent = item.topSpeedKph / maxSpeed;
+-    percent = percent.clamp(0.10, 1.0);
++    final speed = (item.topSpeedKph as num?)?.toDouble() ?? 0.0;
++    final isHighest = (speed - observedMaxSpeed).abs() < 0.001;
++    final gradient = isHighest
++        ? [const Color(0xFFDC2626), const Color(0xFFF87171)]
++        : gradients[index % gradients.length];
++    double percent = speed / maxSpeed;
++    percent = percent.clamp(0.08, 1.0);
++
++    final rankText = '#${index + 1}';
++    final deviceName = item.deviceName ?? 'Vehicle';
++
+     return Container(
+-      margin: EdgeInsets.only(bottom: 1.8.h),
+-      child: Stack(
++      margin: EdgeInsets.only(bottom: 1.15.h),
++      child: Column(
+         children: [
+-          Container(
+-            height: 4.h,
+-            decoration: BoxDecoration(
+-              color: ConstantColor.secondaryColor.withOpacity(0.15),
+-              borderRadius: BorderRadius.circular(6),
+-            ),
+-          ),
+-          AnimatedContainer(
+-            duration: const Duration(milliseconds: 600),
+-            curve: Curves.easeOutCubic,
+-            height: 4.h,
+-            width: _visibleBars[index] ? 100.w * percent : 0,
+-            decoration: BoxDecoration(
+-              gradient: LinearGradient(
+-                colors: gradientColors[index % gradientColors.length],
+-                begin: Alignment.centerLeft,
+-                end: Alignment.centerRight,
++          Row(
++            children: [
++              Container(
++                height: 2.5.h,
++                width: 2.5.h,
++                alignment: Alignment.center,
++                decoration: BoxDecoration(
++                  shape: BoxShape.circle,
++                  color: gradient.first.withOpacity(0.14),
++                  border: Border.all(color: gradient.first.withOpacity(0.45)),
++                ),
++                child: Text(
++                  rankText,
++                  style: AppStyles.semiboldTextStyle(context).copyWith(
++                    fontSize: 11.sp,
++                    color: gradient.first,
++                  ),
++                ),
+               ),
+-              borderRadius: BorderRadius.circular(6),
+-            ),
+-            child: Container(
+-              padding: EdgeInsets.only(left: 4.w,right: 1.w),
+-              child: Row(
++              SizedBox(width: 2.w),
++              Expanded(
++                child: Text(
++                  _shortName(deviceName),
++                  style: AppStyles.regularTextStyle(context).copyWith(
++                    fontSize: 13.sp,
++                    fontWeight: FontWeight.w600,
++                  ),
++                  overflow: TextOverflow.ellipsis,
++                ),
++              ),
++              Container(
++                padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 0.4.h),
++                decoration: BoxDecoration(
++                  color: isHighest
++                      ? const Color(0xFFDC2626).withOpacity(0.12)
++                      : onSurface.withOpacity(0.08),
++                  borderRadius: BorderRadius.circular(20),
++                  border: Border.all(
++                    color: isHighest
++                        ? const Color(0xFFDC2626).withOpacity(0.35)
++                        : onSurface.withOpacity(0.12),
++                  ),
++                ),
++                child: Text(
++                  '${speed.toStringAsFixed(0)} km/h',
++                  style: AppStyles.semiboldTextStyle(context).copyWith(
++                    fontSize: 11.5.sp,
++                    color: isHighest ? const Color(0xFFB91C1C) : null,
++                  ),
++                ),
++              ),
++            ],
++          ),
++          verticalSpace(height: 0.7.h),
++          LayoutBuilder(
++            builder: (context, constraints) {
++              return Stack(
+                 children: [
+-                  Expanded(flex: 2,
+-                    child: Text(
+-                      _shortName(item.deviceName ?? ""),
+-                      style: AppStyles.appTitleTextStyle.copyWith(fontSize: 15.sp,
+-                          color: AppColors.white),
+-                      overflow: TextOverflow.ellipsis,
++                  Container(
++                    height: 1.45.h,
++                    decoration: BoxDecoration(
++                      color: onSurface.withOpacity(0.08),
++                      borderRadius: BorderRadius.circular(10),
+                     ),
+                   ),
+-                  Expanded(flex: 1,
+-                    child: Text(
+-                      "${item.topSpeedKph} km/h",
+-                      style: AppStyles.appTitleTextStyle.copyWith(fontSize: 15.sp,
+-                        color: AppColors.white
++                  AnimatedContainer(
++                    duration: const Duration(milliseconds: 700),
++                    curve: Curves.easeOutCubic,
++                    height: 1.45.h,
++                    width:
++                        _visibleBars[index] ? constraints.maxWidth * percent : 0,
++                    decoration: BoxDecoration(
++                      gradient: LinearGradient(
++                        colors: gradient,
++                        begin: Alignment.centerLeft,
++                        end: Alignment.centerRight,
+                       ),
++                      borderRadius: BorderRadius.circular(10),
++                      boxShadow: [
++                        BoxShadow(
++                          color: gradient.last.withOpacity(0.30),
++                          blurRadius: 10,
++                          offset: const Offset(0, 2),
++                        ),
++                      ],
+                     ),
+                   ),
+                 ],
+-              )
+-
+-            ),
++              );
++            },
+           ),
+         ],
+       ),
+     );
+   }
+ 
++  int _getMaxSpeed(List<dynamic> speeds) {
++    if (speeds.isEmpty) return 200;
++    final max = speeds
++        .map((e) => (e.topSpeedKph as num?)?.toDouble() ?? 0.0)
++        .reduce((a, b) => a > b ? a : b);
++    if (max <= 0) return 200;
++    return (max * 1.15).ceil();
++  }
++
++  double _getObservedMaxSpeed(List<dynamic> speeds) {
++    if (speeds.isEmpty) return 0;
++    return speeds
++        .map((e) => (e.topSpeedKph as num?)?.toDouble() ?? 0.0)
++        .reduce((a, b) => a > b ? a : b);
++  }
++
+   String _shortName(String name) =>
+-      name.length <= 14 ? name : "${name.substring(0, 14)}...";
++      name.length <= 18 ? name : "${name.substring(0, 18)}...";
+ }

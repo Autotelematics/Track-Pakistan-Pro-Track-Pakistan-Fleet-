@@ -23,40 +23,44 @@ class HistoryPlaybackTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
     final hasPosition =
         provider.currentSliderValue < provider.routeList.length;
     final pos =
-    hasPosition ? provider.routeList[provider.currentSliderValue] : null;
+        hasPosition ? provider.routeList[provider.currentSliderValue] : null;
 
     return ListView(
       controller: scrollController,
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       children: [
         if (hasPosition && pos != null) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 2.w,
+            runSpacing: .8.h,
             children: [
-              InfoChip(icon: Icons.speed, label: '${pos.speed} km/h'),
-              InfoChip(icon: Icons.access_alarm, label: pos.rawTime ?? '—'),
+              InfoChip(icon: Icons.speed, label: '${pos.speed} km/h', wide: true),
+              InfoChip(icon: Icons.access_alarm, label: pos.rawTime ?? '—', wide: true),
               InfoChip(
                   icon: Icons.directions_car,
-                  label: '${pos.distance.toStringAsFixed(2)} km'),
+                  label: '${pos.distance.toStringAsFixed(2)} km',
+                  wide: true),
             ],
           ),
-          verticalSpace(height: 1.5.h),
+          verticalSpace(height: 1.h),
         ],
         // Playback status indicator
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.8.h),
+          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.9.h),
           decoration: BoxDecoration(
             color: provider.isPlaying
-                ? Colors.green.withOpacity(0.1)
-                : Colors.orange.withOpacity(0.08),
+                ? Colors.green.withValues(alpha: 0.10)
+                : Colors.orange.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10.sp),
             border: Border.all(
               color: provider.isPlaying
-                  ? Colors.green.withOpacity(0.4)
-                  : Colors.orange.withOpacity(0.3),
+                  ? Colors.green.withValues(alpha: 0.40)
+                  : Colors.orange.withValues(alpha: 0.30),
             ),
           ),
           child: Row(
@@ -75,7 +79,7 @@ class HistoryPlaybackTab extends StatelessWidget {
                     ? 'Playing — route highlighted green'
                     : 'Paused',
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 15.sp,
+                  fontSize: 12.6.sp,
                   color: provider.isPlaying ? Colors.green : Colors.orange,
                   fontWeight: FontWeight.w600,
                 ),
@@ -83,7 +87,7 @@ class HistoryPlaybackTab extends StatelessWidget {
             ],
           ),
         ),
-        verticalSpace(height: 1.5.h),
+        verticalSpace(height: 1.1.h),
 
         // Slider + controls
         Row(
@@ -91,15 +95,22 @@ class HistoryPlaybackTab extends StatelessWidget {
             GestureDetector(
               onTap: provider.playPause,
               child: Container(
-                padding: EdgeInsets.all(1.w),
+                padding: EdgeInsets.all(1.6.w),
                 decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor,
+                  color: ConstantColor.primaryColor.withValues(alpha: .92),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ConstantColor.primaryColor.withValues(alpha: .30),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   provider.isPlaying ? Icons.pause : Icons.play_arrow,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
             ),
@@ -110,15 +121,15 @@ class HistoryPlaybackTab extends StatelessWidget {
                   activeTrackColor: provider.isPlaying
                       ? Colors.green
                       : ConstantColor.primaryColor,
-                  inactiveTrackColor: Colors.grey.shade300,
+                  inactiveTrackColor: onSurface.withValues(alpha: .18),
                   thumbColor: provider.isPlaying
                       ? Colors.green
                       : ConstantColor.primaryColor,
-                  overlayColor: ConstantColor.primaryColor.withOpacity(0.15),
+                  overlayColor: ConstantColor.primaryColor.withValues(alpha: .15),
                   thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 8),
+                      const RoundSliderThumbShape(enabledThumbRadius: 8),
                   overlayShape:
-                  const RoundSliderOverlayShape(overlayRadius: 16),
+                      const RoundSliderOverlayShape(overlayRadius: 16),
                 ),
                 child: Slider(
                   padding: EdgeInsets.zero,
@@ -147,13 +158,12 @@ class HistoryPlaybackTab extends StatelessWidget {
             GestureDetector(
               onTap: provider.changePlaybackSpeed,
               child: Container(
-                padding:
-                EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.6.h),
+                padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 0.7.h),
                 decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor.withOpacity(0.1),
+                  color: ConstantColor.primaryColor.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(6.sp),
                   border: Border.all(
-                      color: ConstantColor.primaryColor.withOpacity(0.4)),
+                      color: ConstantColor.primaryColor.withValues(alpha: .36)),
                 ),
                 child: Text(
                   provider.playbackSpeedLabel,
@@ -166,37 +176,34 @@ class HistoryPlaybackTab extends StatelessWidget {
             ),
           ],
         ),
-        verticalSpace(height: 1.5.h),
+        verticalSpace(height: 1.1.h),
 
-        // Stats grid
-        Row(
+        Wrap(
+          spacing: 2.w,
+          runSpacing: .8.h,
           children: [
-            Expanded(
-              child: Column(children: [
-                StatCard("Total Trips", provider.tripCount.toString(),
-                    ConstantColor.primaryColor),
-                StatCard("Move Time", provider.moveDuration, AppColors.purple),
-              ]),
+            StatCard(
+              "Total Trips",
+              provider.tripCount.toString(),
+              ConstantColor.primaryColor,
+              width: 44.w,
             ),
-            Expanded(
-              child: Column(children: [
-                StatCard("Fuel (LTR)",
-                    provider.totalFuelSpent.toStringAsFixed(2), AppColors.yellow),
-                StatCard("Stop Time", provider.stopDuration, Colors.orange),
-              ]),
+            StatCard("Move Time", provider.moveDuration, AppColors.purple,
+                width: 44.w),
+            StatCard("Fuel (LTR)", provider.totalFuelSpent.toStringAsFixed(2),
+                AppColors.yellow, width: 44.w),
+            StatCard("Stop Time", provider.stopDuration, Colors.orange,
+                width: 44.w),
+            StatCard(
+              "Total Spent",
+              "Rs. ${provider.totalFuelCost.toStringAsFixed(0)}",
+              AppColors.green,
+              width: 44.w,
             ),
-            Expanded(
-              child: Column(children: [
-                StatCard(
-                    "Total Spent",
-                    "Rs. ${provider.totalFuelCost.toStringAsFixed(0)}",
-                    AppColors.green),
-                StatCard("Top Speed", provider.topSpeed, AppColors.red),
-              ]),
-            ),
+            StatCard("Top Speed", provider.topSpeed, AppColors.red, width: 44.w),
           ],
         ),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: 1.2.h),
       ],
     );
   }

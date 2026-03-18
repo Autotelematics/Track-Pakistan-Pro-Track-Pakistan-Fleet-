@@ -9,6 +9,7 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     final String name = CompanyInfo.companyName.trim();
 
     return Column(
@@ -16,14 +17,21 @@ class HeroSection extends StatelessWidget {
       children: [
         Text(
           name,
-          style: AppStyles.appTitleTextStyle,
+          textAlign: TextAlign.center,
+          style: AppStyles.appTitleTextStyle.copyWith(
+            color: onSurface,
+            fontSize: 21.sp,
+          ),
         ),
         verticalSpace(height: 0.8.h),
         Text(
           "We’re here to help",
-          style: AppStyles.regularTextStyle(context),
+          style: AppStyles.regularTextStyle(context).copyWith(
+            color: onSurface.withValues(alpha: 0.72),
+            fontSize: 14.sp,
+          ),
         ),
-        verticalSpace(height: 3.h),
+        verticalSpace(height: 2.2.h),
       ],
     );
   }

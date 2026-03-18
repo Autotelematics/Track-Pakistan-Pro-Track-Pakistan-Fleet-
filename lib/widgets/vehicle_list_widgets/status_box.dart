@@ -40,10 +40,11 @@ class StatusBox extends StatelessWidget {
 
     final countStr = count.toString();
     final digits = countStr.length;
-    final baseCircleSize = 3.4.h;
-    final circleSize = baseCircleSize + (digits > 3 ? (digits - 3) * 0.4.h : 0);
-    final boxWidth = 15.5.w;
-    final boxHeight = 3.5.h;
+    final baseCircleSize = 3.0.h;
+    final circleSize =
+        baseCircleSize + (digits > 3 ? (digits - 3) * 0.35.h : 0);
+    final boxWidth = 14.6.w;
+    final boxHeight = 3.2.h;
 
     return GestureDetector(
       onTap: () => provider.setFilter(_statusKey),
@@ -68,7 +69,9 @@ class StatusBox extends StatelessWidget {
                   child: Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: AppStyles.statusTitle(context).copyWith(
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 12.2.sp,
+                      fontWeight: FontWeight.w600,
                       color: isSelected ? Colors.white : onSurface.withOpacity(0.7),
                     ),
                   ),
@@ -94,8 +97,8 @@ class StatusBox extends StatelessWidget {
                   ),
                   child: Text(
                     countStr,
-                    style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 13.sp,
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      fontSize: 11.4.sp,
                       color: isSelected ? color : onSurface,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),

@@ -94,4 +94,8 @@ class AppStyles {
     fontFamily: "Almarena"
   );
 
+  static get context => null;
+
+  static buttonTextStyle(BuildContext context) {}
+
 }

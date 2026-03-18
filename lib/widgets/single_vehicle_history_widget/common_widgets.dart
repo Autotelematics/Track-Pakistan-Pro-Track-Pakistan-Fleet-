@@ -5,6 +5,7 @@ import 'package:trackerapp/providers/get_device_history_provider.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+
 class SheetTab extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -21,31 +22,42 @@ class SheetTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+        padding: EdgeInsets.symmetric(horizontal: 2.9.w, vertical: .36.h),
         decoration: BoxDecoration(
-          color: isSelected ? ConstantColor.primaryColor : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10.sp),
-          border: Border.all(
-            color: isSelected ? ConstantColor.primaryColor : Colors.grey.shade300,
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border(
+            bottom: BorderSide(
+              color:
+                  isSelected ? ConstantColor.primaryColor : Colors.transparent,
+              width: 2.0,
+            ),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 18.sp,
-                color: isSelected ? Colors.white : Colors.grey.shade600),
-            horizontalSpace(width: 1.5.w),
+                size: 14.8.sp,
+                color: isSelected
+                    ? ConstantColor.primaryColor
+                    : onSurface.withValues(alpha: .58)),
+            horizontalSpace(width: .8.w),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+              style: AppStyles.semiboldTextStyle(context).copyWith(
+                fontSize: 13.9.sp,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? ConstantColor.primaryColor
+                    : onSurface.withValues(alpha: .72),
               ),
             ),
           ],
@@ -54,6 +66,7 @@ class SheetTab extends StatelessWidget {
     );
   }
 }
+
 class TripCard extends StatelessWidget {
   final TripSegment trip;
   final int tripNumber;
@@ -72,25 +85,31 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        margin: EdgeInsets.only(bottom: 1.5.h),
-        padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.4.h),
+        margin: EdgeInsets.only(bottom: 1.0.h),
+        padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.1.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? ConstantColor.primaryColor.withOpacity(0.07)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(14.sp),
+              ? ConstantColor.primaryColor.withValues(alpha: 0.08)
+              : (isDark ? Colors.white.withValues(alpha: .04) : Colors.white),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? ConstantColor.primaryColor : Colors.grey.shade200,
+            color: isSelected
+                ? ConstantColor.primaryColor.withValues(alpha: .45)
+                : (isDark ? Colors.white12 : Colors.black12),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 6,
+              color: Colors.black.withValues(alpha: isDark ? .16 : .05),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -112,9 +131,9 @@ class TripCard extends StatelessWidget {
                 child: Text(
                   '$tripNumber',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
-                    color:  Colors.white,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -132,10 +151,10 @@ class TripCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           trip.startTime,
-                          style: TextStyle(
-                              fontSize: 14.sp,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87),
+                              color: onSurface),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -158,10 +177,10 @@ class TripCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           trip.endTime,
-                          style: TextStyle(
-                              fontSize: 14.sp,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87),
+                              color: onSurface),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -171,8 +190,10 @@ class TripCard extends StatelessWidget {
                   Wrap(
                     spacing: 2.w,
                     children: [
-                      MiniChip(icon: Icons.straighten, label: '${trip.distance} km'),
-                      MiniChip(icon: Icons.timer_outlined, label: trip.duration),
+                      MiniChip(
+                          icon: Icons.straighten, label: '${trip.distance} km'),
+                      MiniChip(
+                          icon: Icons.timer_outlined, label: trip.duration),
                     ],
                   ),
                 ],
@@ -181,7 +202,8 @@ class TripCard extends StatelessWidget {
             // Play button
             GestureDetector(
               onTap: onPlay,
-              child: Container(alignment: Alignment.center,
+              child: Container(
+                alignment: Alignment.center,
                 width: 8.w,
                 height: 8.w,
                 decoration: BoxDecoration(
@@ -193,7 +215,7 @@ class TripCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.withOpacity(0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -201,6 +223,215 @@ class TripCard extends StatelessWidget {
                 ),
                 child: Icon(Icons.play_arrow_rounded,
                     color: Colors.white, size: 21.sp),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ParkedCard extends StatelessWidget {
+  final ParkedSegment parked;
+  final VoidCallback? onTap;
+
+  const ParkedCard({
+    super.key,
+    required this.parked,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 1.0.h),
+        padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.1.h),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: .04) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? Colors.white12 : Colors.black12,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? .16 : .05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 7.w,
+              height: 7.w,
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  'P',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.stop_circle_outlined,
+                          size: 15.sp, color: Colors.red),
+                      SizedBox(width: 1.5.w),
+                      Expanded(
+                        child: Text(
+                          parked.stoppedAt,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              fontWeight: FontWeight.w600,
+                              color: onSurface),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  verticalSpace(height: 0.3.h),
+                  Padding(
+                    padding: EdgeInsets.only(left: 1.8.w),
+                    child: Container(
+                      height: 1.8.h,
+                      width: 2,
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  SizedBox(height: 0.3.h),
+                  Row(
+                    children: [
+                      Icon(Icons.play_circle_outline,
+                          size: 16.sp, color: Colors.green),
+                      SizedBox(width: 1.5.w),
+                      Expanded(
+                        child: Text(
+                          parked.nextMoveAt,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              fontWeight: FontWeight.w600,
+                              color: onSurface),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 0.8.h),
+                  Wrap(
+                    spacing: 2.w,
+                    children: [
+                      const MiniChip(icon: Icons.straighten, label: '0.00 km'),
+                      MiniChip(
+                          icon: Icons.timer_outlined, label: parked.duration),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AlertCard extends StatelessWidget {
+  final AlertSegment alert;
+  final VoidCallback? onTap;
+
+  const AlertCard({
+    super.key,
+    required this.alert,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 1.0.h),
+        padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.1.h),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: .04) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? Colors.white12 : Colors.black12,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? .16 : .05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.notifications_active_rounded,
+                color: Colors.white,
+                size: 16.sp,
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    alert.message,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      fontSize: 13.sp,
+                      color: onSurface,
+                    ),
+                  ),
+                  verticalSpace(height: 0.5.h),
+                  Wrap(
+                    spacing: 2.w,
+                    runSpacing: .6.h,
+                    children: [
+                      MiniChip(icon: Icons.access_time, label: alert.time),
+                      MiniChip(icon: Icons.speed, label: '${alert.speed} km/h'),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -218,28 +449,35 @@ class MiniChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.4.h),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: isDark
+            ? Colors.white.withValues(alpha: .06)
+            : const Color(0xFFF7FAFC),
         borderRadius: BorderRadius.circular(6.sp),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16.sp, color: Colors.grey.shade600),
+          Icon(icon, size: 12.5.sp, color: onSurface.withValues(alpha: .7)),
           SizedBox(width: 1.w),
           Text(label,
-              style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500)),
+              style: AppStyles.regularTextStyle(context).copyWith(
+                  fontSize: 12.8.sp,
+                  color: onSurface.withValues(alpha: .78),
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 }
+
 class DateTimeTile extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -250,27 +488,38 @@ class DateTimeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+    final isPlaceholder = text.contains("Select");
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.5.h),
+        constraints: BoxConstraints(minHeight: 4.6.h),
+        padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: 0.8.h),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(10.sp),
-          border: Border.all(color: ConstantColor.primaryColor.withOpacity(0.3)),
+          color: isDark
+              ? Colors.white.withValues(alpha: .05)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark ? Colors.white12 : Colors.black12,
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18.sp, color: ConstantColor.primaryColor),
-            horizontalSpace(width: 2.w),
+            Icon(icon, size: 15.5.sp, color: ConstantColor.primaryColor),
+            horizontalSpace(width: 1.5.w),
             Expanded(
               child: Text(
                 text,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 14.sp,
-                  color: text.contains("Select")
-                      ? Colors.grey.shade500
-                      : Colors.black87,
+                  fontSize: 12.6.sp,
+                  color: isPlaceholder
+                      ? onSurface.withValues(alpha: .56)
+                      : onSurface.withValues(alpha: .92),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -280,54 +529,98 @@ class DateTimeTile extends StatelessWidget {
     );
   }
 }
+
 class InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
+  final bool wide;
 
-  const InfoChip({super.key, required this.icon, required this.label});
+  const InfoChip({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.wide = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20.sp, color: ConstantColor.primaryColor),
-        SizedBox(width: 1.w),
-        Text(label,
-            style: AppStyles.semiboldTextStyle(context)
-                .copyWith(fontSize: 15.sp)),
-      ],
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
+    return Container(
+      width: wide ? 28.w : null,
+      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: .55.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .06)
+            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.5.sp, color: ConstantColor.primaryColor),
+          SizedBox(width: 1.w),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.semiboldTextStyle(context).copyWith(
+                fontSize: 12.7.sp,
+                color: onSurface.withValues(alpha: .86),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
 class StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final double? width;
 
-  const StatCard(this.label, this.value, this.color, {super.key});
+  const StatCard(this.label, this.value, this.color, {super.key, this.width});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.6.h),
-      margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.6.h),
-      width: 40.w,
+      width: width,
+      padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .75.h),
+      margin: EdgeInsets.symmetric(vertical: .2.h),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(10.sp),
-        border: Border.all(color: ConstantColor.primaryColor.withOpacity(0.3)),
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: AppStyles.regularTextStyle(context)
-                  .copyWith(fontSize: 16.sp, color: Colors.grey.shade600),
-              textAlign: TextAlign.center),
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 12.6.sp,
+                color: onSurface.withValues(alpha: .64),
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.start),
+          verticalSpace(height: .25.h),
           Text(value,
-              style: AppStyles.boldTextStyle(context)
-                  .copyWith(fontSize: 15.sp, color: color),
-              textAlign: TextAlign.center),
+              style: AppStyles.semiboldTextStyle(context)
+                  .copyWith(fontSize: 12.8.sp, color: color),
+              textAlign: TextAlign.start),
         ],
       ),
     );

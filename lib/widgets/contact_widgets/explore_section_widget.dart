@@ -62,22 +62,25 @@ class ExploreSection extends StatelessWidget {
     }
 
     final List<Widget> children = [
-      verticalSpace(height: 3.h),
+      verticalSpace(height: 2.2.h),
       Text(
         "Explore",
-        style: AppStyles.appTitleTextStyle.copyWith(fontSize: 16.sp),
+        style: AppStyles.appTitleTextStyle.copyWith(
+          fontSize: 17.sp,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
-      verticalSpace(height: 2.h),
+      verticalSpace(height: 1.4.h),
     ];
 
     for (int i = 0; i < cards.length; i++) {
       if (i > 0) {
-        children.add(verticalSpace(height: 1.8.h));
+        children.add(verticalSpace(height: 1.1.h));
       }
       children.add(cards[i]);
     }
 
-    children.add(verticalSpace(height: 3.h));
+    children.add(verticalSpace(height: 2.2.h));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,16 +111,23 @@ class _ActionCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.only(bottom: .6.h),
-        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.1.h),
         decoration: BoxDecoration(
           color: isDark ? theme.cardColor : AppColors.white,
-          borderRadius: BorderRadius.circular(10.px),
+          borderRadius: BorderRadius.circular(12.px),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              size: 23.sp,
+              size: 21.sp,
               color: isDark ? AppColors.white : AppColors.purple,
             ),
             horizontalSpace(width: 4.w),
@@ -129,13 +139,16 @@ class _ActionCard extends StatelessWidget {
                     title,
                     style: AppStyles.regularTextStyle(context).copyWith(
                       color: isDark ? AppColors.white : AppColors.textBlack,
+                      fontSize: 14.2.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   verticalSpace(height: 0.5.h),
                   Text(
                     subtitle,
                     style: AppStyles.lightTextStyle(context).copyWith(
-                      color: AppColors.grey,
+                      color: AppColors.grey.withValues(alpha: 0.85),
+                      fontSize: 12.1.sp,
                     ),
                   ),
                 ],
@@ -143,7 +156,7 @@ class _ActionCard extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              size: 23.sp,
+              size: 21.sp,
               color: isDark ? Colors.grey[500] : Colors.grey[600],
             ),
           ],

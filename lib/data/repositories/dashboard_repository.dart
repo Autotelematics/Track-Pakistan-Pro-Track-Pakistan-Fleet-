@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -15,13 +16,18 @@ class DashboardRepository {
         "${AppUrl.baseURL}${AppUrl.getDashboardEp}user_api_hash=$token");
     final headers = {"Content-Type": "application/json"};
     try {
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
       if (response.statusCode == 200) {
         return GetDashboardModel.fromJson(jsonDecode(response.body));
       } else {
         log('Error fetching business profiles: ${response.body}');
         return null;
       }
+    } on TimeoutException {
+      log('Timeout fetching dashboard data');
+      return null;
     } catch (error) {
       log('UnExpected Error fetching business profiles: ${error.toString()}');
       return null;
@@ -133,13 +139,18 @@ class DashboardRepository {
         "${AppUrl.baseURL}${AppUrl.getDashboardHistoryEp}user_api_hash=$token");
     final headers = {"Content-Type": "application/json"};
     try {
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
       if (response.statusCode == 200) {
         return GetDashboardHistoryModel.fromJson(jsonDecode(response.body));
       } else {
         log('Error fetching business profiles: ${response.body}');
         return null;
       }
+    } on TimeoutException {
+      log('Timeout fetching dashboard history');
+      return null;
     } catch (error) {
       log('UnExpected Error fetching business profiles: ${error.toString()}');
       return null;

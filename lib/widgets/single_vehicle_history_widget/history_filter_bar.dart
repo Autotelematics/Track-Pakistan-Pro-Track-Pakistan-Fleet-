@@ -9,7 +9,9 @@ class HistoryFilterBar extends StatelessWidget {
   final String fromDate;
   final String toDate;
   final String selectedFilter;
+  final bool showDateRangePicker;
   final ValueChanged<String> onFilterSelected;
+  final VoidCallback? onCustomFilterTap;
   final VoidCallback? onDateRangeTap; // ← NEW: Left side date click ke liye
 
   const HistoryFilterBar({
@@ -17,7 +19,9 @@ class HistoryFilterBar extends StatelessWidget {
     required this.fromDate,
     required this.toDate,
     required this.selectedFilter,
+    required this.showDateRangePicker,
     required this.onFilterSelected,
+    this.onCustomFilterTap,
     this.onDateRangeTap, // optional
   });
 
@@ -33,107 +37,125 @@ class HistoryFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayFilter = selectedFilter.isEmpty ? "Last 12H" : selectedFilter;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final filters = const [
+      "Today",
+      "Yesterday",
+      "Last 3 Days",
+      "Last 7 Days",
+      "Custom",
+    ];
 
     return Positioned(
-      top: 8.h,
+      top: 5.6.h,
       left: 3.w,
       right: 3.w,
-      child: Container(
-        height: 5.h,
-        padding: EdgeInsets.symmetric(horizontal: 2.w),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(12.sp),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.grey.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
+      child: Transform.translate(
+        offset: Offset(0, -0.4.h),
+        transformHitTests: false,
+        child: Column(
           children: [
-            // ==================== LEFT SIDE - Clickable Date Range ====================
-            Expanded(
-              child: GestureDetector(
-                onTap: onDateRangeTap, // ← Custom picker open hoga
-                behavior: HitTestBehavior.opaque,
+            Row(
+              children: List.generate(filters.length, (i) {
+                final filter = filters[i];
+                final selected = selectedFilter == filter;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        right: i == filters.length - 1 ? 0 : 1.2.w),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(9),
+                      onTap: () {
+                        if (filter == "Custom") {
+                          onCustomFilterTap?.call();
+                          return;
+                        }
+                        onFilterSelected(filter);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        alignment: Alignment.center,
+                        constraints: BoxConstraints(minHeight: 4.4.h),
+                        padding: EdgeInsets.symmetric(vertical: .7.h),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? const Color(0xFF223B63)
+                              : (isDark
+                                  ? const Color(0xFF1A2433)
+                                  : Colors.white),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(
+                            color: selected
+                                ? ConstantColor.primaryColor
+                                    .withValues(alpha: .52)
+                                : (isDark ? Colors.white12 : Colors.black12),
+                          ),
+                        ),
+                        child: Text(
+                          filter,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                            fontSize: 12.3.sp,
+                            color: selected
+                                ? const Color(0xFF7FB3FF)
+                                : (isDark ? Colors.white70 : Colors.black87),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+            SizedBox(height: 0.3.h),
+            InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: onDateRangeTap,
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.15.h),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1A2433) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : Colors.black12,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? .16 : .06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_today,
-                        size: 18.sp, color: ConstantColor.primaryColor),
-                    horizontalSpace(width: 2.w),
+                    Icon(Icons.calendar_month_rounded,
+                        size: 17.sp, color: ConstantColor.primaryColor),
+                    horizontalSpace(width: 1.8.w),
                     Expanded(
                       child: Text(
-                        "${_formatDate(fromDate)} → ${_formatDate(toDate)}",
-                        style: AppStyles.semiboldTextStyle(context)
-                            .copyWith(fontSize: 14.sp),
+                        "${_formatDate(fromDate)}  ->  ${_formatDate(toDate)}",
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        style: AppStyles.semiboldTextStyle(context).copyWith(
+                          fontSize: 12.2.sp,
+                          color: isDark ? AppColors.white : AppColors.textBlack,
+                        ),
                       ),
+                    ),
+                    Icon(
+                      showDateRangePicker
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: isDark ? Colors.white70 : Colors.black54,
                     ),
                   ],
                 ),
               ),
-            ),
-
-            // ==================== RIGHT SIDE - Filter Badge + Popup ====================
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
-              decoration: BoxDecoration(
-                color: ConstantColor.primaryColor,
-                borderRadius: BorderRadius.circular(6.sp),
-              ),
-              child: Text(
-                displayFilter,
-                style: AppStyles.semiboldTextStyle(context).copyWith(
-                  fontSize: 14.sp,
-                  color: AppColors.white,
-                ),
-              ),
-            ),
-            horizontalSpace(width: 2.w),
-
-            PopupMenuButton<String>(
-              offset: Offset(0, 5.h),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.sp)),
-              icon: Icon(Icons.filter_list,
-                  color: ConstantColor.primaryColor, size: 24.sp),
-              onSelected: onFilterSelected,
-              itemBuilder: (_) => [
-                "Today",
-                "Yesterday",
-                "Last 3 Days",
-                "Last 7 Days",
-                // "Custom" ← REMOVED as per requirement
-              ]
-                  .map((e) => PopupMenuItem(
-                value: e,
-                child: Row(
-                  children: [
-                    if (e == selectedFilter)
-                      Icon(Icons.check,
-                          color: ConstantColor.primaryColor,
-                          size: 18.sp),
-                    if (e == selectedFilter)
-                      horizontalSpace(width: 2.w),
-                    Text(
-                      e,
-                      style: TextStyle(
-                        fontWeight: e == selectedFilter
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: e == selectedFilter
-                            ? ConstantColor.primaryColor
-                            : Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ))
-                  .toList(),
             ),
           ],
         ),

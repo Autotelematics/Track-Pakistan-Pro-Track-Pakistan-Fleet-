@@ -16,7 +16,7 @@ android {
         "29.0.13599879"
     }
 
-    namespace = "com.autotelnew.android"
+    namespace = "com.autotelfleet.android"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -36,13 +36,15 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.autotelnew.android"
+        applicationId = "com.autotelfleet.android"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = System.getenv("FLUTTER_VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = System.getenv("FLUTTER_VERSION_NAME") ?: "1.0"
         multiDexEnabled = true
     }
+
+    var hasValidReleaseSigning = false
 
     signingConfigs {
         create("release") {
@@ -51,12 +53,20 @@ android {
                 val properties = Properties().apply {
                     load(FileInputStream(keystorePropertiesFile))
                 }
-                keyAlias = properties["keyAlias"] as String
-                keyPassword = properties["keyPassword"] as String
-                storeFile = file(properties["storeFile"] as String)
-                storePassword = properties["storePassword"] as String
+                val storeFilePath = properties["storeFile"] as? String
+                val resolvedStoreFile = if (storeFilePath.isNullOrBlank()) null else file(storeFilePath)
+
+                if (resolvedStoreFile != null && resolvedStoreFile.exists()) {
+                    keyAlias = properties["keyAlias"] as String
+                    keyPassword = properties["keyPassword"] as String
+                    storeFile = resolvedStoreFile
+                    storePassword = properties["storePassword"] as String
+                    hasValidReleaseSigning = true
+                } else {
+                    println("⚠️ Warning: Release keystore file not found at '$storeFilePath'. Building unsigned release APK.")
+                }
             } else {
-                println("⚠️ Warning: key.properties file not found. Skipping release signing.")
+                println("⚠️ Warning: key.properties file not found. Building unsigned release APK.")
             }
         }
     }
@@ -70,7 +80,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (hasValidReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

@@ -37,6 +37,7 @@ class Item {
   final int? course;
   final int? speed;
   final String? path;
+  final String? vehicleType;
   final List<Sensor>? sensors;
   final String? stopDuration;
   final DateTime? movedAt;
@@ -56,6 +57,7 @@ class Item {
     this.course,
     this.speed,
     this.path,
+    this.vehicleType,
     this.sensors,
     this.stopDuration,
     this.movedAt,
@@ -73,9 +75,10 @@ class Item {
     lat: _toString(json["lat"]),
     lng: _toString(json["lng"]),
     addr: json["addr"] as String?,
-    course: json["course"] as int?,
-    speed: json["speed"] as int?,
+    course: _toInt(json["course"]),
+    speed: _toInt(json["speed"]),
     path: json["path"] as String?,
+    vehicleType: json["vehicle_type"] as String?,
     sensors: json["sensors"] != null
         ? List<Sensor>.from(json["sensors"].map((x) => Sensor.fromJson(x)))
         : null,
@@ -102,6 +105,7 @@ class Item {
     "course": course,
     "speed": speed,
     "path": path,
+    "vehicle_type": vehicleType,
     "sensors": sensors != null
         ? List<dynamic>.from(sensors!.map((x) => x.toJson()))
         : null,
@@ -161,7 +165,7 @@ class Sensor {
     showInPopup: json["show_in_popup"] as int?,
     value: json["value"] as String?,
     val: json["val"],
-    scaleValue: json["scale_value"] as int?,
+    scaleValue: Item._toInt(json["scale_value"]),
   );
 
   Map<String, dynamic> toJson() => {

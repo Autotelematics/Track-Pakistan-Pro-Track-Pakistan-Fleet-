@@ -10,6 +10,8 @@ class SettingsMenuTile extends StatefulWidget {
   final Color cardColor;
   final Color onSurface;
   final VoidCallback onTap;
+  final bool? switchValue;
+  final ValueChanged<bool>? onSwitchChanged;
 
   const SettingsMenuTile({
     super.key,
@@ -18,6 +20,8 @@ class SettingsMenuTile extends StatefulWidget {
     required this.cardColor,
     required this.onSurface,
     required this.onTap,
+    this.switchValue,
+    this.onSwitchChanged,
   });
 
   @override
@@ -25,44 +29,81 @@ class SettingsMenuTile extends StatefulWidget {
 }
 
 class _SettingsMenuTileState extends State<SettingsMenuTile> {
-  bool? value = false;
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDanger = widget.title == "LogOut";
+    final tileTextColor = isDanger ? AppColors.red : widget.onSurface;
+    final iconTint = isDanger
+        ? AppColors.red.withValues(alpha: 0.14)
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.12)
+            : Colors.black.withValues(alpha: 0.06));
+
     return AnimatedContainer(
       width: MediaQuery.sizeOf(context).width,
-      margin: EdgeInsets.only(bottom: 1.h),
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
+      margin: EdgeInsets.only(bottom: 1.15.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.8.w, vertical: .15.h),
       decoration: BoxDecoration(
         color: widget.cardColor,
-        borderRadius: BorderRadius.circular(10.px),
+        borderRadius: BorderRadius.circular(16.px),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       duration: const Duration(milliseconds: 400),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: Icon(widget.icon,
-            color: widget.title == "LogOut" ? AppColors.red : widget.onSurface),
+        leading: Container(
+          width: 9.5.w,
+          height: 9.5.w,
+          decoration: BoxDecoration(
+            color: iconTint,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(widget.icon, color: tileTextColor, size: 19.sp),
+        ),
         title: Text(widget.title,
             style: AppStyles.regularTextStyle(context).copyWith(
-                color: widget.title == "LogOut"
-                    ? AppColors.red
-                    : widget.onSurface)),
+                color: tileTextColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14.6.sp)),
         trailing: widget.title == "Play Alerts Announcement"
-            ? Container(
-                width: 12.w,
-                padding: EdgeInsets.only(left: 6.w),
-                child: Checkbox(
-                  value: value,
-                  activeColor: ConstantColor.primaryColor,
-                  side: BorderSide(color: AppColors.grey, width: 2),
-                  onChanged: (bool? newValue) {
-                    setState(() {
-                      value = newValue;
-                    });
-                  },
+            ? Transform.scale(
+                scale: .9,
+                child: Switch(
+                  value: widget.switchValue ?? false,
+                  activeThumbColor: ConstantColor.primaryColor,
+                  activeTrackColor:
+                      ConstantColor.primaryColor.withValues(alpha: .45),
+                  onChanged: widget.onSwitchChanged,
                 ),
               )
-            : Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.grey),
+            : Container(
+                width: 7.4.w,
+                height: 7.4.w,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: AppColors.grey,
+                ),
+              ),
         onTap: () {
           widget.onTap();
         },

@@ -1,9 +1,26 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/popups.dart';
+import 'package:trackerapp/data/models/device_expense_model.dart';
+import 'package:trackerapp/data/models/device_service_model.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
+import 'package:trackerapp/data/models/local_reminder_model.dart';
+import 'package:trackerapp/data/repositories/device_expense_repository.dart';
+import 'package:trackerapp/data/repositories/device_service_repository.dart';
+import 'package:trackerapp/providers/device_expense_provider.dart';
+import 'package:trackerapp/providers/device_service_provider.dart';
+import 'package:trackerapp/providers/reminder_provider.dart';
+import 'package:trackerapp/providers/update_device_data_provider.dart';
+import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/view/setting_screens/manager_chat_screen.dart';
+import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_expense_screen.dart';
+import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_service_screen.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -11,87 +28,121 @@ import 'package:trackerapp/widgets/get_vertical_space.dart';
 class SingleVehicleInfoScreen extends StatelessWidget {
   final List<Sensor> sensors;
   final int deviceId;
-  const SingleVehicleInfoScreen(
-      {super.key, required this.sensors, required this.deviceId});
+  final String vehicleName;
+  final String? initialKmPerLiter;
+  final String? initialEngineType;
+  final String? initialVehicleType;
+
+  const SingleVehicleInfoScreen({
+    super.key,
+    required this.sensors,
+    required this.deviceId,
+    required this.vehicleName,
+    this.initialKmPerLiter,
+    this.initialEngineType,
+    this.initialVehicleType,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xffF6F8FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+          padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 1.h),
           children: [
-            _SensorsCard(
-              sensors: sensors,
+            // Text(
+            //   "Vehicle Info",
+            //   style: AppStyles.boldTextStyle(context).copyWith(
+            //     fontSize: 16.4.sp,
+            //     color: isDark ? AppColors.white : AppColors.textBlack,
+            //   ),
+            // ),
+            verticalSpace(height: 0.0.h),
+            _SensorsCard(sensors: sensors),
+            verticalSpace(height: 1.h),
+            _UpdateVehicleInfoCard(
+              deviceId: deviceId,
+              initialKmPerLiter: initialKmPerLiter,
+              initialEngineType: initialEngineType,
+              initialVehicleType: initialVehicleType,
             ),
-            verticalSpace(height: 1.6.h),
+            verticalSpace(height: 1.h),
             _InfoCard(
               index: 0,
               icon: Icons.person_outline,
-              iconBg: const Color(0xffEAF1FF),
-              iconColor: const Color(0xff3B82F6),
+              iconBg: const Color(0xFFEAF1FF),
+              iconColor: const Color(0xFF3B82F6),
               title: "Driver Assignment",
               actionText: "Assign",
               bodyText: "See driver",
               deviceId: deviceId,
+              vehicleName: vehicleName,
             ),
-            verticalSpace(height: 1.6.h),
+            verticalSpace(height: 1.h),
             _InfoCard(
               index: 1,
               icon: Icons.assignment_turned_in,
-              iconBg: const Color(0xffEAF1FF),
-              iconColor: const Color(0xff3B82F6),
+              iconBg: const Color(0xFFEAF1FF),
+              iconColor: const Color(0xFF3B82F6),
               title: "Alert Assign",
               actionText: "Assign",
               bodyText: "No Alert assigned",
-              deviceId: 0,
+              deviceId: deviceId,
+              vehicleName: vehicleName,
             ),
-            verticalSpace(height: 1.6.h),
+            verticalSpace(height: 1.h),
             _InfoCard(
               index: 2,
               icon: Icons.build_outlined,
-              iconBg: const Color(0xffFFF3E8),
-              iconColor: const Color(0xffF97316),
+              iconBg: const Color(0xFFFFF3E8),
+              iconColor: const Color(0xFFF97316),
               title: "Maintenance",
               actionText: "Add",
               bodyText: "No upcoming maintenance",
-              deviceId: 0,
+              deviceId: deviceId,
+              vehicleName: vehicleName,
             ),
-            verticalSpace(height: 1.6.h),
+            verticalSpace(height: 1.h),
             _InfoCard(
               index: 3,
               icon: Icons.attach_money,
-              iconBg: const Color(0xffE9F9F1),
-              iconColor: const Color(0xff10B981),
+              iconBg: const Color(0xFFE9F9F1),
+              iconColor: const Color(0xFF10B981),
               title: "Expenses",
-              subtitle: "Total: Rs 0",
+              subtitle: "Track and manage expenses",
               actionText: "Add",
-              bodyText: "No expenses recorded",
-              deviceId: 0,
+              bodyText: "View all expenses",
+              deviceId: deviceId,
+              vehicleName: vehicleName,
             ),
-            verticalSpace(height: 1.6.h),
-            _InfoCard(
-              index: 4,
-              icon: Icons.location_on_outlined,
-              iconBg: const Color(0xffF1EDFF),
-              iconColor: const Color(0xff8B5CF6),
-              title: "Geofences",
-              actionText: "Assign",
-              bodyText: "No geofences assigned",
-              hintText: "Create geofences first to assign them",
-              deviceId: 0,
-            ),
-            verticalSpace(height: 1.6.h),
+            verticalSpace(height: 1.h),
             _InfoCard(
               index: 5,
               icon: Icons.notifications_none_outlined,
-              iconBg: const Color(0xfffff1f2),
-              iconColor: const Color(0xffe4395e),
+              iconBg: const Color(0xFFFFF1F2),
+              iconColor: const Color(0xFFE4395E),
               title: "Reminders",
               actionText: "Add",
               bodyText: "No active reminders",
-              deviceId: 0,
+              deviceId: deviceId,
+              vehicleName: vehicleName,
+            ),
+            verticalSpace(height: 1.h),
+            _InfoCard(
+              index: 6,
+              icon: Icons.report_problem_outlined,
+              iconBg: const Color(0xFFFFF4E5),
+              iconColor: const Color(0xFFD97706),
+              title: "Complain About this Vehicle",
+              subtitle: "Open support chat with this vehicle selected",
+              actionText: "Complain",
+              bodyText: "Talk to support about $vehicleName",
+              deviceId: deviceId,
+              vehicleName: vehicleName,
             ),
           ],
         ),
@@ -103,9 +154,7 @@ class SingleVehicleInfoScreen extends StatelessWidget {
 class _SensorsCard extends StatelessWidget {
   final List<Sensor> sensors;
 
-  const _SensorsCard({
-    required this.sensors,
-  });
+  const _SensorsCard({required this.sensors});
 
   static const Map<String, IconData> _sensorIcons = {
     "IGNITION": Icons.flash_on,
@@ -123,139 +172,731 @@ class _SensorsCard extends StatelessWidget {
 
   static const IconData _fallbackIcon = Icons.sensors;
 
-  Color _getValueColor(String? value) {
+  Color _getValueColor(String? value, bool isDark) {
     if (value == "On") return AppColors.green;
     if (value == "Off") return AppColors.red;
-    return Colors.black87;
+    return isDark ? Colors.white : Colors.black87;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
             blurRadius: 12,
-            offset: const Offset(0, 6),
-          )
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: ExpansionTile(
-        initiallyExpanded: false,
-        tilePadding: EdgeInsets.symmetric(horizontal: 3.w),
-        childrenPadding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
-        backgroundColor: Colors.transparent,
-        collapsedBackgroundColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(
-          side: BorderSide.none,
-        ),
-        collapsedShape: const RoundedRectangleBorder(
-          side: BorderSide.none,
-        ),
+        tilePadding: EdgeInsets.symmetric(horizontal: 3.w, vertical: .2.h),
+        childrenPadding: EdgeInsets.fromLTRB(3.w, .1.h, 3.w, 1.0.h),
+        shape: const RoundedRectangleBorder(side: BorderSide.none),
+        collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
         title: Row(
           children: [
             Container(
               padding: EdgeInsets.all(7.px),
               decoration: BoxDecoration(
-                color: ConstantColor.primaryColor.withOpacity(0.1),
+                color: ConstantColor.primaryColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12.px),
               ),
               child: Icon(
                 Icons.sensors,
                 color: ConstantColor.primaryColor,
-                size: 3.5.h,
+                size: 2.6.h,
               ),
             ),
-
-            horizontalSpace(width: 3.w),
-            Text(
-              "Vehicle Sensors",
-              style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 17.sp),
+            horizontalSpace(width: 2.4.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Vehicle Sensors",
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      fontSize: 14.2.sp,
+                      color: isDark ? AppColors.white : AppColors.textBlack,
+                    ),
+                  ),
+                  Text(
+                    "${sensors.length} items",
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 11.2.sp,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            // horizontalSpace(width: 2.w),
-            // Text(
-            //   "(${sensors.length} items)",
-            //   style: TextStyle(
-            //     fontSize: 14.sp,
-            //     color: Colors.grey[600],
-            //   ),
-            // ),
           ],
         ),
-        trailing: Icon(
-          Icons.expand_more,
-          size: 3.h,
-        ),
         children: [
-          ListView.separated(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: sensors.length,
-            separatorBuilder: (context, index) => Divider(
-              color: Colors.grey.shade300,
-            ),
-            itemBuilder: (context, index) {
-              final sensor = sensors[index];
-              final String label = sensor.name ?? sensor.type ?? "Unknown";
-              final String value =
-                  sensor.value ?? sensor.val?.toString() ?? "-";
-              final IconData sensorIcon = _sensorIcons[label] ?? _fallbackIcon;
+          if (sensors.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 1.2.h),
+              child: Text(
+                "No sensors available",
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: sensors.length,
+              separatorBuilder: (_, __) => Divider(
+                color: isDark ? Colors.white10 : Colors.grey.shade300,
+                height: 1.2.h,
+              ),
+              itemBuilder: (context, index) {
+                final sensor = sensors[index];
+                final label = sensor.name ?? sensor.type ?? "Unknown";
+                final value = sensor.value ?? sensor.val?.toString() ?? "-";
+                final sensorIcon = _sensorIcons[label] ?? _fallbackIcon;
 
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                return Row(
                   children: [
+                    Container(
+                      width: 8.2.w,
+                      height: 4.0.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.blueCyan.withValues(alpha: .14),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        sensorIcon,
+                        size: 15.sp,
+                        color: AppColors.blueCyan,
+                      ),
+                    ),
+                    horizontalSpace(width: 2.2.w),
                     Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.1.sp,
+                          color: isDark ? AppColors.white : AppColors.textBlack,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 1.6.w),
+                    Flexible(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 36.w),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 2.2.w, vertical: .5.h),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: .07)
+                                  : Colors.black.withValues(alpha: .03),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black12,
+                              ),
+                            ),
+                            child: Text(
+                              value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: 11.3.sp,
+                                color: _getValueColor(value, isDark),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpdateVehicleInfoCard extends StatefulWidget {
+  final int deviceId;
+  final String? initialKmPerLiter;
+  final String? initialEngineType;
+  final String? initialVehicleType;
+
+  const _UpdateVehicleInfoCard({
+    required this.deviceId,
+    this.initialKmPerLiter,
+    this.initialEngineType,
+    this.initialVehicleType,
+  });
+
+  @override
+  State<_UpdateVehicleInfoCard> createState() => _UpdateVehicleInfoCardState();
+}
+
+class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
+  static const List<String> _engineOptions = ['Petrol', 'Diesel'];
+  static const List<String> _vehicleOptions = [
+    'Car',
+    'Truck',
+    'Motorbike',
+    'Bicycle',
+    'Bus',
+    'Boat',
+    'Truck Trailer',
+    'Ambulance',
+    'SUV',
+    'Other',
+  ];
+
+  String _kmPerLiter = '-';
+  String _engineType = '-';
+  String _vehicleType = '-';
+  bool _didRequestCurrentData = false;
+  late final TextEditingController _dialogKmController;
+
+  @override
+  void initState() {
+    super.initState();
+    _dialogKmController = TextEditingController();
+    _kmPerLiter = (widget.initialKmPerLiter?.trim().isNotEmpty ?? false)
+        ? widget.initialKmPerLiter!.trim()
+        : '-';
+    _engineType = _engineOptions.contains(widget.initialEngineType)
+        ? widget.initialEngineType!
+        : '-';
+    _vehicleType = _vehicleOptions.contains(widget.initialVehicleType)
+        ? widget.initialVehicleType!
+        : '-';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didRequestCurrentData) return;
+    _didRequestCurrentData = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadCurrentData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dialogKmController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCurrentData() async {
+    final provider = context.read<UpdateDeviceDataProvider>();
+    final response = await provider.fetchCurrentDeviceData(
+      deviceId: widget.deviceId.toString(),
+      showErrorSnackBar: false,
+    );
+
+    if (!mounted || response == null) return;
+
+    setState(() {
+      if ((response.kmPerLiter?.trim().isNotEmpty ?? false)) {
+        _kmPerLiter = response.kmPerLiter!.trim();
+      }
+      if (_engineOptions.contains(response.engineType)) {
+        _engineType = response.engineType!;
+      }
+      if (_vehicleOptions.contains(response.vehicleType)) {
+        _vehicleType = response.vehicleType!;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.25.h),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.px),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF8FF),
+                  borderRadius: BorderRadius.circular(11.px),
+                ),
+                child: Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFF0284C7),
+                  size: 1.9.h,
+                ),
+              ),
+              horizontalSpace(width: 2.4.w),
+              Expanded(
+                child: Text(
+                  "Vehicle Info",
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 13.8.sp,
+                    color: isDark ? AppColors.white : AppColors.textBlack,
+                  ),
+                ),
+              ),
+              Consumer<UpdateDeviceDataProvider>(
+                builder: (context, provider, _) {
+                  return InkWell(
+                    onTap:
+                        provider.isLoading ? null : () => _showUpdateDialog(),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 3.0.w, vertical: .78.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.blueCyan.withValues(alpha: .70),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.blueCyan.withValues(alpha: .85),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.blueCyan.withValues(alpha: .22),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
                       child: Row(
                         children: [
-                          Icon(
-                            sensorIcon,
-                            size: 22,
-                            color: AppColors.blueCyan,
-                          ),
-                          horizontalSpace(width: 4.w),
+                          provider.isLoading
+                              ? SizedBox(
+                                  height: 1.75.h,
+                                  width: 1.75.h,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.edit_outlined,
+                                  size: 1.75.h,
+                                  color: Colors.white,
+                                ),
+                          horizontalSpace(width: .8.w),
                           Text(
-                            label,
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              color: Colors.grey[700],
+                            "Update",
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 11.4.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    label == "Result"
-                        ? Expanded(
-                            child: Text(
-                              value,
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                                color: _getValueColor(value),
-                              ),
-                            ),
-                          )
-                        : Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w600,
-                              color: _getValueColor(value),
-                            ),
-                          ),
-                  ],
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ],
+          ),
+          verticalSpace(height: 1.2.h),
+          _valueTile(context, "Average Per Liter", _kmPerLiter),
+          verticalSpace(height: .8.h),
+          _valueTile(context, "Engine Type", _engineType),
+          verticalSpace(height: .8.h),
+          _valueTile(context, "Vehicle Type", _vehicleType),
+        ],
+      ),
+    );
+  }
+
+  Widget _valueTile(BuildContext context, String title, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: .95.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black12,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: AppStyles.semiboldTextStyle(context).copyWith(
+                fontSize: 11.7.sp,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 11.8.sp,
+              color: isDark ? AppColors.white : AppColors.textBlack,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showUpdateDialog() async {
+    _dialogKmController.text = _kmPerLiter == '-' ? '' : _kmPerLiter;
+    String selectedEngineType = _engineOptions.contains(_engineType)
+        ? _engineType
+        : _engineOptions.first;
+    String selectedVehicleType = _vehicleOptions.contains(_vehicleType)
+        ? _vehicleType
+        : _vehicleOptions.first;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final dialogFieldWidth = 84.w;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: theme.cardColor,
+              title: SizedBox(
+                width: double.infinity,
+                height: 4.6.h,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -.6.h,
+                      right: -1.w,
+                      child: Icon(
+                        Icons.directions_car_rounded,
+                        color: AppColors.blueCyan
+                            .withValues(alpha: isDark ? 0.22 : 0.16),
+                        size: 6.2.h,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        "Update Vehicle Info",
+                        style: AppStyles.boldTextStyle(context).copyWith(
+                          fontSize: 16.2.sp,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.white : AppColors.textBlack,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 84.w,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _dialogFieldLabel(context, "Average Per Liter"),
+                      verticalSpace(height: .5.h),
+                      _dialogTextField(
+                        context: context,
+                        isDark: isDark,
+                        controller: _dialogKmController,
+                        hintText: "e.g. 11.00",
+                      ),
+                      verticalSpace(height: 1.2.h),
+                      _dialogFieldLabel(context, "Engine Type"),
+                      verticalSpace(height: .5.h),
+                      _dialogDropdownField(
+                        context: context,
+                        isDark: isDark,
+                        fieldWidth: dialogFieldWidth,
+                        value: selectedEngineType,
+                        hintText: "Select engine type",
+                        items: _engineOptions,
+                        onChanged: (value) {
+                          setDialogState(() => selectedEngineType = value);
+                        },
+                      ),
+                      verticalSpace(height: 1.2.h),
+                      _dialogFieldLabel(context, "Vehicle Type"),
+                      verticalSpace(height: .5.h),
+                      _dialogDropdownField(
+                        context: context,
+                        isDark: isDark,
+                        fieldWidth: dialogFieldWidth,
+                        value: selectedVehicleType,
+                        hintText: "Select vehicle type",
+                        items: _vehicleOptions,
+                        onChanged: (value) {
+                          setDialogState(() => selectedVehicleType = value);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(
+                    "Cancel",
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ),
+                Consumer<UpdateDeviceDataProvider>(
+                  builder: (context, provider, _) {
+                    return ElevatedButton(
+                      onPressed: provider.isLoading
+                          ? null
+                          : () async {
+                              final kmText = _dialogKmController.text.trim();
+                              final value = double.tryParse(kmText);
+                              if (kmText.isEmpty ||
+                                  value == null ||
+                                  value <= 0) {
+                                AppSnackBar.error(
+                                  message:
+                                      "Please enter a valid Average Per Liter",
+                                );
+                                return;
+                              }
+
+                              final response = await context
+                                  .read<UpdateDeviceDataProvider>()
+                                  .updateDeviceData(
+                                    deviceId: widget.deviceId.toString(),
+                                    fuelQuantity: kmText,
+                                    vehicleType: selectedVehicleType,
+                                    engineType: selectedEngineType,
+                                  );
+
+                              if (!mounted ||
+                                  response == null ||
+                                  response.status != 1) {
+                                return;
+                              }
+
+                              setState(() {
+                                _kmPerLiter = response.kmPerLiter ?? kmText;
+                                _engineType =
+                                    _engineOptions.contains(response.engineType)
+                                        ? response.engineType!
+                                        : selectedEngineType;
+                                _vehicleType = _vehicleOptions
+                                        .contains(response.vehicleType)
+                                    ? response.vehicleType!
+                                    : selectedVehicleType;
+                              });
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.blueCyan,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: provider.isLoading
+                          ? SizedBox(
+                              height: 1.6.h,
+                              width: 1.6.h,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              "Save",
+                              style: AppStyles.semiboldTextStyle(context)
+                                  .copyWith(color: Colors.white),
+                            ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _dialogFieldLabel(BuildContext context, String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Text(
+      text,
+      style: AppStyles.semiboldTextStyle(context).copyWith(
+        fontSize: 11.8.sp,
+        color: isDark ? Colors.white70 : Colors.black87,
+      ),
+    );
+  }
+
+  Widget _dialogTextField({
+    required BuildContext context,
+    required bool isDark,
+    required TextEditingController controller,
+    required String hintText,
+  }) {
+    final horizontalInset = 2.6.w;
+    return Container(
+      height: 4.6.h,
+      decoration: _dialogControlDecoration(isDark: isDark),
+      padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+      alignment: Alignment.center,
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textAlignVertical: TextAlignVertical.center,
+        style: AppStyles.regularTextStyle(context).copyWith(
+          fontSize: 13.2.sp,
+          color: isDark ? AppColors.white : AppColors.textBlack,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          isDense: true,
+          isCollapsed: true,
+          border: InputBorder.none,
+          hintText: hintText,
+          hintStyle: AppStyles.regularTextStyle(context).copyWith(
+            fontSize: 12.sp,
+            color: isDark ? Colors.white54 : Colors.black45,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _dialogDropdownField({
+    required BuildContext context,
+    required bool isDark,
+    required double fieldWidth,
+    required String value,
+    required String hintText,
+    required List<String> items,
+    required ValueChanged<String> onChanged,
+  }) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final horizontalInset = 2.6.w;
+    final innerWidth = fieldWidth - (horizontalInset * 2);
+    return Container(
+      height: 4.6.h,
+      decoration: _dialogControlDecoration(isDark: isDark),
+      padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton2<String>(
+          isExpanded: true,
+          value: value,
+          hint: Text(
+            hintText,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 12.sp,
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
+          ),
+          style: AppStyles.regularTextStyle(context).copyWith(
+            fontSize: 13.2.sp,
+            color: isDark ? AppColors.white : AppColors.textBlack,
+            fontWeight: FontWeight.w500,
+          ),
+          items: items
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 13.2.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (newValue) {
+            if (newValue == null) return;
+            onChanged(newValue);
+          },
+          buttonStyleData: ButtonStyleData(
+            height: 4.6.h,
+            width: innerWidth,
+            padding: EdgeInsets.zero,
+          ),
+          iconStyleData: IconStyleData(
+            icon: Icon(
+              Icons.arrow_drop_down_rounded,
+              color: onSurface.withValues(alpha: .7),
+              size: 2.3.h,
+            ),
+          ),
+          dropdownStyleData: DropdownStyleData(
+            width: innerWidth - 50,
+            maxHeight: 36.h,
+            isOverButton: false,
+            offset: const Offset(-8, -6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          menuItemStyleData: MenuItemStyleData(
+            padding: EdgeInsets.symmetric(horizontal: 3.w),
+            height: 4.6.h,
+          ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _dialogControlDecoration({required bool isDark}) {
+    return BoxDecoration(
+      color: isDark
+          ? Colors.white.withValues(alpha: .05)
+          : const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isDark ? Colors.white12 : Colors.black12,
       ),
     );
   }
@@ -270,8 +911,8 @@ class _InfoCard extends StatelessWidget {
   final String? subtitle;
   final String actionText;
   final String bodyText;
-  final String? hintText;
   final int deviceId;
+  final String vehicleName;
 
   const _InfoCard({
     required this.index,
@@ -282,139 +923,1718 @@ class _InfoCard extends StatelessWidget {
     this.subtitle,
     required this.actionText,
     required this.bodyText,
-    this.hintText,
     required this.deviceId,
+    required this.vehicleName,
   });
+
+  Future<void> _onPrimaryTap(BuildContext context) async {
+    if (index == 0) {
+      showAssignDriverPopup(context, deviceId.toString());
+    } else if (index == 1) {
+      showAlertSettingsPopup(context, deviceId: deviceId);
+    } else if (index == 2) {
+      final formData = await showServiceFormDialog(context);
+      if (formData == null) return;
+      try {
+        await DeviceServiceRepository().createService(
+          deviceId: deviceId,
+          name: formData.name,
+          expirationBy: formData.expirationBy,
+          interval: formData.interval,
+          lastService: formData.lastService,
+          triggerEventLeft: formData.triggerEventLeft,
+          renewAfterExpiration: formData.renewAfterExpiration,
+          expires: formData.expires,
+          expiresDate: formData.expiresDate,
+          remind: formData.remind,
+          remindDate: formData.remindDate,
+          email: formData.email,
+          mobilePhone: formData.mobilePhone,
+          description: formData.description,
+        );
+        AppSnackBar.success(message: "Service added successfully");
+      } catch (e) {
+        AppSnackBar.error(message: e.toString());
+      }
+    } else if (index == 3) {
+      final formData = await showExpenseFormDialog(
+        context,
+        deviceId: deviceId,
+      );
+      if (formData == null) return;
+
+      try {
+        await DeviceExpenseRepository().createExpense(
+          deviceId: deviceId,
+          typeId: formData.typeId,
+          date: formData.date,
+          quantity: formData.quantity,
+          unitCost: formData.unitCost,
+          name: formData.name,
+          supplier: formData.supplier,
+          comment: formData.comment,
+        );
+        AppSnackBar.success(message: "Expense added successfully");
+      } catch (e) {
+        AppSnackBar.error(message: e.toString());
+      }
+    } else if (index == 5) {
+      showAddReminderPopup(
+        context,
+        deviceId: deviceId,
+        vehicleName: vehicleName,
+      );
+    } else if (index == 6) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ManagerChatScreen(
+            deviceId: deviceId,
+            vehicleName: vehicleName,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _onBodyTap(BuildContext context) {
+    if (index == 0) {
+      showDriverDetailPopup(context, deviceId: deviceId.toString());
+      return;
+    }
+    if (index == 3) {
+      _showExpenseListBottomSheet(
+        context,
+        deviceId: deviceId,
+        vehicleName: vehicleName,
+      );
+      return;
+    }
+    if (index == 2) {
+      _showServiceListBottomSheet(
+        context,
+        deviceId: deviceId,
+        vehicleName: vehicleName,
+      );
+      return;
+    }
+    if (index == 5) {
+      _showReminderListBottomSheet(
+        context,
+        deviceId: deviceId,
+        vehicleName: vehicleName,
+      );
+      return;
+    }
+    if (index == 6) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ManagerChatScreen(
+            deviceId: deviceId,
+            vehicleName: vehicleName,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final activeReminderText = index == 5
+        ? context.select<ReminderProvider, String>((provider) {
+            final now = DateTime.now();
+            final active = provider.reminders
+                .where((r) =>
+                    r.deviceId == deviceId &&
+                    (r.repeatType != "none" || !r.dueAt.isBefore(now)))
+                .length;
+            if (active == 0) return "No active reminders";
+            if (active == 1) return "1 active reminder";
+            return "$active active reminders";
+          })
+        : "";
+    final pastReminderText = index == 5
+        ? context.select<ReminderProvider, String>((provider) {
+            final now = DateTime.now();
+            final past = provider.reminders
+                .where((r) =>
+                    r.deviceId == deviceId &&
+                    r.repeatType == "none" &&
+                    r.dueAt.isBefore(now))
+                .length;
+            if (past == 0) return "No past reminders";
+            if (past == 1) return "1 past reminder";
+            return "$past past reminders";
+          })
+        : "";
+
     return Container(
-      padding: EdgeInsets.all(1.6.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.25.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
             blurRadius: 12,
-            offset: const Offset(0, 6),
-          )
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
         children: [
-          Row(
+          Positioned(
+            right: 0,
+            left: 0,
+            top: 0,
+            height: 6.8.h,
+            child: Icon(
+              icon,
+              size: 40.sp,
+              color: iconColor.withValues(alpha: .11),
+            ),
+          ),
+          Column(
             children: [
-              Container(
-                padding: EdgeInsets.all(10.px),
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12.px),
-                ),
-                child: Icon(icon, color: iconColor, size: 2.2.h),
-              ),
-              horizontalSpace(width: 3.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppStyles.semiboldTextStyle(context)
-                          .copyWith(fontSize: 17.sp),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.px),
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(11.px),
                     ),
-                    if (subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          subtitle!,
-                          style: AppStyles.regularTextStyle(context),
+                    child: Icon(icon, color: iconColor, size: 1.9.h),
+                  ),
+                  horizontalSpace(width: 2.4.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                            fontSize: 13.8.sp,
+                            color:
+                                isDark ? AppColors.white : AppColors.textBlack,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              subtitle!,
+                              style:
+                                  AppStyles.regularTextStyle(context).copyWith(
+                                fontSize: 11.4.sp,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _onPrimaryTap(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 3.0.w, vertical: .78.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.blueCyan.withValues(alpha: .70),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.blueCyan.withValues(alpha: .85),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.blueCyan.withValues(alpha: .22),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            index == 0
+                                ? Icons.person_outline
+                                : index == 6
+                                    ? Icons.chat_rounded
+                                : Icons.add_rounded,
+                            size: 1.75.h,
+                            color: Colors.white,
+                          ),
+                          horizontalSpace(width: .8.w),
+                          Text(
+                            actionText,
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 11.4.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (index != 1) ...[
+                verticalSpace(height: .9.h),
+                if (index == 5)
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        EdgeInsets.symmetric(vertical: .9.h, horizontal: 2.4.w),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: .05)
+                          : const Color(0xFFF6F8FB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? Colors.white10 : Colors.black12,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: .07)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : Colors.black12,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              _showReminderListBottomSheet(
+                                context,
+                                deviceId: deviceId,
+                                vehicleName: vehicleName,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: .8.h, horizontal: 1.2.w),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      activeReminderText,
+                                      style: AppStyles.regularTextStyle(context)
+                                          .copyWith(
+                                        fontSize: 12.1.sp,
+                                        color: isDark
+                                            ? AppColors.white
+                                            : AppColors.textBlack,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14.5.sp,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        verticalSpace(height: .75.h),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: .07)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : Colors.black12,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              _showOldReminderHistoryBottomSheet(
+                                context,
+                                deviceId: deviceId,
+                                vehicleName: vehicleName,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: .8.h, horizontal: 1.2.w),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      pastReminderText,
+                                      style: AppStyles.regularTextStyle(context)
+                                          .copyWith(
+                                        fontSize: 12.1.sp,
+                                        color: isDark
+                                            ? AppColors.white
+                                            : AppColors.textBlack,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14.5.sp,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  InkWell(
+                    onTap: () => _onBodyTap(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          vertical: 1.0.h, horizontal: 3.w),
+                      decoration: BoxDecoration(
+                        color: index == 0
+                            ? AppColors.blueCyan.withValues(alpha: .70)
+                            : (isDark
+                                ? Colors.white.withValues(alpha: .05)
+                                : const Color(0xFFF6F8FB)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.black12,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            bodyText,
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.2.sp,
+                              color: index == 0
+                                  ? AppColors.white
+                                  : (isDark
+                                      ? AppColors.white
+                                      : AppColors.textBlack),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void _showReminderListBottomSheet(
+  BuildContext context, {
+  required int deviceId,
+  required String vehicleName,
+}) {
+  final theme = Theme.of(context);
+  final onSurface = theme.colorScheme.onSurface;
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return Consumer<ReminderProvider>(
+        builder: (context, provider, _) {
+          final now = DateTime.now();
+          final activeReminders = provider.reminders
+              .where((r) =>
+                  r.deviceId == deviceId &&
+                  (r.repeatType != "none" || !r.dueAt.isBefore(now)))
+              .toList()
+            ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
+          final oldReminders = provider.reminders
+              .where((r) =>
+                  r.deviceId == deviceId &&
+                  r.repeatType == "none" &&
+                  r.dueAt.isBefore(now))
+              .toList()
+            ..sort((a, b) => b.dueAt.compareTo(a.dueAt));
+
+          return Container(
+            width: double.infinity,
+            constraints: BoxConstraints(minHeight: 70.h, maxHeight: 70.h),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+              child: activeReminders.isEmpty
+                  ? SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Container(
+                            width: 10.w,
+                            height: .45.h,
+                            decoration: BoxDecoration(
+                              color: onSurface.withValues(alpha: .18),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          verticalSpace(height: 1.2.h),
+                          Text(
+                            "Active Reminders",
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 14.sp,
+                              color: onSurface,
+                            ),
+                          ),
+                          verticalSpace(height: .35.h),
+                          Text(
+                            vehicleName,
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.sp,
+                              color: onSurface.withValues(alpha: .62),
+                            ),
+                          ),
+                          verticalSpace(height: 2.2.h),
+                          Text(
+                            "No active reminders",
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              color: onSurface.withValues(alpha: .65),
+                            ),
+                          ),
+                          if (oldReminders.isNotEmpty) ...[
+                            verticalSpace(height: 1.2.h),
+                            SizedBox(
+                              width: 45.w,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  _showOldReminderHistoryBottomSheet(
+                                    context,
+                                    deviceId: deviceId,
+                                    vehicleName: vehicleName,
+                                  );
+                                },
+                                icon: const Icon(Icons.history_rounded),
+                                label: const Text("Old Reminders"),
+                              ),
+                            ),
+                          ],
+                          verticalSpace(height: 2.2.h),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        Container(
+                          width: 10.w,
+                          height: .45.h,
+                          decoration: BoxDecoration(
+                            color: onSurface.withValues(alpha: .18),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        verticalSpace(height: 1.2.h),
+                        Text(
+                          "Active Reminders",
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                            fontSize: 14.sp,
+                            color: onSurface,
+                          ),
+                        ),
+                        verticalSpace(height: .35.h),
+                        Text(
+                          vehicleName,
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: 12.sp,
+                            color: onSurface.withValues(alpha: .62),
+                          ),
+                        ),
+                        verticalSpace(height: 1.2.h),
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: activeReminders.length,
+                            separatorBuilder: (_, __) =>
+                                verticalSpace(height: .8.h),
+                            itemBuilder: (_, index) {
+                              final reminder = activeReminders[index];
+                              return _ReminderTile(
+                                reminder: reminder,
+                                onEdit: () async {
+                                  Navigator.pop(sheetContext);
+                                  await showAddReminderPopup(
+                                    context,
+                                    deviceId: deviceId,
+                                    vehicleName: vehicleName,
+                                    existingReminder: reminder,
+                                  );
+                                },
+                                onDelete: () async {
+                                  final confirmed =
+                                      await _confirmDeleteReminder(context);
+                                  if (!confirmed) return;
+                                  if (!context.mounted) return;
+                                  await context
+                                      .read<ReminderProvider>()
+                                      .deleteReminder(reminder.id);
+                                  AppSnackBar.success(
+                                      message: "Reminder deleted");
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        if (oldReminders.isNotEmpty) ...[
+                          verticalSpace(height: .8.h),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _showOldReminderHistoryBottomSheet(
+                                  context,
+                                  deviceId: deviceId,
+                                  vehicleName: vehicleName,
+                                );
+                              },
+                              icon: const Icon(Icons.history_rounded),
+                              label: const Text("Old Reminders"),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+void _showOldReminderHistoryBottomSheet(
+  BuildContext context, {
+  required int deviceId,
+  required String vehicleName,
+}) {
+  final theme = Theme.of(context);
+  final onSurface = theme.colorScheme.onSurface;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return Consumer<ReminderProvider>(
+        builder: (context, provider, _) {
+          final now = DateTime.now();
+          final oldReminders = provider.reminders
+              .where((r) =>
+                  r.deviceId == deviceId &&
+                  r.repeatType == "none" &&
+                  r.dueAt.isBefore(now))
+              .toList()
+            ..sort((a, b) => b.dueAt.compareTo(a.dueAt));
+
+          return Container(
+            width: double.infinity,
+            constraints: BoxConstraints(minHeight: 70.h, maxHeight: 70.h),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+              child: oldReminders.isEmpty
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 10.w,
+                          height: .45.h,
+                          decoration: BoxDecoration(
+                            color: onSurface.withValues(alpha: .18),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        verticalSpace(height: 1.2.h),
+                        Text(
+                          "Old Reminders",
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                            fontSize: 14.sp,
+                            color: onSurface,
+                          ),
+                        ),
+                        verticalSpace(height: .35.h),
+                        Text(
+                          vehicleName,
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: 12.sp,
+                            color: onSurface.withValues(alpha: .62),
+                          ),
+                        ),
+                        verticalSpace(height: 2.2.h),
+                        Text(
+                          "No old reminders",
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: 12.8.sp,
+                            color: onSurface.withValues(alpha: .65),
+                          ),
+                        ),
+                        verticalSpace(height: 2.2.h),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Container(
+                          width: 10.w,
+                          height: .45.h,
+                          decoration: BoxDecoration(
+                            color: onSurface.withValues(alpha: .18),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        verticalSpace(height: 1.2.h),
+                        Text(
+                          "Old Reminders",
+                          style: AppStyles.semiboldTextStyle(context).copyWith(
+                            fontSize: 14.sp,
+                            color: onSurface,
+                          ),
+                        ),
+                        verticalSpace(height: .35.h),
+                        Text(
+                          vehicleName,
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: 12.sp,
+                            color: onSurface.withValues(alpha: .62),
+                          ),
+                        ),
+                        verticalSpace(height: 1.2.h),
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: oldReminders.length,
+                            separatorBuilder: (_, __) =>
+                                verticalSpace(height: .8.h),
+                            itemBuilder: (_, index) {
+                              final reminder = oldReminders[index];
+                              return _ReminderTile(
+                                reminder: reminder,
+                                onEdit: () async {
+                                  Navigator.pop(sheetContext);
+                                  await showAddReminderPopup(
+                                    context,
+                                    deviceId: deviceId,
+                                    vehicleName: vehicleName,
+                                    existingReminder: reminder,
+                                  );
+                                },
+                                onDelete: () async {
+                                  final confirmed =
+                                      await _confirmDeleteReminder(context);
+                                  if (!confirmed) return;
+                                  if (!context.mounted) return;
+                                  await context
+                                      .read<ReminderProvider>()
+                                      .deleteReminder(reminder.id);
+                                  AppSnackBar.success(
+                                      message: "Reminder deleted");
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+void _showExpenseListBottomSheet(
+  BuildContext context, {
+  required int deviceId,
+  required String vehicleName,
+}) {
+  final theme = Theme.of(context);
+  final onSurface = theme.colorScheme.onSurface;
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return ChangeNotifierProvider(
+        create: (_) => DeviceExpenseProvider()..initialize(deviceId: deviceId),
+        child: Consumer<DeviceExpenseProvider>(
+          builder: (context, provider, _) {
+            return Container(
+              width: double.infinity,
+              constraints: BoxConstraints(minHeight: 70.h, maxHeight: 70.h),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 10.w,
+                      height: .45.h,
+                      decoration: BoxDecoration(
+                        color: onSurface.withValues(alpha: .18),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    verticalSpace(height: 1.2.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Expenses",
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 14.sp,
+                              color: onSurface,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: provider.expenses.isEmpty
+                              ? null
+                              : () => _shareExpenseSummary(
+                                    vehicleName: vehicleName,
+                                    total: provider.total,
+                                    items: provider.expenses,
+                                  ),
+                          icon: const Icon(Icons.ios_share_rounded),
+                          tooltip: "Share",
+                        ),
+                      ],
+                    ),
+                    verticalSpace(height: .35.h),
+                    Text(
+                      vehicleName,
+                      style: AppStyles.regularTextStyle(context).copyWith(
+                        fontSize: 12.sp,
+                        color: onSurface.withValues(alpha: .62),
+                      ),
+                    ),
+                    verticalSpace(height: .5.h),
+                    Text(
+                      "Total: Rs ${provider.total.toStringAsFixed(2)}",
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: 14.8.sp,
+                        color: AppColors.green,
+                      ),
+                    ),
+                    verticalSpace(height: .9.h),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 2.6.w, vertical: .8.h),
+                      decoration: BoxDecoration(
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: .05)
+                            : const Color(0xFFF7FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white10
+                              : Colors.black12,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final today =
+                                    DateTime(now.year, now.month, now.day);
+                                final toBound = provider.toDate == null
+                                    ? today
+                                    : DateTime(provider.toDate!.year,
+                                        provider.toDate!.month,
+                                        provider.toDate!.day);
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      provider.fromDate ?? DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate:
+                                      toBound.isBefore(today) ? toBound : today,
+                                );
+                                if (picked == null) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceExpenseProvider>()
+                                    .setDateRange(
+                                      deviceId: deviceId,
+                                      from: picked,
+                                      to: provider.toDate,
+                                    );
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: .45.h),
+                                child: Text(
+                                  "From: ${provider.fromDate == null ? '-' : DateFormat('dd/MM/yyyy').format(provider.fromDate!)}",
+                                  style: AppStyles.regularTextStyle(context)
+                                      .copyWith(
+                                    fontSize: 13.8.sp,
+                                    color: onSurface.withValues(alpha: .78),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          horizontalSpace(width: 2.w),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final today =
+                                    DateTime(now.year, now.month, now.day);
+                                final fromBound = provider.fromDate == null
+                                    ? DateTime(2020)
+                                    : DateTime(provider.fromDate!.year,
+                                        provider.fromDate!.month,
+                                        provider.fromDate!.day);
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      provider.toDate ?? DateTime.now(),
+                                  firstDate: fromBound,
+                                  lastDate: today,
+                                );
+                                if (picked == null) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceExpenseProvider>()
+                                    .setDateRange(
+                                      deviceId: deviceId,
+                                      from: provider.fromDate,
+                                      to: picked,
+                                    );
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: .45.h),
+                                child: Text(
+                                  "To: ${provider.toDate == null ? '-' : DateFormat('dd/MM/yyyy').format(provider.toDate!)}",
+                                  style: AppStyles.regularTextStyle(context)
+                                      .copyWith(
+                                    fontSize: 13.8.sp,
+                                    color: onSurface.withValues(alpha: .78),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await context
+                                  .read<DeviceExpenseProvider>()
+                                  .setDateRange(
+                                    deviceId: deviceId,
+                                    from: null,
+                                    to: null,
+                                  );
+                            },
+                            icon: Icon(
+                              Icons.clear_rounded,
+                              size: 17.sp,
+                            ),
+                            tooltip: "Clear date filter",
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
+                      ),
+                    ),
+                    verticalSpace(height: 1.2.h),
+                    if (provider.isLoading)
+                      Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (provider.expenses.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            "No expenses recorded",
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              color: onSurface.withValues(alpha: .65),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: provider.expenses.length,
+                          separatorBuilder: (_, __) =>
+                              verticalSpace(height: .8.h),
+                          itemBuilder: (_, index) {
+                            final expense = provider.expenses[index];
+                            return _ExpenseListTile(
+                              expense: expense,
+                              fallbackType: provider.typeName(expense.typeId),
+                              onEdit: () async {
+                                final payload = await showExpenseFormDialog(
+                                  context,
+                                  deviceId: deviceId,
+                                  initialExpense: expense,
+                                );
+                                if (payload == null) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceExpenseProvider>()
+                                    .editExpense(
+                                      deviceId: deviceId,
+                                      expenseId: expense.id,
+                                      typeId: payload.typeId,
+                                      date: payload.date,
+                                      quantity: payload.quantity,
+                                      unitCost: payload.unitCost,
+                                      name: payload.name,
+                                      supplier: payload.supplier,
+                                      comment: payload.comment,
+                                    );
+                              },
+                              onDelete: () async {
+                                final confirmed =
+                                    await _confirmDeleteExpense(context);
+                                if (!confirmed) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceExpenseProvider>()
+                                    .deleteExpense(
+                                      deviceId: deviceId,
+                                      expenseId: expense.id,
+                                    );
+                              },
+                            );
+                          },
                         ),
                       ),
                   ],
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  if (index == 0) {
-                    showAssignDriverPopup(context, deviceId.toString());
-                  } else if (index == 1) {
-                    showAlertSettingsPopup(context);
-                  } else if (index == 2) {
-                    showAddMaintenancePopup(context);
-                  } else if (index == 3) {
-                    showAddExpensePopup(context);
-                  } else if (index == 4) {
-                    showGeofenceSettingsPopup(context);
-                  } else if (index == 5) {
-                    showAddReminderPopup(context);
-                  }
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      index == 0
-                          ? Icon(Icons.person_outline, size: 2.h)
-                          : Icon(Icons.add, size: 2.h),
-                      horizontalSpace(width: 1.w),
-                      Text(
-                        actionText,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+            );
+          },
+        ),
+      );
+    },
+  );
+}
+
+void _showServiceListBottomSheet(
+  BuildContext context, {
+  required int deviceId,
+  required String vehicleName,
+}) {
+  final theme = Theme.of(context);
+  final onSurface = theme.colorScheme.onSurface;
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return ChangeNotifierProvider(
+        create: (_) => DeviceServiceProvider()..initialize(deviceId: deviceId),
+        child: Consumer<DeviceServiceProvider>(
+          builder: (context, provider, _) {
+            return Container(
+              width: double.infinity,
+              constraints: BoxConstraints(minHeight: 70.h, maxHeight: 70.h),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 10.w,
+                      height: .45.h,
+                      decoration: BoxDecoration(
+                        color: onSurface.withValues(alpha: .18),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ],
+                    ),
+                    verticalSpace(height: 1.2.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Maintenance",
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 14.sp,
+                              color: onSurface,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: provider.services.isEmpty
+                              ? null
+                              : () => _shareMaintenanceSummary(
+                                    vehicleName: vehicleName,
+                                    items: provider.services,
+                                  ),
+                          icon: const Icon(Icons.ios_share_rounded),
+                          tooltip: "Share",
+                        ),
+                      ],
+                    ),
+                    verticalSpace(height: .35.h),
+                    Text(
+                      vehicleName,
+                      style: AppStyles.regularTextStyle(context).copyWith(
+                        fontSize: 12.sp,
+                        color: onSurface.withValues(alpha: .62),
+                      ),
+                    ),
+                    verticalSpace(height: .5.h),
+                    Text(
+                      "Total: ${provider.total}",
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: 14.8.sp,
+                        color: AppColors.yellow,
+                      ),
+                    ),
+                    verticalSpace(height: .9.h),
+                    if (provider.isLoading)
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (provider.services.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            "No services recorded",
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              color: onSurface.withValues(alpha: .65),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: provider.services.length,
+                          separatorBuilder: (_, __) =>
+                              verticalSpace(height: .8.h),
+                          itemBuilder: (_, index) {
+                            final service = provider.services[index];
+                            return _ServiceListTile(
+                              service: service,
+                              onEdit: () async {
+                                final payload = await showServiceFormDialog(
+                                  context,
+                                  initialService: service,
+                                );
+                                if (payload == null) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceServiceProvider>()
+                                    .editService(
+                                      deviceId: deviceId,
+                                      serviceId: service.id,
+                                      name: payload.name,
+                                      expirationBy: payload.expirationBy,
+                                      interval: payload.interval,
+                                      lastService: payload.lastService,
+                                      triggerEventLeft:
+                                          payload.triggerEventLeft,
+                                      renewAfterExpiration:
+                                          payload.renewAfterExpiration,
+                                      expires: payload.expires,
+                                      expiresDate: payload.expiresDate,
+                                      remind: payload.remind,
+                                      remindDate: payload.remindDate,
+                                      email: payload.email,
+                                      mobilePhone: payload.mobilePhone,
+                                      description: payload.description,
+                                    );
+                              },
+                              onDelete: () async {
+                                final confirmed =
+                                    await _confirmDeleteService(context);
+                                if (!confirmed) return;
+                                if (!context.mounted) return;
+                                await context
+                                    .read<DeviceServiceProvider>()
+                                    .deleteService(
+                                      deviceId: deviceId,
+                                      serviceId: service.id,
+                                    );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _shareMaintenanceSummary({
+  required String vehicleName,
+  required List<DeviceService> items,
+}) async {
+  final fmt = DateFormat('dd MMM yyyy');
+  final buffer = StringBuffer();
+  buffer.writeln("Maintenance Summary");
+  buffer.writeln("Vehicle: $vehicleName");
+  buffer.writeln("Total Services: ${items.length}");
+  buffer.writeln("");
+  for (final item in items) {
+    final expiresText =
+        item.expiresDate == null ? "-" : fmt.format(item.expiresDate!);
+    final remindText =
+        item.remindDate == null ? "-" : fmt.format(item.remindDate!);
+    final title = item.name.isEmpty ? "Service #${item.id}" : item.name;
+    buffer.writeln("- $title");
+    buffer.writeln(
+        "  Type: ${item.expirationBy.isEmpty ? '-' : item.expirationBy} | Interval: ${item.interval.isEmpty ? '-' : item.interval} | Last: ${item.lastService.isEmpty ? '-' : item.lastService}");
+    buffer.writeln(
+        "  Expires: $expiresText | Remind: $remindText | Status: ${item.expired ? 'expired' : 'active'}");
+    if (item.description.isNotEmpty) {
+      buffer.writeln("  Notes: ${item.description}");
+    }
+  }
+  await SharePlus.instance.share(ShareParams(text: buffer.toString()));
+}
+
+Future<void> _shareExpenseSummary({
+  required String vehicleName,
+  required double total,
+  required List<DeviceExpense> items,
+}) async {
+  final fmt = DateFormat('dd MMM yyyy');
+  final buffer = StringBuffer();
+  buffer.writeln("Expense Summary");
+  buffer.writeln("Vehicle: $vehicleName");
+  buffer.writeln("Total Expense: Rs ${total.toStringAsFixed(2)}");
+  buffer.writeln("Total Entries: ${items.length}");
+  buffer.writeln("");
+  for (final item in items) {
+    final dateText = item.date == null ? "-" : fmt.format(item.date!);
+    final typeText = item.typeName.trim().isEmpty ? "Unknown" : item.typeName;
+    buffer.writeln("- $dateText | $typeText");
+    buffer.writeln(
+        "  Qty: ${item.quantity} | Unit: Rs ${item.unitCost.toStringAsFixed(2)} | Amount: Rs ${item.totalCost.toStringAsFixed(2)}");
+    if (item.name.trim().isNotEmpty) {
+      buffer.writeln("  Name: ${item.name}");
+    }
+    if (item.supplier.trim().isNotEmpty) {
+      buffer.writeln("  Supplier: ${item.supplier}");
+    }
+    if (item.comment.trim().isNotEmpty) {
+      buffer.writeln("  Notes: ${item.comment}");
+    }
+  }
+  await SharePlus.instance.share(ShareParams(text: buffer.toString()));
+}
+
+Future<bool> _confirmDeleteExpense(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text("Delete Expense"),
+      content: const Text("Are you sure you want to delete this expense?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text("Delete"),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
+}
+
+Future<bool> _confirmDeleteService(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text("Delete Service"),
+      content: const Text("Are you sure you want to delete this service?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text("Delete"),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
+}
+
+Future<bool> _confirmDeleteReminder(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text("Delete Reminder"),
+      content: const Text("Are you sure you want to delete this reminder?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text("Delete"),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
+}
+
+class _ExpenseListTile extends StatelessWidget {
+  final DeviceExpense expense;
+  final String fallbackType;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ExpenseListTile({
+    required this.expense,
+    required this.fallbackType,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+    final date = expense.date == null
+        ? "-"
+        : DateFormat('dd/MM/yyyy').format(expense.date!);
+    final type = expense.typeName.isNotEmpty ? expense.typeName : fallbackType;
+    final amount = expense.totalCost.toStringAsFixed(2);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.0.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  type,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 14.8.sp,
+                    color: onSurface,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: onEdit,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 16.5.sp,
+                    color: AppColors.blueCyan,
+                  ),
+                ),
+              ),
+              horizontalSpace(width: .8.w),
+              InkWell(
+                onTap: onDelete,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.delete_rounded,
+                    size: 16.8.sp,
+                    color: AppColors.red,
                   ),
                 ),
               ),
             ],
           ),
-          if (!(index == 4 || index == 1)) verticalSpace(height: 1.4.h),
-          if (!(index == 4 || index == 1))
-            InkWell(
-              onTap: () {
-                if (index == 0) {
-                  showDriverDetailPopup(
-                    context,
-                   deviceId: deviceId.toString()
-                  );
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color:index==0?AppColors.green: const Color(0xffF6F8FB),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      bodyText,
-                      style:AppStyles.regularTextStyle(context).copyWith(
-                        color: index==0?AppColors.white:AppColors.textBlack
-                      ),
-                    ),
-                    if (hintText != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        hintText!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
+          verticalSpace(height: .35.h),
+          Text(
+            expense.name.trim().isEmpty ? "No name" : "Name: ${expense.name}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 13.2.sp,
+              color: onSurface.withValues(alpha: .72),
+            ),
+          ),
+          verticalSpace(height: .25.h),
+          Text(
+            "$date  •  Qty: ${expense.quantity}  •  Unit: Rs ${expense.unitCost.toStringAsFixed(2)}",
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 12.8.sp,
+              color: onSurface.withValues(alpha: .72),
+            ),
+          ),
+          if (expense.supplier.trim().isNotEmpty) ...[
+            verticalSpace(height: .2.h),
+            Text(
+              "Supplier: ${expense.supplier}",
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 12.8.sp,
+                color: onSurface.withValues(alpha: .72),
               ),
-            )
+            ),
+          ],
+          verticalSpace(height: .2.h),
+          Text(
+            "Amount: Rs $amount",
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 13.4.sp,
+              color: AppColors.green,
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+class _ServiceListTile extends StatelessWidget {
+  final DeviceService service;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ServiceListTile({
+    required this.service,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+    final expiresDate = service.expiresDate == null
+        ? "-"
+        : DateFormat('dd/MM/yyyy').format(service.expiresDate!);
+    final remindDate = service.remindDate == null
+        ? "-"
+        : DateFormat('dd/MM/yyyy').format(service.remindDate!);
+    final title =
+        service.name.isEmpty ? "Service #${service.id}" : service.name;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.0.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 14.8.sp,
+                    color: onSurface,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: onEdit,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 16.5.sp,
+                    color: AppColors.blueCyan,
+                  ),
+                ),
+              ),
+              horizontalSpace(width: .8.w),
+              InkWell(
+                onTap: onDelete,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.delete_rounded,
+                    size: 16.8.sp,
+                    color: AppColors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          verticalSpace(height: .35.h),
+          Text(
+            "Type: ${service.expirationBy.isEmpty ? '-' : service.expirationBy}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 13.2.sp,
+              color: onSurface.withValues(alpha: .72),
+            ),
+          ),
+          verticalSpace(height: .25.h),
+          Text(
+            "Interval: ${service.interval.isEmpty ? '-' : service.interval}  •  Last: ${service.lastService.isEmpty ? '-' : service.lastService}",
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 12.8.sp,
+              color: onSurface.withValues(alpha: .72),
+            ),
+          ),
+          verticalSpace(height: .2.h),
+          Text(
+            "Expires: $expiresDate  •  Remind: $remindDate",
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 12.8.sp,
+              color: onSurface.withValues(alpha: .72),
+            ),
+          ),
+          if (service.description.isNotEmpty) ...[
+            verticalSpace(height: .2.h),
+            Text(
+              service.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 12.8.sp,
+                color: onSurface.withValues(alpha: .72),
+              ),
+            ),
+          ],
+          verticalSpace(height: .2.h),
+          Text(
+            "Current Odometer: ${service.currentOdometer?.toString() ?? '-'}  •  Engine Hours: ${service.currentEngineHours.isEmpty ? '-' : service.currentEngineHours}",
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 13.4.sp,
+              color: AppColors.yellow,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReminderTile extends StatelessWidget {
+  final LocalReminder reminder;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ReminderTile({
+    required this.reminder,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+
+    final dueDate = DateFormat('dd/MM/yyyy').format(reminder.dueAt);
+    final dueTime = DateFormat('hh:mm a').format(reminder.dueAt);
+    final description = reminder.description.trim();
+    final repeatLabel = reminder.repeatType == "none"
+        ? "One-time"
+        : "Recurring • ${_prettyRepeat(reminder.repeatType)}";
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.0.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "${reminder.vehicleName} - ${reminder.title}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 13.8.sp,
+                    color: onSurface,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: onEdit,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 16.5.sp,
+                    color: AppColors.blueCyan,
+                  ),
+                ),
+              ),
+              horizontalSpace(width: .8.w),
+              InkWell(
+                onTap: onDelete,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(1.2.w),
+                  child: Icon(
+                    Icons.delete_rounded,
+                    size: 16.8.sp,
+                    color: AppColors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          verticalSpace(height: .35.h),
+          Text(
+            description.isEmpty ? "No description" : description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 13.5.sp,
+              color: onSurface.withValues(alpha: .74),
+            ),
+          ),
+          verticalSpace(height: .28.h),
+          Text(
+            repeatLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 12.6.sp,
+              fontWeight: FontWeight.w600,
+              color: reminder.repeatType == "none"
+                  ? onSurface.withValues(alpha: .62)
+                  : AppColors.blueCyan,
+            ),
+          ),
+          verticalSpace(height: .55.h),
+          Row(
+            children: [
+              Icon(Icons.event_rounded,
+                  size: 14.5.sp, color: AppColors.blueCyan),
+              horizontalSpace(width: 1.2.w),
+              Text(
+                dueDate,
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  fontSize: 12.7.sp,
+                  color: onSurface.withValues(alpha: .8),
+                ),
+              ),
+              horizontalSpace(width: 3.w),
+              Icon(Icons.access_time_rounded,
+                  size: 14.5.sp, color: AppColors.blueCyan),
+              horizontalSpace(width: 1.2.w),
+              Text(
+                dueTime,
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  fontSize: 12.7.sp,
+                  color: onSurface.withValues(alpha: .8),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _prettyRepeat(String repeatType) {
+    switch (repeatType) {
+      case "daily":
+        return "Daily";
+      case "weekly":
+        return "Weekly";
+      case "monthly":
+        return "Monthly";
+      case "yearly":
+        return "Yearly";
+      default:
+        return repeatType;
+    }
   }
 }

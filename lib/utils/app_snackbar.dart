@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:trackerapp/main.dart';
 
 class AppSnackBar {
-  static void success({required String message}) {
+  static void success({
+    required String message,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     rootScaffoldMessengerKey.currentState
       ?..hideCurrentSnackBar()
       ..showSnackBar(
@@ -16,12 +19,15 @@ class AppSnackBar {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          duration: const Duration(seconds: 2),
+          duration: duration,
         ),
       );
   }
 
-  static void error({required String message}) {
+  static void error({
+    required String message,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     rootScaffoldMessengerKey.currentState
       ?..hideCurrentSnackBar()
       ..showSnackBar(
@@ -35,7 +41,7 @@ class AppSnackBar {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          duration: const Duration(seconds: 2),
+          duration: duration,
         ),
       );
   }

@@ -13,27 +13,48 @@ import 'package:trackerapp/widgets/vehicle_list_widgets/group_filter_item.dart';
 import 'package:trackerapp/widgets/vehicle_list_widgets/search_bar.dart';
 import 'package:trackerapp/widgets/vehicle_list_widgets/status_box.dart';
 import 'package:trackerapp/widgets/vehicle_list_widgets/vehicle_card.dart';
+import 'package:trackerapp/widgets/vehicle_list_widgets/vehicle_list_scale.dart';
 
 class NewVehicleListDashBoard extends StatefulWidget {
   const NewVehicleListDashBoard({super.key});
 
   @override
-  State<NewVehicleListDashBoard> createState() => _NewVehicleListDashBoardState();
+  State<NewVehicleListDashBoard> createState() =>
+      _NewVehicleListDashBoardState();
 }
 
-class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
+class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
+    with WidgetsBindingObserver {
   late final GetDevicesListProvider _provider;
   bool _hasSyncedGroups = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _provider = Provider.of<GetDevicesListProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.init(context);
-      final groupProvider = Provider.of<GetDeviceGroupProvider>(context, listen: false);
+      final groupProvider =
+          Provider.of<GetDeviceGroupProvider>(context, listen: false);
       groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Future<void>.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        _provider.fetchData(isPeriodic: true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
@@ -48,7 +69,9 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Consumer2<GetDevicesListProvider, GetDeviceGroupProvider>(
         builder: (context, provider, groupProvider, child) {
-          if (groupProvider.model != null && !provider.hasGroups && !_hasSyncedGroups) {
+          if (groupProvider.model != null &&
+              !provider.hasGroups &&
+              !_hasSyncedGroups) {
             _hasSyncedGroups = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               provider.updateGroupModel(groupProvider.model);
@@ -56,7 +79,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
           }
           return Stack(
             children: [
-              _buildMainContent(context, theme, onSurface, cardColor, primary, outline),
+              _buildMainContent(
+                  context, theme, onSurface, cardColor, primary, outline),
               _buildGroupFilterOverlay(provider, cardColor, primary, onSurface),
             ],
           );
@@ -66,14 +90,13 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
   }
 
   Widget _buildMainContent(
-      BuildContext context,
-      ThemeData theme,
-      Color onSurface,
-      Color cardColor,
-      Color primary,
-      Color outline,
-      )
-  {
+    BuildContext context,
+    ThemeData theme,
+    Color onSurface,
+    Color cardColor,
+    Color primary,
+    Color outline,
+  ) {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
         if (provider.showLoading) {
@@ -82,15 +105,18 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
         if (provider.error != null) {
           return _buildErrorState(provider, context);
         }
-        if (provider.vehicleData == null || provider.vehicleData!.items == null || provider.vehicleData!.items!.isEmpty) {
+        if (provider.vehicleData == null ||
+            provider.vehicleData!.items == null ||
+            provider.vehicleData!.items!.isEmpty) {
           return _buildEmptyState(context);
         }
         return Column(
           children: [
-            verticalSpace(height: 6.h),
+            verticalSpace(height: 5.2.h),
             _buildStatusBoxes(provider, onSurface, cardColor),
-            verticalSpace(height: 1.h),
+            verticalSpace(height: .2.h),
             _buildSearchAndFilterRow(primary, onSurface, outline),
+            verticalSpace(height: 1.h),
             _buildVehicleList(provider, theme),
           ],
         );
@@ -98,19 +124,18 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildShimmer(ThemeData theme, Color onSurface, Color cardColor)
-  {
+  Widget _buildShimmer(ThemeData theme, Color onSurface, Color cardColor) {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: Column(
         children: [
-          verticalSpace(height: 6.h),
+          verticalSpace(height: 5.2.h),
           SizedBox(
-            height: 7.7.h,
+            height: 7.1.h,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: 1.h),
+              padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: .75.h),
               itemCount: 7,
               itemBuilder: (context, index) => Padding(
                 padding: EdgeInsets.symmetric(horizontal: 1.w),
@@ -125,9 +150,9 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
               ),
             ),
           ),
-          verticalSpace(height: 1.h),
+          verticalSpace(height: .8.h),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 3.w),
+            padding: EdgeInsets.symmetric(horizontal: 2.6.w),
             child: Row(
               children: [
                 Expanded(
@@ -139,7 +164,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
                     ),
                   ),
                 ),
-                horizontalSpace(width: 3.w),
+                horizontalSpace(width: 2.w),
                 Container(
                   height: 5.h,
                   width: 5.h,
@@ -151,10 +176,10 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
               ],
             ),
           ),
-          verticalSpace(height: 1.h),
+          verticalSpace(height: .8.h),
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0),
+              padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0),
               itemCount: 5,
               itemBuilder: (_, i) => Container(
                 margin: EdgeInsets.symmetric(vertical: 1.h),
@@ -171,14 +196,17 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context)
-  {
-    final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
-    final message = provider.filterStatus == 'all' && provider.selectedGroupId == null
-        ? 'No vehicles available.'
-        : provider.selectedGroupId == null
-        ? 'No vehicles are currently ${provider.filterStatus}.'
-        : 'No vehicles available in the selected group.';
+  Widget _buildEmptyState(BuildContext context) {
+    final provider =
+        Provider.of<GetDevicesListProvider>(context, listen: false);
+    final textScale = vehicleListTextScale(context);
+    final iconScale = vehicleListIconScale(context);
+    final message =
+        provider.filterStatus == 'all' && provider.selectedGroupId == null
+            ? 'No vehicles available.'
+            : provider.selectedGroupId == null
+                ? 'No vehicles are currently ${provider.filterStatus}.'
+                : 'No vehicles available in the selected group.';
     return Center(
       child: Padding(
         padding: EdgeInsets.all(4.w),
@@ -187,13 +215,16 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
           children: [
             Icon(
               Icons.directions_car_outlined,
-              size: 48.sp,
+              size: (48 * iconScale).sp,
               color: Colors.grey[600],
             ),
             verticalSpace(height: 2.h),
             Text(
               message,
-              style: TextStyle(fontSize: 16.sp, color: Colors.grey, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: (14.4 * textScale).sp,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
             verticalSpace(height: 2.h),
@@ -211,23 +242,44 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildStatusBoxes(GetDevicesListProvider provider, Color onSurface, Color cardColor)
-  {
+  Widget _buildStatusBoxes(
+      GetDevicesListProvider provider, Color onSurface, Color cardColor) {
     final statuses = [
-      _StatusData(title: "All", count: provider.getCountForStatus('all'), color: AppColors.brownMain),
-      _StatusData(title: "Running", count: provider.getCountForStatus('running'), color: AppColors.green),
-      _StatusData(title: "Stopped", count: provider.getCountForStatus('stopped'), color: AppColors.red),
-      _StatusData(title: "Idle", count: provider.getCountForStatus('idle'), color: AppColors.yellow),
-      _StatusData(title: "Offline", count: provider.getCountForStatus('offline'), color: AppColors.blueCyan),
-      _StatusData(title: "No Data", count: provider.getCountForStatus('nodata'), color: AppColors.grey),
-      _StatusData(title: "Expired", count: provider.getCountForStatus('expired'), color: AppColors.brown),
+      _StatusData(
+          title: "All",
+          count: provider.getCountForStatus('all'),
+          color: AppColors.brownMain),
+      _StatusData(
+          title: "Running",
+          count: provider.getCountForStatus('running'),
+          color: AppColors.green),
+      _StatusData(
+          title: "Stopped",
+          count: provider.getCountForStatus('stopped'),
+          color: AppColors.red),
+      _StatusData(
+          title: "Idle",
+          count: provider.getCountForStatus('idle'),
+          color: AppColors.yellow),
+      _StatusData(
+          title: "Offline",
+          count: provider.getCountForStatus('offline'),
+          color: AppColors.blueCyan),
+      _StatusData(
+          title: "No Data",
+          count: provider.getCountForStatus('nodata'),
+          color: AppColors.grey),
+      _StatusData(
+          title: "Expired",
+          count: provider.getCountForStatus('expired'),
+          color: AppColors.brown),
     ];
 
     return SizedBox(
-      height: 7.7.h,
+      height: 6.9.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: 1.h),
+        padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: .8.h),
         itemCount: statuses.length,
         itemBuilder: (context, index) => StatusBox(
           title: statuses[index].title,
@@ -240,40 +292,63 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget _buildSearchAndFilterRow(Color primary, Color onSurface, Color outline)
-  {
+  Widget _buildSearchAndFilterRow(
+      Color primary, Color onSurface, Color outline) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 3.w),
+      padding: EdgeInsets.symmetric(horizontal: 2.6.w),
       child: Row(
         children: [
           Expanded(
-            child: SearchFiled(primary: primary, onSurface: onSurface, outline: outline),
+            child: SearchFiled(
+                primary: primary, onSurface: onSurface, outline: outline),
           ),
-          horizontalSpace(width: 3.w),
+          horizontalSpace(width: 2.w),
           FilterButton(onSurface: onSurface, primary: primary),
         ],
       ),
     );
   }
 
-  Widget _buildVehicleList(GetDevicesListProvider provider, ThemeData theme)
-  {
+  Widget _buildVehicleList(GetDevicesListProvider provider, ThemeData theme) {
     if (provider.filteredVehicles.isEmpty) {
       return _buildEmptyState(context);
     }
     return Expanded(
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0),
         itemCount: provider.filteredVehicles.length,
         itemBuilder: (_, i) {
           final item = provider.filteredVehicles[i];
           return GestureDetector(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>
-                    SingleVehicleAnalytics(
-                      deviceId: provider.filteredVehicles[i].id??0,
-                      deviceName: provider.filteredVehicles[i].name??"", sensors: item.sensors??[],
-                    )));
+              onTap: () {
+                final lat = _parseCoordinate(item.lat);
+                final lng = _parseCoordinate(item.lng);
+                final online = (item.online ?? '').toLowerCase().trim();
+                final time = (item.time ?? '').toLowerCase().trim();
+                final isExpired = online == 'expired' ||
+                    (online == 'offline' && time == 'expired');
+                final isOffline = online == 'offline' &&
+                    time != 'expired' &&
+                    time != 'not connected';
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            SingleVehicleAnalytics(
+                              deviceId: provider.filteredVehicles[i].id ?? 0,
+                              deviceName:
+                                  provider.filteredVehicles[i].name ?? "",
+                              sensors: item.sensors ?? [],
+                              isExpired: isExpired,
+                              isOffline: isOffline,
+                              lastStatusTimestamp: item.timestamp,
+                              lastAckTimestamp: item.acktimestamp,
+                              lastStatusTimeText: item.time,
+                              initialVehicleType: item.vehicleType,
+                              initialLiveLat: lat,
+                              initialLiveLng: lng,
+                              initialLiveStatus: item.online,
+                            )));
               },
               child: VehicleCard(vehicle: item, theme: theme));
         },
@@ -281,13 +356,18 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
+  double? _parseCoordinate(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
   Widget _buildGroupFilterOverlay(
-      GetDevicesListProvider provider,
-      Color cardColor,
-      Color primary,
-      Color onSurface,
-      )
-  {
+    GetDevicesListProvider provider,
+    Color cardColor,
+    Color primary,
+    Color onSurface,
+  ) {
     return Consumer<GetDeviceGroupProvider>(
       builder: (context, groupProvider, child) {
         if (!provider.isFilterOpen) return const SizedBox();
@@ -314,7 +394,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
                           Column(
                             children: List.generate(
                               6,
-                                  (_) => groupItemShimmer(
+                              (_) => groupItemShimmer(
                                 primary,
                                 primary.withOpacity(0.4),
                               ),
@@ -326,7 +406,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
                               "Error: ${groupProvider.error}",
                               style: TextStyle(
                                 color: Colors.red,
-                                fontSize: 16.sp,
+                                fontSize: 14.4.sp,
                               ),
                             ),
                           )
@@ -336,13 +416,11 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
                               GroupFilterItem(
                                 title: 'All',
                                 groupId: null,
-
                               ),
                               ...groups.map(
-                                    (group) => GroupFilterItem(
+                                (group) => GroupFilterItem(
                                   title: group.title,
                                   groupId: group.id,
-
                                 ),
                               ),
                             ],
@@ -359,11 +437,10 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-  Widget groupItemShimmer(Color baseColor, Color highlightColor)
-  {
+  Widget groupItemShimmer(Color baseColor, Color highlightColor) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 4.w),
-      margin: EdgeInsets.symmetric(vertical: 0.6.h),
+      padding: EdgeInsets.symmetric(vertical: 1.3.h, horizontal: 4.w),
+      margin: EdgeInsets.symmetric(vertical: 0.45.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: baseColor.withOpacity(0.10),
@@ -372,12 +449,11 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
           width: 1,
         ),
       ),
-
       child: Row(
         children: [
           Expanded(
             child: Container(
-              height: 14.sp,
+              height: 12.4.sp,
               decoration: BoxDecoration(
                 color: baseColor.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(8),
@@ -398,10 +474,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
     );
   }
 
-
-
-  Widget _buildErrorState(GetDevicesListProvider provider, BuildContext context)
-  {
+  Widget _buildErrorState(
+      GetDevicesListProvider provider, BuildContext context) {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 6.w),
@@ -411,10 +485,13 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard> {
             Text(
               'Error: ${provider.error}',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.error),
+              style: TextStyle(
+                  fontSize: 14.4.sp,
+                  color: Theme.of(context).colorScheme.error),
             ),
             verticalSpace(height: 2.h),
-            ElevatedButton(onPressed: provider.fetchData, child: const Text('Retry')),
+            ElevatedButton(
+                onPressed: provider.fetchData, child: const Text('Retry')),
           ],
         ),
       ),

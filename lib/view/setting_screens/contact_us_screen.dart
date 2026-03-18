@@ -24,10 +24,10 @@ class ContactScreen extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isDark
                 ? const LinearGradient(
-              colors: [Color(0xFF1A1A1A), Color(0xFF121212)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            )
+                    colors: [Color(0xFF1A1A1A), Color(0xFF121212)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )
                 : AppColors.mainGradient,
           ),
           child: Column(
@@ -39,7 +39,8 @@ class ContactScreen extends StatelessWidget {
                   clipper: TopCurveClipper(),
                   child: Container(
                     color: theme.scaffoldBackgroundColor,
-                    padding: EdgeInsets.only(left: 6.w, right: 6.w, top: 3.h, bottom: 1.h),
+                    padding: EdgeInsets.only(
+                        left: 6.w, right: 6.w, top: 3.h, bottom: 1.h),
                     child: const SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,

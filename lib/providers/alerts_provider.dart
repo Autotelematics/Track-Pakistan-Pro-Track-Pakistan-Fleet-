@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
 import 'package:trackerapp/data/repositories/alerts_repository.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
@@ -21,6 +22,9 @@ class AlertsProvider with ChangeNotifier {
   String? _deviceIdFilter;
   String? _alertTypeFilter;
   String? _searchQuery;
+  DateTime? _fromDateFilter;
+  DateTime? _toDateFilter;
+  String? _pendingAlertTypeLabel;
 
   // Selection
   final Set<int> _selectedAlertIds = {};
@@ -34,6 +38,10 @@ class AlertsProvider with ChangeNotifier {
   int get totalPages => _totalPages;
   Set<int> get selectedAlertIds => _selectedAlertIds;
   bool get hasMore => _currentPage < _totalPages;
+  String? get alertTypeFilter => _alertTypeFilter;
+  DateTime? get fromDateFilter => _fromDateFilter;
+  DateTime? get toDateFilter => _toDateFilter;
+  String? get pendingAlertTypeLabel => _pendingAlertTypeLabel;
 
   // Filtered items based on search query
   List<Item> get filteredItems {
@@ -77,10 +85,43 @@ class AlertsProvider with ChangeNotifier {
     _alertTypeFilter = type == "All" ? null : type;
   }
 
+  void setDateFilter(DateTime? date) {
+    if (date == null) {
+      _fromDateFilter = null;
+      _toDateFilter = null;
+      return;
+    }
+    final normalized = DateTime(date.year, date.month, date.day);
+    _fromDateFilter = normalized;
+    _toDateFilter = normalized;
+  }
+
+  void setDateRangeFilter({
+    DateTime? from,
+    DateTime? to,
+  }) {
+    DateTime? normalize(DateTime? d) =>
+        d == null ? null : DateTime(d.year, d.month, d.day);
+    _fromDateFilter = normalize(from);
+    _toDateFilter = normalize(to);
+  }
+
+  void setPendingAlertTypeLabel(String? label) {
+    _pendingAlertTypeLabel = label;
+    notifyListeners();
+  }
+
+  void clearPendingAlertTypeLabel() {
+    _pendingAlertTypeLabel = null;
+    notifyListeners();
+  }
+
   void clearFilters() {
     _deviceIdFilter = null;
     _alertTypeFilter = null;
     _searchQuery = null;
+    _fromDateFilter = null;
+    _toDateFilter = null;
     notifyListeners();
   }
 
@@ -119,27 +160,40 @@ class AlertsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _repository.getAlerts(
+      final token = await _resolveUserToken();
+      if (token.isEmpty) {
+        throw Exception("Authentication token not ready. Please try again.");
+      }
+
+      final result = await _getAlertsWithRetry(
         page: _currentPage,
         deviceId: _deviceIdFilter,
         alertType: _alertTypeFilter,
-        userApiHashKey: MySharedPreferences.getString(authTokenKey),
+        from:
+            _fromDateFilter == null ? null : _startOfDayIso(_fromDateFilter!),
+        to: _toDateFilter == null ? null : _endOfDayIso(_toDateFilter!),
+        token: token,
       );
       if (result != null) {
         _totalPages = (result.total / result.perPage).ceil();
 
         // Grand total only when no filters
-        if (_deviceIdFilter == null && _alertTypeFilter == null) {
+        if (_deviceIdFilter == null &&
+            _alertTypeFilter == null &&
+            _fromDateFilter == null &&
+            _toDateFilter == null) {
           _grandTotal = result.total;
         }
 
+        final existingItems = _lastValidModel?.items ?? const <Item>[];
         final newItems = isRefresh
             ? result.items
             : [
-          ...?_lastValidModel?.items,
-          ...result.items.where((newItem) =>
-          !_lastValidModel!.items.any((old) => old.id == newItem.id))
-        ];
+                ...existingItems,
+                ...result.items.where(
+                  (newItem) => !existingItems.any((old) => old.id == newItem.id),
+                ),
+              ];
 
         _lastValidModel = result.copyWith(items: newItems);
         _model = _lastValidModel;
@@ -149,9 +203,11 @@ class AlertsProvider with ChangeNotifier {
             .removeWhere((id) => !newItems.any((item) => item.id == id));
 
         if (_currentPage < _totalPages) _currentPage++;
+      } else {
+        throw Exception("Unable to load alerts right now. Please try again.");
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _friendlyErrorMessage(e);
     } finally {
       _isLoading = false;
       _isLoadMore = false;
@@ -162,6 +218,8 @@ class AlertsProvider with ChangeNotifier {
   void resetFiltersOnly(BuildContext context) {
     _deviceIdFilter = null;
     _alertTypeFilter = null;
+    _fromDateFilter = null;
+    _toDateFilter = null;
     _currentPage = 1;
     _lastValidModel = null;
     _model = null;
@@ -208,5 +266,72 @@ class AlertsProvider with ChangeNotifier {
   Future<void> loadMore(BuildContext context) async {
     if (_isLoadMore || !hasMore || _isLoading) return;
     await fetchAlerts(context: context);
+  }
+
+  Future<String> _resolveUserToken() async {
+    var token = MySharedPreferences.getString(authTokenKey).trim();
+    if (token.isNotEmpty) return token;
+
+    // First app entry after login can race with async preference writes.
+    for (int i = 0; i < 4; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await MySharedPreferences.reload();
+      token = MySharedPreferences.getString(authTokenKey).trim();
+      if (token.isNotEmpty) return token;
+    }
+    return token;
+  }
+
+  Future<GetAlertsModel?> _getAlertsWithRetry({
+    required int page,
+    required String token,
+    String? deviceId,
+    String? alertType,
+    String? from,
+    String? to,
+  }) async {
+    const maxAttempts = 3;
+    for (int i = 1; i <= maxAttempts; i++) {
+      final result = await _repository.getAlerts(
+        page: page,
+        deviceId: deviceId,
+        alertType: alertType,
+        from: from,
+        to: to,
+        userApiHashKey: token,
+      );
+      if (result != null) return result;
+      if (i < maxAttempts) {
+        await Future<void>.delayed(Duration(milliseconds: 450 * i));
+      }
+    }
+    return null;
+  }
+
+  String _startOfDayIso(DateTime date) {
+    final d = DateTime(date.year, date.month, date.day, 0, 0, 0);
+    return "${DateFormat('yyyy-MM-dd').format(d)}T00:00:00";
+  }
+
+  String _endOfDayIso(DateTime date) {
+    final d = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    return "${DateFormat('yyyy-MM-dd').format(d)}T23:59:59";
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    final text = error.toString().toLowerCase();
+    if (text.contains('socketexception') ||
+        text.contains('failed host lookup') ||
+        text.contains('no address associated with hostname') ||
+        text.contains('network is unreachable') ||
+        text.contains('timed out') ||
+        text.contains('clientexception')) {
+      return "Network connection issue. Please check internet and try again.";
+    }
+    final raw = error.toString().trim();
+    if (raw.startsWith('Exception:')) {
+      return raw.replaceFirst('Exception:', '').trim();
+    }
+    return raw;
   }
 }

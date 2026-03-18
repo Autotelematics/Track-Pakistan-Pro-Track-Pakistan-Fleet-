@@ -22,6 +22,7 @@ class CustomTextField extends StatelessWidget {
   final double? contentPaddingV;
   final double? contentPaddingH;
   final bool enabled;
+  final bool readOnly;
   final int maxLines;
   final String? Function(String?)? validator;
   final VoidCallback? onTap;
@@ -49,6 +50,7 @@ class CustomTextField extends StatelessWidget {
     this.contentPaddingV,
     this.contentPaddingH,
     this.enabled = true,
+    this.readOnly = false,
     this.maxLines = 1,
     this.validator,
     this.onTap,
@@ -73,7 +75,7 @@ class CustomTextField extends StatelessWidget {
           ? BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
+            color: Colors.grey.withValues(alpha: 0.15),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -85,6 +87,7 @@ class CustomTextField extends StatelessWidget {
         keyboardType: keyboardType,
         obscureText: obscureText,
         enabled: enabled,
+        readOnly: readOnly,
         maxLines: maxLines,
         validator: validator,
         onTap: onTap,

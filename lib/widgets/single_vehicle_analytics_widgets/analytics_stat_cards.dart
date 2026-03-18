@@ -3,7 +3,6 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
-import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class AnalyticsStatCards extends StatelessWidget {
@@ -13,66 +12,65 @@ class AnalyticsStatCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _StatCard(
-          icon: Icons.straighten,
-          title: "Total Distance",
-          value: provider.totalDistance,
-          color: AppColors.blueCyan,
-        ),
-        verticalSpace(height: 1.5.h),
-        _StatCard(
-          icon: Icons.speed,
-          title: "Maximum Speed",
-          value: provider.maxSpeed,
-          color: Colors.red,
-        ),
-        verticalSpace(height: 1.5.h),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.access_time,
-                title: "Drive Time",
-                value: provider.driveTime,
-                color: AppColors.purple,
-              ),
-            ),
-            horizontalSpace(width: 3.w),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.pause_circle_outline,
-                title: "Stop Time",
-                value: provider.stopTime,
-                color: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-        verticalSpace(height: 1.5.h),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.local_gas_station_rounded,
-                title: "Fuel Used",
-                value: provider.fuelUsed,
-                color: AppColors.yellow,
-              ),
-            ),
-            horizontalSpace(width: 3.w),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.attach_money,
-                title: "Amount Spent",
-                value: provider.amountSpent,
-                color: Colors.teal,
-              ),
-            ),
-          ],
-        ),
-      ],
+    final items = [
+      (
+        icon: Icons.straighten,
+        title: "Total Distance",
+        value: provider.totalDistance,
+        color: AppColors.blueCyan,
+      ),
+      (
+        icon: Icons.speed,
+        title: "Maximum Speed",
+        value: provider.maxSpeed,
+        color: Colors.red,
+      ),
+      (
+        icon: Icons.access_time,
+        title: "Drive Time",
+        value: provider.driveTime,
+        color: AppColors.purple,
+      ),
+      (
+        icon: Icons.pause_circle_outline,
+        title: "Stop Time",
+        value: provider.stopTime,
+        color: Colors.orange,
+      ),
+      (
+        icon: Icons.local_gas_station_rounded,
+        title: "Fuel Used",
+        value: provider.fuelUsed,
+        color: AppColors.yellow,
+      ),
+      (
+        icon: Icons.attach_money,
+        title: "Amount Spent",
+        value: provider.amountSpent,
+        color: Colors.teal,
+      ),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: items.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: .8.h,
+        crossAxisSpacing: 2.2.w,
+        childAspectRatio: 2.9,
+      ),
+      itemBuilder: (_, index) {
+        final item = items[index];
+        return _StatCard(
+          icon: item.icon,
+          title: item.title,
+          value: item.value,
+          color: item.color,
+        );
+      },
     );
   }
 }
@@ -92,14 +90,23 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
+    final border = isDark ? Colors.white12 : Colors.black12;
+    final primaryText = isDark ? AppColors.white : AppColors.textBlack;
+    final secondaryText = isDark ? Colors.white70 : Colors.grey.shade600;
+
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .7.h),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(10.sp),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12.sp),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
+            color: Colors.black.withValues(alpha: isDark ? .18 : .07),
+            blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
@@ -107,34 +114,43 @@ class _StatCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
+            width: 9.0.w,
+            height: 4.3.h,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10.sp),
-                bottomLeft: Radius.circular(10.sp),
-              ),
+              color: color.withValues(alpha: .14),
+              borderRadius: BorderRadius.circular(9.sp),
             ),
-            child: Icon(icon, color: AppColors.white, size: 24.sp),
+            child: Icon(icon, color: color, size: 17.sp),
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.5.h),
+              padding: EdgeInsets.symmetric(horizontal: 2.0.w, vertical: .2.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 14.sp,
-                      color: Colors.grey.shade600,
+                      fontSize: 11.4.sp,
+                      color: secondaryText,
+                      fontWeight: FontWeight.w700,
+                      height: 1.0,
                     ),
                   ),
-                  verticalSpace(height: 0.5.h),
+                  verticalSpace(height: 0.15.h),
                   Text(
                     value,
-                    style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(fontSize: 15.sp),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.semiboldTextStyle(context).copyWith(
+                      fontSize: 13.2.sp,
+                      color: primaryText,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
                   ),
                 ],
               ),

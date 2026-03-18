@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/data/models/get_device_history_model.dart';
@@ -32,6 +34,63 @@ class TripSegment {
   });
 }
 
+class ParkedSegment {
+  final String stoppedAt;
+  final String nextMoveAt;
+  final String duration;
+  final int durationSeconds;
+  final int anchorRouteIndex;
+
+  const ParkedSegment({
+    required this.stoppedAt,
+    required this.nextMoveAt,
+    required this.duration,
+    required this.durationSeconds,
+    required this.anchorRouteIndex,
+  });
+}
+
+class HistoryTimelineEntry {
+  final TripSegment? trip;
+  final ParkedSegment? parked;
+  final bool isParked;
+
+  const HistoryTimelineEntry._({
+    this.trip,
+    this.parked,
+    required this.isParked,
+  });
+
+  factory HistoryTimelineEntry.trip(TripSegment segment) =>
+      HistoryTimelineEntry._(trip: segment, isParked: false);
+
+  factory HistoryTimelineEntry.parked(ParkedSegment segment) =>
+      HistoryTimelineEntry._(parked: segment, isParked: true);
+}
+
+class AlertSegment {
+  final String message;
+  final String time;
+  final LatLng position;
+  final int anchorRouteIndex;
+  final int speed;
+
+  const AlertSegment({
+    required this.message,
+    required this.time,
+    required this.position,
+    required this.anchorRouteIndex,
+    required this.speed,
+  });
+}
+
+class _TimeInfo {
+  final String label;
+  final DateTime? dateTime;
+
+  const _TimeInfo({required this.label, required this.dateTime});
+}
+
 class DeviceHistoryProvider extends ChangeNotifier {
   final GetDeviceHistoryRepository _repository = GetDeviceHistoryRepository();
 
@@ -45,7 +104,10 @@ class DeviceHistoryProvider extends ChangeNotifier {
   final List<LatLng> _polyLatLng = [];
   final List<LatLng> _parkedLatLngs = [];
   final List<LatLng> _eventsLatLngs = [];
+  final List<AlertSegment> _alertSegments = [];
   final Set<Polyline> _routePolyLine = {};
+  LatLng? _startPacketLatLng;
+  LatLng? _endPacketLatLng;
 
   // ── Playback ───────────────────────────────────────────────────────────────
   final List<LocationItem> _routeList = [];
@@ -53,8 +115,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
   int _sliderValueMax = 0;
   bool _isPlaying = false;
   Timer? _playbackTimer;
-  final List<int> _playBackTimeSpeeds = [1000, 800, 600, 400, 200];
+  Timer? _segmentFrameTimer;
+  static const int _baseSegmentDurationMs = 1000; // 1x speed baseline
+  static const List<double> _playbackSpeedFactors = [0.5, 1.0, 1.5, 2.0, 3.0];
   int _selectedPlayBackSpeed = 0;
+  int _segmentFromIndex = 0;
+  double _segmentProgress = 0.0;
+  DateTime? _segmentStartTime;
 
   // ── Car position (direct, no animation timer) ─────────────────────────────
   double _carLat = 0.0;
@@ -80,6 +147,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   // ── Trip segments ──────────────────────────────────────────────────────────
   final List<TripSegment> _tripSegments = [];
+  final List<ParkedSegment> _parkedSegments = [];
+  final List<HistoryTimelineEntry> _timelineEntries = [];
   int _selectedTripIndex = -1; // -1 = all trips
 
   // ── Getters ────────────────────────────────────────────────────────────────
@@ -102,8 +171,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
   double get totalFuelCost => _totalFuelCost;
   List<LatLng> get polyLatLng => _polyLatLng;
   List<LocationItem> get routeList => _routeList;
-  List<int> get playBackTimeSpeeds => _playBackTimeSpeeds;
+  List<int> get playBackTimeSpeeds => _playbackSpeedFactors
+      .map((f) => (_baseSegmentDurationMs / f).round())
+      .toList();
   List<TripSegment> get tripSegments => _tripSegments;
+  List<ParkedSegment> get parkedSegments => _parkedSegments;
+  List<AlertSegment> get alertSegments => _alertSegments;
+  List<HistoryTimelineEntry> get timelineEntries => _timelineEntries;
   int get selectedTripIndex => _selectedTripIndex;
 
   // Animated car position getters
@@ -158,33 +232,147 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _stopDuration = summary.stopDuration1;
 
     int tripIdx = 0;
+    int? activeTripStartIndex;
+    double activeTripDistanceKm = 0.0;
+    int activeTripDurationSec = 0;
+    _TimeInfo? pendingStop;
+    int pendingStopRouteIndex = 0;
+
     for (var historyItem in _deviceHistoryModel!.history) {
-      if (historyItem.status == 2) {
-        _tripCount++;
-        final segStart = _routeList.length;
+      if (historyItem.status == 1) {
+        final moveStart = _extractTimeInfo(historyItem.items, preferLast: false);
+        if (pendingStop != null) {
+          final diffSec = pendingStop.dateTime != null && moveStart.dateTime != null
+              ? moveStart.dateTime!.difference(pendingStop.dateTime!).inSeconds
+              : 0;
+          final parkedDurationSec = diffSec > 0 ? diffSec : 0;
+          final parked = ParkedSegment(
+            stoppedAt: pendingStop.label,
+            nextMoveAt: moveStart.label,
+            duration: _formatDuration(parkedDurationSec),
+            durationSeconds: parkedDurationSec,
+            anchorRouteIndex: pendingStopRouteIndex,
+          );
+          _parkedSegments.add(parked);
+          _timelineEntries.add(HistoryTimelineEntry.parked(parked));
+          pendingStop = null;
+        }
+
+        // status 1: moving points
+        final prevLen = _routeList.length;
         _processMovingItems(historyItem.items);
-        final segEnd = _routeList.length - 1;
-        if (segEnd >= segStart && segEnd >= 0) {
+        final addedPoints = _routeList.length - prevLen;
+        if (addedPoints <= 0) continue;
+
+        activeTripStartIndex ??= prevLen;
+        activeTripDistanceKm += historyItem.distance;
+        activeTripDurationSec += historyItem.timeSeconds ?? 0;
+      } else if (historyItem.status == 2) {
+        // status 2: stop event, this closes one trip (move -> stop = 1 trip)
+        _stopCount++;
+        _appendRepresentativePointFromItems(
+          historyItem.items,
+          preferLast: false,
+          includeInRoute: true,
+        );
+        _processStoppedItems(historyItem.items);
+
+        if (activeTripStartIndex case final segStart?
+            when segStart < _routeList.length) {
+          final segEnd = _routeList.length - 1;
           final startItem = _routeList[segStart];
           final endItem = _routeList[segEnd];
-          _tripSegments.add(TripSegment(
+          final seg = TripSegment(
             tripIndex: tripIdx++,
             startTime: startItem.rawTime ?? startItem.time ?? '—',
             endTime: endItem.rawTime ?? endItem.time ?? '—',
-            distance: historyItem.distance.toStringAsFixed(2),
-            duration: historyItem.time ?? '—',
+            distance: activeTripDistanceKm.toStringAsFixed(2),
+            duration: _formatDuration(activeTripDurationSec),
             startRouteIndex: segStart,
             endRouteIndex: segEnd,
             startLatLng: LatLng(startItem.lat, startItem.lng),
             endLatLng: LatLng(endItem.lat, endItem.lng),
-          ));
+          );
+          _tripSegments.add(seg);
+          _timelineEntries.add(HistoryTimelineEntry.trip(seg));
+          _tripCount = _tripSegments.length;
+          activeTripStartIndex = null;
+          activeTripDistanceKm = 0.0;
+          activeTripDurationSec = 0;
+        }
+        pendingStop = _extractTimeInfo(historyItem.items, preferLast: false);
+        pendingStopRouteIndex = _routeList.isNotEmpty ? _routeList.length - 1 : 0;
+      } else if (historyItem.status == 3) {
+        // status 3: first packet of selected range
+        _startPacketLatLng = _extractNormalizedPoint(
+          historyItem.items,
+          preferLast: false,
+        );
+        _appendRepresentativePointFromItems(
+          historyItem.items,
+          preferLast: false,
+          includeInRoute: _routeList.isEmpty,
+        );
+      } else if (historyItem.status == 4) {
+        // status 4: last packet of selected range
+        _endPacketLatLng = _extractNormalizedPoint(
+          historyItem.items,
+          preferLast: true,
+        );
+        _appendRepresentativePointFromItems(
+          historyItem.items,
+          preferLast: true,
+          includeInRoute: true,
+        );
+        if (activeTripStartIndex case final segStart?
+            when segStart < _routeList.length) {
+          final segEnd = _routeList.length - 1;
+          final startItem = _routeList[segStart];
+          final endItem = _routeList[segEnd];
+          final seg = TripSegment(
+            tripIndex: tripIdx++,
+            startTime: startItem.rawTime ?? startItem.time ?? '—',
+            endTime: endItem.rawTime ?? endItem.time ?? '—',
+            distance: activeTripDistanceKm.toStringAsFixed(2),
+            duration: _formatDuration(activeTripDurationSec),
+            startRouteIndex: segStart,
+            endRouteIndex: segEnd,
+            startLatLng: LatLng(startItem.lat, startItem.lng),
+            endLatLng: LatLng(endItem.lat, endItem.lng),
+          );
+          _tripSegments.add(seg);
+          _timelineEntries.add(HistoryTimelineEntry.trip(seg));
+          _tripCount = _tripSegments.length;
+          activeTripStartIndex = null;
+          activeTripDistanceKm = 0.0;
+          activeTripDurationSec = 0;
         }
       } else if (historyItem.status == 5) {
-        _processEventItems(historyItem.items);
-      } else if (historyItem.status == 4) {
-        _stopCount++;
-        _processStoppedItems(historyItem.items);
+        _processAlertItems(historyItem);
       }
+    }
+
+    // Fallback close if API ended with moving block without explicit stop.
+    if (activeTripStartIndex != null &&
+        activeTripStartIndex < _routeList.length) {
+      final segStart = activeTripStartIndex;
+      final segEnd = _routeList.length - 1;
+      final startItem = _routeList[segStart];
+      final endItem = _routeList[segEnd];
+      final seg = TripSegment(
+        tripIndex: tripIdx++,
+        startTime: startItem.rawTime ?? startItem.time ?? '—',
+        endTime: endItem.rawTime ?? endItem.time ?? '—',
+        distance: activeTripDistanceKm.toStringAsFixed(2),
+        duration: _formatDuration(activeTripDurationSec),
+        startRouteIndex: segStart,
+        endRouteIndex: segEnd,
+        startLatLng: LatLng(startItem.lat, startItem.lng),
+        endLatLng: LatLng(endItem.lat, endItem.lng),
+      );
+      _tripSegments.add(seg);
+      _timelineEntries.add(HistoryTimelineEntry.trip(seg));
+      _tripCount = _tripSegments.length;
     }
 
     _sliderValueMax = _routeList.isEmpty ? 0 : _routeList.length - 1;
@@ -200,48 +388,248 @@ class DeviceHistoryProvider extends ChangeNotifier {
   }
 
   void _processMovingItems(List<LocationItem> items) {
+    LatLng? previous =
+        _polyLatLng.isNotEmpty ? _polyLatLng.last : null;
     for (var item in items) {
-      if (item.lat != 0 && item.lng != 0) {
-        _routeList.add(item);
-        _polyLatLng.add(LatLng(item.lat, item.lng));
-      }
+      final point = _normalizedPoint(item, previous: previous);
+      if (point == null) continue;
+      final normalizedItem = _copyWithLatLng(item, point.latitude, point.longitude);
+      _routeList.add(normalizedItem);
+      _polyLatLng.add(point);
+      previous = point;
     }
   }
 
-  void _processEventItems(List<LocationItem> items) {
-    for (var item in items) {
-      if (item.lat != 0 && item.lng != 0) {
-        _eventsLatLngs.add(LatLng(item.lat, item.lng));
+  void _processAlertItems(HistoryItem historyItem) {
+    for (var item in historyItem.items) {
+      final previous = _eventsLatLngs.isNotEmpty ? _eventsLatLngs.last : null;
+      final point = _normalizedPoint(item, previous: previous);
+      if (point == null) continue;
+
+      _eventsLatLngs.add(point);
+      final message = (historyItem.message ?? '').trim().isNotEmpty
+          ? historyItem.message!.trim()
+          : 'Alert';
+      final time = item.rawTime ?? item.time ?? historyItem.rawTime;
+      final anchorRouteIndex = _nearestRouteIndex(point);
+      _alertSegments.add(
+        AlertSegment(
+          message: message,
+          time: time,
+          position: point,
+          anchorRouteIndex: anchorRouteIndex,
+          speed: item.speed,
+        ),
+      );
+    }
+  }
+
+  int _nearestRouteIndex(LatLng point) {
+    if (_routeList.isEmpty) return 0;
+    var minDistance = double.infinity;
+    var minIndex = 0;
+    for (var i = 0; i < _routeList.length; i++) {
+      final p = LatLng(_routeList[i].lat, _routeList[i].lng);
+      final dist = _distanceMeters(point, p);
+      if (dist < minDistance) {
+        minDistance = dist;
+        minIndex = i;
       }
     }
+    return minIndex;
   }
 
   void _processStoppedItems(List<LocationItem> items) {
-    if (items.isNotEmpty && items[0].lat != 0 && items[0].lng != 0) {
-      _parkedLatLngs.add(LatLng(items[0].lat, items[0].lng));
+    if (items.isEmpty) return;
+    final previous =
+        _parkedLatLngs.isNotEmpty ? _parkedLatLngs.last : null;
+    final point = _normalizedPoint(items[0], previous: previous);
+    if (point == null) return;
+    final isDuplicate = _parkedLatLngs.isNotEmpty &&
+        (_parkedLatLngs.last.latitude - point.latitude).abs() < 0.000001 &&
+        (_parkedLatLngs.last.longitude - point.longitude).abs() < 0.000001;
+    if (isDuplicate) return;
+    _parkedLatLngs.add(point);
+  }
+
+  LatLng? _extractNormalizedPoint(
+    List<LocationItem> items, {
+    required bool preferLast,
+  }) {
+    if (items.isEmpty) return null;
+    final iterable = preferLast ? items.reversed : items;
+    final previous = _polyLatLng.isNotEmpty ? _polyLatLng.last : null;
+    for (final item in iterable) {
+      final point = _normalizedPoint(item, previous: previous);
+      if (point != null) return point;
+    }
+    return null;
+  }
+
+  LocationItem _copyWithLatLng(LocationItem source, double lat, double lng) {
+    return LocationItem(
+      id: source.id,
+      rawTime: source.rawTime,
+      altitude: source.altitude,
+      course: source.course,
+      speed: source.speed,
+      lat: lat,
+      lng: lng,
+      distance: source.distance,
+      valid: source.valid,
+      other: source.other,
+      time: source.time,
+    );
+  }
+
+  String _formatDuration(int totalSec) {
+    if (totalSec <= 0) return '0s';
+    final h = totalSec ~/ 3600;
+    final m = (totalSec % 3600) ~/ 60;
+    final s = totalSec % 60;
+    final parts = <String>[];
+    if (h > 0) parts.add('${h}h');
+    if (m > 0) parts.add('${m}m');
+    if (s > 0 || parts.isEmpty) parts.add('${s}s');
+    return parts.join(' ');
+  }
+
+  _TimeInfo _extractTimeInfo(
+    List<LocationItem> items, {
+    required bool preferLast,
+  }) {
+    if (items.isEmpty) return const _TimeInfo(label: '—', dateTime: null);
+    final iterable = preferLast ? items.reversed : items;
+    for (final item in iterable) {
+      final label = item.rawTime ?? item.time ?? '—';
+      final dt = _parseHistoryDateTime(item.rawTime ?? item.time);
+      return _TimeInfo(label: label, dateTime: dt);
+    }
+    return const _TimeInfo(label: '—', dateTime: null);
+  }
+
+  DateTime? _parseHistoryDateTime(String? raw) {
+    if (raw == null) return null;
+    final text = raw.trim();
+    if (text.isEmpty) return null;
+    final normalized = text.replaceAll('T', ' ');
+    final parts = normalized.split(' ');
+    if (parts.length >= 2) {
+      final date = parts[0];
+      final time = parts[1];
+      final d = date.split('-');
+      final t = time.split(':');
+      if (d.length == 3 && t.length >= 2) {
+        final year = int.tryParse(d[0]);
+        final month = int.tryParse(d[1]);
+        final day = int.tryParse(d[2]);
+        final hour = int.tryParse(t[0]);
+        final minute = int.tryParse(t[1]);
+        final second = t.length >= 3 ? int.tryParse(t[2]) ?? 0 : 0;
+        if (year != null &&
+            month != null &&
+            day != null &&
+            hour != null &&
+            minute != null) {
+          return DateTime(year, month, day, hour, minute, second);
+        }
+      }
+    }
+    return DateTime.tryParse(text);
+  }
+
+  void _appendRepresentativePointFromItems(
+    List<LocationItem> items, {
+    required bool preferLast,
+    required bool includeInRoute,
+  }) {
+    if (items.isEmpty) return;
+    final ordered = preferLast ? items.reversed : items;
+    for (final item in ordered) {
+      final previous = _polyLatLng.isNotEmpty ? _polyLatLng.last : null;
+      final point = _normalizedPoint(item, previous: previous);
+      if (point == null) continue;
+      if (includeInRoute) {
+        final isDuplicate = _polyLatLng.isNotEmpty &&
+            (_polyLatLng.last.latitude - point.latitude).abs() < 0.000001 &&
+            (_polyLatLng.last.longitude - point.longitude).abs() < 0.000001;
+        if (!isDuplicate) {
+          final normalizedItem =
+              _copyWithLatLng(item, point.latitude, point.longitude);
+          _routeList.add(normalizedItem);
+          _polyLatLng.add(point);
+        }
+      }
+      break;
     }
   }
 
+  LatLng? _normalizedPoint(LocationItem item, {LatLng? previous}) {
+    final lat = item.lat;
+    final lng = item.lng;
+
+    final direct = _isValidLatLng(lat, lng) ? LatLng(lat, lng) : null;
+    final swapped = _isValidLatLng(lng, lat) ? LatLng(lng, lat) : null;
+
+    if (direct == null && swapped == null) return null;
+    if (direct != null && swapped == null) return direct;
+    if (direct == null && swapped != null) return swapped;
+    if (previous == null) return direct;
+
+    final directDistance = _distanceMeters(previous, direct!);
+    final swappedDistance = _distanceMeters(previous, swapped!);
+
+    // Prefer the orientation that keeps route continuity and avoids big jumps.
+    if (swappedDistance + 1 < directDistance) return swapped;
+    return direct;
+  }
+
+  bool _isValidLatLng(double lat, double lng) {
+    if (!lat.isFinite || !lng.isFinite) return false;
+    if (lat == 0 || lng == 0) return false;
+    if (lat < -90 || lat > 90) return false;
+    if (lng < -180 || lng > 180) return false;
+    return true;
+  }
+
+  double _distanceMeters(LatLng a, LatLng b) {
+    const earthRadius = 6371000.0;
+    final dLat = _radians(b.latitude - a.latitude);
+    final dLng = _radians(b.longitude - a.longitude);
+    final lat1 = _radians(a.latitude);
+    final lat2 = _radians(b.latitude);
+    final h = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1) *
+            math.cos(lat2) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    final c = 2 * math.atan2(math.sqrt(h), math.sqrt(1 - h));
+    return earthRadius * c;
+  }
+
+  double _radians(double degrees) => degrees * (math.pi / 180.0);
+
   // ── Icons ──────────────────────────────────────────────────────────────────
   Future<void> _loadMapIcons() async {
-    final String iconPath =
-    Platform.isAndroid ? 'assets/images/' : 'assets/images/ios/';
-
-    _startIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(100, 100)),
-      '${iconPath}start.png',
+    _startIcon = await _buildStatusMarker(
+      bgColor: Colors.green,
+      letter: 'S',
+      letterColor: Colors.white,
     );
-    _endIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(100, 100)),
-      '${iconPath}end.png',
+    _endIcon = await _buildStatusMarker(
+      bgColor: Colors.blue,
+      letter: 'E',
+      letterColor: Colors.white,
     );
-    _parkingIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(32, 32)),
-      '${iconPath}stops.png',
+    _parkingIcon = await _buildStatusMarker(
+      bgColor: Colors.red,
+      letter: 'P',
+      letterColor: Colors.white,
     );
-    _eventsIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(32, 32)),
-      '${iconPath}alert.png',
+    _eventsIcon = await _buildStatusMarker(
+      bgColor: Colors.red,
+      icon: Icons.notifications_active_rounded,
+      letterColor: Colors.white,
     );
     // Always use car_green.png for history playback car
     _carIcon = await BitmapDescriptor.asset(
@@ -270,17 +658,19 @@ class DeviceHistoryProvider extends ChangeNotifier {
     if (_routeList.isEmpty || _startIcon == null || _endIcon == null) return;
     _mapMarkers.removeWhere(
             (m) => m.markerId == const MarkerId('start') || m.markerId == const MarkerId('end'));
+    final startPos = _startPacketLatLng ?? LatLng(_routeList.first.lat, _routeList.first.lng);
+    final endPos = _endPacketLatLng ?? LatLng(_routeList.last.lat, _routeList.last.lng);
 
     _mapMarkers.add(Marker(
       markerId: const MarkerId('start'),
-      position: LatLng(_routeList.first.lat, _routeList.first.lng),
+      position: startPos,
       icon: _startIcon!,
       anchor: const Offset(0.5, 0.5),
       zIndex: 7,
     ));
     _mapMarkers.add(Marker(
       markerId: const MarkerId('end'),
-      position: LatLng(_routeList.last.lat, _routeList.last.lng),
+      position: endPos,
       icon: _endIcon!,
       anchor: const Offset(0.5, 0.5),
       zIndex: 8,
@@ -305,13 +695,17 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void _setEventsMarkers() {
     if (_eventsIcon == null) return;
     int index = 0;
-    for (var position in _eventsLatLngs) {
+    for (var event in _alertSegments) {
       _mapMarkers.add(Marker(
         markerId: MarkerId('event_$index'),
-        position: position,
+        position: event.position,
         icon: _eventsIcon!,
         anchor: const Offset(0.5, 0.5),
         zIndex: 5,
+        infoWindow: InfoWindow(
+          title: event.message,
+          snippet: event.time,
+        ),
       ));
       index++;
     }
@@ -321,29 +715,110 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void _updateCarMarker(int index) {
     if (index >= _routeList.length || _carIcon == null) return;
 
-    _mapMarkers.removeWhere((m) => m.markerId == const MarkerId('car'));
-
     final location = _routeList[index];
-    _carLat = location.lat;
-    _carLng = location.lng;
-    _carRotation = location.course?.toDouble() ?? 0.0;
-
-    _mapMarkers.add(Marker(
-      markerId: const MarkerId('car'),
-      position: LatLng(_carLat, _carLng),
-      icon: _carIcon!,
-      anchor: const Offset(0.5, 0.5),
-      rotation: _carRotation,
-      flat: true,
-      zIndex: 10,
-      infoWindow: InfoWindow(
-        title: 'Speed: ${location.speed} km/h',
-        snippet: location.time ?? '',
-      ),
-    ));
+    _setCarMarkerPosition(
+      lat: location.lat,
+      lng: location.lng,
+      rotation: location.course?.toDouble() ?? 0.0,
+      speed: location.speed,
+      snippet: location.time ?? '',
+    );
 
     _currentSliderValue = index;
+    _segmentFromIndex = index.clamp(0, _sliderValueMax);
+    _segmentProgress = 0.0;
+    _segmentStartTime = null;
     notifyListeners();
+  }
+
+  void _setCarMarkerPosition({
+    required double lat,
+    required double lng,
+    required double rotation,
+    required int speed,
+    required String snippet,
+  }) {
+    if (_carIcon == null) return;
+    _mapMarkers.removeWhere((m) => m.markerId == const MarkerId('car'));
+
+    _carLat = lat;
+    _carLng = lng;
+    _carRotation = rotation;
+
+    _mapMarkers.add(
+      Marker(
+        markerId: const MarkerId('car'),
+        position: LatLng(_carLat, _carLng),
+        icon: _carIcon!,
+        anchor: const Offset(0.5, 0.5),
+        rotation: _carRotation,
+        flat: true,
+        zIndex: 10,
+        infoWindow: InfoWindow(
+          title: 'Speed: $speed km/h',
+          snippet: snippet,
+        ),
+      ),
+    );
+  }
+
+  double _interpolateRotation(double start, double end, double t) {
+    double diff = (end - start) % 360;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return (start + diff * t) % 360;
+  }
+
+  Future<BitmapDescriptor> _buildStatusMarker({
+    required Color bgColor,
+    String? letter,
+    IconData? icon,
+    Color letterColor = Colors.white,
+  }) async {
+    const double size = 110;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = Offset(size / 2, size / 2);
+    const radius = 36.0;
+
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.22);
+    canvas.drawCircle(center.translate(0, 4), radius, shadowPaint);
+
+    final circlePaint = Paint()..color = bgColor;
+    canvas.drawCircle(center, radius, circlePaint);
+
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    final glyph = icon != null ? String.fromCharCode(icon.codePoint) : (letter ?? '');
+    final textStyle = TextStyle(
+      color: letterColor,
+      fontSize: icon != null ? 42 : 36,
+      fontWeight: FontWeight.w800,
+      fontFamily: icon?.fontFamily,
+      package: icon?.fontPackage,
+    );
+    final tp = TextPainter(
+      text: TextSpan(text: glyph, style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(
+      canvas,
+      Offset(
+        center.dx - (tp.width / 2),
+        center.dy - (tp.height / 2),
+      ),
+    );
+
+    final image = await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (data == null) {
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+    }
+    return BitmapDescriptor.fromBytes(Uint8List.view(data.buffer));
   }
 
   // ── Playback controls ──────────────────────────────────────────────────────
@@ -351,26 +826,73 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   void startPlayback() {
     if (_routeList.isEmpty) return;
+    if (_currentSliderValue >= _sliderValueMax) {
+      _updateCarMarker(0);
+    }
+
     _isPlaying = true;
     _setCompleteRoutePolyline(isPlaying: true);
     notifyListeners();
 
     _playbackTimer?.cancel();
-    _playbackTimer = Timer.periodic(
-      Duration(milliseconds: _playBackTimeSpeeds[_selectedPlayBackSpeed]),
-          (timer) {
-        if (_currentSliderValue >= _sliderValueMax) {
-          pausePlayback();
-          return;
-        }
-        _updateCarMarker(_currentSliderValue + 1);
-      },
+    _segmentFrameTimer?.cancel();
+    _segmentFromIndex = _currentSliderValue.clamp(0, _sliderValueMax);
+    final segmentMs = _currentSegmentDurationMs;
+    _segmentStartTime = DateTime.now().subtract(
+      Duration(
+        milliseconds: (segmentMs * _segmentProgress).round(),
+      ),
     );
+
+    // Smoothly interpolate between route points to avoid visible marker jumps.
+    _playbackTimer?.cancel();
+    _segmentFrameTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
+      if (!_isPlaying || _routeList.length < 2) return;
+      if (_segmentFromIndex >= _sliderValueMax) {
+        pausePlayback();
+        return;
+      }
+
+      final segmentMs = _currentSegmentDurationMs;
+      final from = _routeList[_segmentFromIndex];
+      final to = _routeList[_segmentFromIndex + 1];
+      _segmentStartTime ??= DateTime.now();
+      final elapsedMs =
+          DateTime.now().difference(_segmentStartTime!).inMilliseconds;
+      final t = (elapsedMs / segmentMs).clamp(0.0, 1.0);
+      _segmentProgress = t;
+
+      final lat = from.lat + ((to.lat - from.lat) * t);
+      final lng = from.lng + ((to.lng - from.lng) * t);
+      final fromCourse = (from.course ?? 0).toDouble();
+      final toCourse = (to.course ?? from.course ?? 0).toDouble();
+      final rotation = _interpolateRotation(fromCourse, toCourse, t);
+      final speed = (from.speed + ((to.speed - from.speed) * t)).round();
+      final snippet = t < 0.5 ? (from.time ?? '') : (to.time ?? '');
+
+      _setCarMarkerPosition(
+        lat: lat,
+        lng: lng,
+        rotation: rotation,
+        speed: speed,
+        snippet: snippet,
+      );
+
+      if (t >= 1.0) {
+        _currentSliderValue = _segmentFromIndex + 1;
+        _segmentFromIndex = _currentSliderValue;
+        _segmentProgress = 0.0;
+        _segmentStartTime = DateTime.now();
+      }
+
+      notifyListeners();
+    });
   }
 
   void pausePlayback() {
     _isPlaying = false;
     _playbackTimer?.cancel();
+    _segmentFrameTimer?.cancel();
     _setCompleteRoutePolyline(isPlaying: false);
     notifyListeners();
   }
@@ -378,21 +900,28 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void stopPlayback() {
     _isPlaying = false;
     _playbackTimer?.cancel();
+    _segmentFrameTimer?.cancel();
     _currentSliderValue = 0;
+    _segmentFromIndex = 0;
+    _segmentProgress = 0.0;
+    _segmentStartTime = null;
     _setCompleteRoutePolyline(isPlaying: false);
     _updateCarMarker(0);
   }
 
   void seekTo(int value) {
     if (value < 0 || value > _sliderValueMax) return;
+    _segmentFromIndex = value.clamp(0, _sliderValueMax);
+    _segmentProgress = 0.0;
+    _segmentStartTime = null;
     _updateCarMarker(value);
   }
 
   void changePlaybackSpeed() {
     _selectedPlayBackSpeed =
-        (_selectedPlayBackSpeed + 1) % _playBackTimeSpeeds.length;
+        (_selectedPlayBackSpeed + 1) % _playbackSpeedFactors.length;
     if (_isPlaying) {
-      _playbackTimer?.cancel();
+      _segmentFrameTimer?.cancel();
       startPlayback();
     }
     notifyListeners();
@@ -401,6 +930,12 @@ class DeviceHistoryProvider extends ChangeNotifier {
   String get playbackSpeedLabel {
     const speeds = ['0.5x', '1x', '1.5x', '2x', '3x'];
     return speeds[_selectedPlayBackSpeed];
+  }
+
+  int get _currentSegmentDurationMs {
+    final factor = _playbackSpeedFactors[_selectedPlayBackSpeed];
+    final duration = (_baseSegmentDurationMs / factor).round();
+    return duration < 120 ? 120 : duration;
   }
 
   // ── Trip selection ─────────────────────────────────────────────────────────
@@ -466,9 +1001,12 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _polyLatLng.clear();
     _parkedLatLngs.clear();
     _eventsLatLngs.clear();
+    _alertSegments.clear();
     _routePolyLine.clear();
     _routeList.clear();
     _tripSegments.clear();
+    _parkedSegments.clear();
+    _timelineEntries.clear();
     _currentSliderValue = 0;
     _sliderValueMax = 0;
     _tripCount = 0;
@@ -483,13 +1021,17 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _carLng = 0.0;
     _carRotation = 0.0;
     _selectedTripIndex = -1;
+    _startPacketLatLng = null;
+    _endPacketLatLng = null;
     _isPlaying = false;
     _playbackTimer?.cancel();
+    _segmentFrameTimer?.cancel();
   }
 
   @override
   void dispose() {
     _playbackTimer?.cancel();
+    _segmentFrameTimer?.cancel();
     super.dispose();
   }
 }

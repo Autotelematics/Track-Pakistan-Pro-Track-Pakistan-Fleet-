@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -9,10 +11,16 @@ import 'package:trackerapp/data/models/get_device_live_tracking_model.dart';
 import 'package:trackerapp/data/repositories/get_device_live_tracking_repository.dart';
 
 class VehicleTrackingProvider extends ChangeNotifier {
-  final GetDeviceLiveTrackingRepository repository = GetDeviceLiveTrackingRepository();
+  final GetDeviceLiveTrackingRepository repository =
+      GetDeviceLiveTrackingRepository();
   GetDeviceLiveTrackingModel? deviceData;
 
   Timer? _refreshTimer;
+  bool _isDisposed = false;
+  bool isLoading = true;
+  bool hasNoData = false;
+  String? noDataMessage;
+  String? errorMessage;
   DateTime? _lastPacketTime;
   double deviceLat = 0.0;
   double deviceLng = 0.0;
@@ -28,11 +36,18 @@ class VehicleTrackingProvider extends ChangeNotifier {
   MapType currentMapType = MapType.normal;
   bool enableTraffic = false;
   double currentZoom = 15.0;
+  bool followVehicle = true;
+  bool rulerMode = false;
+  final List<LatLng> _rulerPoints = [];
+  Position? _userPosition;
+  bool isLocatingUser = false;
+  String? locationError;
 
   Item? get item => deviceData?.item;
 
   String get deviceName => item?.name ?? 'Unknown Vehicle';
   String get deviceId => item?.id.toString() ?? 'Unknown Vehicle';
+  String get vehicleType => item?.vehicleType ?? '';
   String get status => (item?.online ?? 'offline').toLowerCase();
   double get odometer => _safeDouble(item?.odometer);
   String get totalDistance => odometer.toStringAsFixed(2);
@@ -46,7 +61,9 @@ class VehicleTrackingProvider extends ChangeNotifier {
   double get course {
     return deviceSpeed > 0 ? _smoothedCourse : _lastMovingCourse;
   }
+
   String get deviceStopDuration => item?.stopDuration?.toString() ?? '0';
+  Position? get userPosition => _userPosition;
 
   Color get ignitionColor {
     switch (status) {
@@ -190,8 +207,79 @@ class VehicleTrackingProvider extends ChangeNotifier {
     return earthRadius * c; // Distance in km
   }
 
+  double? get distanceToVehicleKm {
+    if (_userPosition == null || deviceLat == 0.0 || deviceLng == 0.0) {
+      return null;
+    }
+    return _calculateDistance(
+      LatLng(_userPosition!.latitude, _userPosition!.longitude),
+      LatLng(deviceLat, deviceLng),
+    );
+  }
+
+  String get distanceToVehicleLabel {
+    final km = distanceToVehicleKm;
+    if (km == null) return 'Distance unavailable';
+    if (km < 1) {
+      return '${(km * 1000).round()} m away';
+    }
+    return '${km.toStringAsFixed(2)} km away';
+  }
+
+  List<LatLng> get rulerPoints => List.unmodifiable(_rulerPoints);
+
+  double get rulerDistanceKm {
+    if (_rulerPoints.length < 2) return 0.0;
+    double total = 0.0;
+    for (int i = 1; i < _rulerPoints.length; i++) {
+      total += _calculateDistance(_rulerPoints[i - 1], _rulerPoints[i]);
+    }
+    return total;
+  }
+
+  String get rulerDistanceLabel {
+    if (_rulerPoints.length < 2) return 'Tap points to measure';
+    final km = rulerDistanceKm;
+    if (km < 1) {
+      final meters = (km * 1000).round();
+      return '$meters m';
+    }
+    return '${km.toStringAsFixed(2)} km';
+  }
+
+  Set<Marker> get rulerMarkers {
+    if (_rulerPoints.isEmpty) return {};
+    return _rulerPoints
+        .asMap()
+        .entries
+        .map(
+          (entry) => Marker(
+            markerId: MarkerId('ruler_point_${entry.key}'),
+            position: entry.value,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueAzure,
+            ),
+            anchor: const Offset(0.5, 1),
+          ),
+        )
+        .toSet();
+  }
+
+  Set<Polyline> get rulerPolylines {
+    if (_rulerPoints.length < 2) return {};
+    return {
+      Polyline(
+        polylineId: const PolylineId('ruler_line'),
+        points: _rulerPoints,
+        width: 4,
+        color: AppColors.blueCyan,
+      ),
+    };
+  }
+
   // Animation logic adapted from lite Cubit
   Future<void> _handleInitialAnimation() async {
+    if (_isDisposed) return;
     if (deviceData?.item == null) {
       if (kDebugMode) print('No device data for initial animation');
       return;
@@ -218,7 +306,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
       if (lat1 != 0.0 && lng1 != 0.0 && lat2 != 0.0 && lng2 != 0.0) {
         double tailBearing =
-        calculateBearing(LatLng(lat1, lng1), LatLng(lat2, lng2));
+            calculateBearing(LatLng(lat1, lng1), LatLng(lat2, lng2));
         deviceLat = lat1;
         deviceLng = lng1;
         deviceRotation = tailBearing;
@@ -233,6 +321,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
         for (int i = 1; i <= steps; i++) {
           await Future.delayed(Duration(milliseconds: stepDurationMs));
+          if (_isDisposed) return;
           double t = i / steps;
           deviceLat = lat1 + (lat2 - lat1) * t;
           deviceLng = lng1 + (lng2 - lng1) * t;
@@ -243,6 +332,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
           for (int i = 1; i <= steps; i++) {
             await Future.delayed(
                 Duration(milliseconds: durationMs + stepDurationMs * i));
+            if (_isDisposed) return;
             double t = i / steps;
             deviceLat = lat2 + (liveLat - lat2) * t;
             deviceLng = lng2 + (liveLng - lng2) * t;
@@ -267,6 +357,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   }
 
   Future<void> _updateDeviceData({required bool isRefresh}) async {
+    if (_isDisposed) return;
     if (deviceData?.item == null) {
       if (kDebugMode) print('No device data for update');
       return;
@@ -332,6 +423,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
       for (int i = 1; i <= steps; i++) {
         await Future.delayed(Duration(milliseconds: stepDurationMs));
+        if (_isDisposed) return;
         double t = i / steps;
         deviceLat = startLat + (lat - startLat) * t;
         deviceLng = startLng + (lng - startLng) * t;
@@ -358,15 +450,49 @@ class VehicleTrackingProvider extends ChangeNotifier {
     bool isRefresh = false,
     required BuildContext context,
   }) async {
+    if (_isDisposed) return;
+    if (!isRefresh) {
+      isLoading = true;
+      errorMessage = null;
+      hasNoData = false;
+      noDataMessage = null;
+      notifyListeners();
+    }
+
     try {
-      final response = await repository.getDeviceLiveTrackingApi(deviceId: deviceId);
+      final response = await _fetchLiveWithRetry(deviceId: deviceId);
+      if (_isDisposed) return;
 
       deviceData = response;
 
       if (deviceData?.item == null) {
         if (kDebugMode) print('No device data found');
+        hasNoData = true;
+        noDataMessage = 'No live data available for this vehicle.';
+        isLoading = false;
+        notifyListeners();
         return;
       }
+
+      final liveItem = deviceData!.item!;
+      final lat = _safeDouble(liveItem.lat);
+      final lng = _safeDouble(liveItem.lng);
+      final online = (liveItem.online ?? '').toLowerCase().trim();
+      final time = (liveItem.time ?? '').toLowerCase().trim();
+      final noDataStatus = online == 'never_connected' ||
+          (online == 'offline' && time == 'not connected');
+
+      if ((lat == 0.0 || lng == 0.0) && noDataStatus) {
+        hasNoData = true;
+        noDataMessage = 'This vehicle has no live location data yet.';
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      hasNoData = false;
+      noDataMessage = null;
+      errorMessage = null;
 
       // Validate and assign data (from lite)
       deviceName;
@@ -398,9 +524,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
       // Update last packet time
       _lastPacketTime = deviceTime ?? now;
 
-      if (isInitial &&
-          !skipInitialAnimation &&
-          status == 'online') {
+      if (isInitial && !skipInitialAnimation && status == 'online') {
         await _handleInitialAnimation();
       } else {
         await _updateDeviceData(isRefresh: isRefresh);
@@ -414,22 +538,80 @@ class VehicleTrackingProvider extends ChangeNotifier {
         _lastMovingCourse = _smoothedCourse;
         if (kDebugMode) print("Updated moving course to: $_lastMovingCourse");
       } else {
-        if (kDebugMode) print("Vehicle stopped, keeping course: $_lastMovingCourse");
+        if (kDebugMode) {
+          print("Vehicle stopped, keeping course: $_lastMovingCourse");
+        }
       }
 
+      isLoading = false;
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print("Live Tracking Error: $e");
-      // keep previous state; don't throw to UI
+      if (deviceData?.item == null) {
+        errorMessage = _friendlyErrorMessage(e);
+      }
+      isLoading = false;
+      notifyListeners();
     }
   }
 
-  void startPeriodicRefresh(int deviceId, BuildContext context, {int intervalSeconds = 8}) {  // Matched lite's 8s
+  Future<GetDeviceLiveTrackingModel?> _fetchLiveWithRetry({
+    required int deviceId,
+  }) async {
+    const maxAttempts = 3;
+    Object? lastError;
+    for (int i = 1; i <= maxAttempts; i++) {
+      try {
+        final response =
+            await repository.getDeviceLiveTrackingApi(deviceId: deviceId);
+        if (response != null) return response;
+      } catch (e) {
+        lastError = e;
+        if (!_isLikelyNetworkError(e) || i == maxAttempts) {
+          rethrow;
+        }
+      }
+      if (i < maxAttempts) {
+        await Future<void>.delayed(Duration(milliseconds: 500 * i));
+      }
+    }
+    if (lastError != null) throw lastError;
+    return null;
+  }
+
+  bool _isLikelyNetworkError(Object error) {
+    final text = error.toString().toLowerCase();
+    return text.contains('socketexception') ||
+        text.contains('failed host lookup') ||
+        text.contains('no address associated with hostname') ||
+        text.contains('network is unreachable') ||
+        text.contains('timed out') ||
+        text.contains('clientexception');
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    if (_isLikelyNetworkError(error)) {
+      return 'Network connection issue. Please check internet and try again.';
+    }
+    final raw = error.toString().trim();
+    if (raw.startsWith('Exception:')) {
+      return raw.replaceFirst('Exception:', '').trim();
+    }
+    return raw;
+  }
+
+  void startPeriodicRefresh(int deviceId, BuildContext context,
+      {int intervalSeconds = 8}) {
+    if (_isDisposed) return;
+    // Matched lite's 8s
     _refreshTimer?.cancel();
     // Immediately fetch once, then schedule periodic
-    fetchDeviceLiveTracking(deviceId: deviceId, context: context, isRefresh: false);
+    fetchDeviceLiveTracking(
+        deviceId: deviceId, context: context, isRefresh: false);
     _refreshTimer = Timer.periodic(Duration(seconds: intervalSeconds), (_) {
-      fetchDeviceLiveTracking(deviceId: deviceId, context: context, isRefresh: true);
+      if (_isDisposed) return;
+      fetchDeviceLiveTracking(
+          deviceId: deviceId, context: context, isRefresh: true);
     });
   }
 
@@ -441,7 +623,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   // Toggle methods (from lite, adapted)
   void toggleMapType() {
     currentMapType =
-    currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
+        currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
     if (kDebugMode) {
       print('Toggled map type to: $currentMapType');
     }
@@ -464,11 +646,101 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
   // Center on vehicle (notifies for UI to animate)
   void centerOnVehicle() {
+    followVehicle = true;
     notifyListeners(); // UI will animate on change
+  }
+
+  void toggleFollowVehicle() {
+    followVehicle = !followVehicle;
+    notifyListeners();
+  }
+
+  void toggleRulerMode() {
+    rulerMode = !rulerMode;
+    if (rulerMode) {
+      // Manual point selection should not fight camera follow updates.
+      followVehicle = false;
+    } else {
+      _rulerPoints.clear();
+    }
+    notifyListeners();
+  }
+
+  void handleRulerTap(LatLng point) {
+    if (!rulerMode) return;
+    _rulerPoints.add(point);
+    notifyListeners();
+  }
+
+  void clearRulerPoints() {
+    if (_rulerPoints.isEmpty) return;
+    _rulerPoints.clear();
+    notifyListeners();
+  }
+
+  Future<bool> fetchUserLocation() async {
+    try {
+      locationError = null;
+      isLocatingUser = true;
+      notifyListeners();
+
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        locationError = 'Location services are disabled';
+        return false;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        locationError = 'Location permission denied';
+        return false;
+      }
+      if (permission == LocationPermission.deniedForever) {
+        locationError = 'Enable location permission in Settings';
+        return false;
+      }
+
+      _userPosition = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+      _userPosition ??= await Geolocator.getLastKnownPosition();
+      if (_userPosition == null) {
+        locationError = 'No GPS fix available';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      try {
+        _userPosition = await Geolocator.getLastKnownPosition();
+      } catch (_) {}
+      if (_userPosition != null) {
+        locationError = null;
+        return true;
+      }
+      locationError = 'Unable to get current location';
+      return false;
+    } finally {
+      isLocatingUser = false;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     stopPeriodicRefresh();
     super.dispose();
   }

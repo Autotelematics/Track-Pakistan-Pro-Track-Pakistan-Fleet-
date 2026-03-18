@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
-import 'package:trackerapp/data/models/get_device_list_model.dart' as DeviceModel;
+import 'package:trackerapp/data/models/get_device_list_model.dart'
+    // ignore: library_prefixes
+    as DeviceModel;
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
 import 'package:trackerapp/utils/top_curve_bezier.dart';
+import 'package:trackerapp/view/alert_location_screen.dart';
+import 'package:trackerapp/widgets/custom_text_field.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/search_textfield.dart';
 
@@ -21,30 +26,46 @@ class NewNotificationScreen extends StatefulWidget {
   State<NewNotificationScreen> createState() => _NewNotificationScreenState();
 }
 
-class _NewNotificationScreenState extends State<NewNotificationScreen> {
+class _NewNotificationScreenState extends State<NewNotificationScreen>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   int? _selectedDeviceId;
   String? _selectedAlertType = 'All';
+  DateTime? _fromFilterDate;
+  DateTime? _toFilterDate;
+  String? _selectedDatePreset;
   late final GetDevicesListProvider _provider;
+  AlertsProvider? _alertsProviderForListener;
+  bool _isApplyingPendingAlertType = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController.addListener(_onScroll);
     _provider = Provider.of<GetDevicesListProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.init(context);
-      final groupProvider = Provider.of<GetDeviceGroupProvider>(context, listen: false);
+      final groupProvider =
+          Provider.of<GetDeviceGroupProvider>(context, listen: false);
       groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
     });
     // Initial fetch
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
-      if (alertsProvider.model == null) {
+      final alertsProvider =
+          Provider.of<AlertsProvider>(context, listen: false);
+      final pending = alertsProvider.pendingAlertTypeLabel?.trim();
+      if (pending != null && pending.isNotEmpty) {
+        _consumePendingAlertTypeFilter();
+      } else if (alertsProvider.model == null) {
         alertsProvider.fetchAlerts(isRefresh: true, context: context);
       }
     });
+
+    _alertsProviderForListener =
+        Provider.of<AlertsProvider>(context, listen: false);
+    _alertsProviderForListener!.addListener(_onAlertsProviderChanged);
 
     // Listen to search text changes
     _searchController.addListener(_onSearchChanged);
@@ -53,6 +74,36 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
   void _onSearchChanged() {
     final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
     alertsProvider.setSearchQuery(_searchController.text);
+  }
+
+  void _onAlertsProviderChanged() {
+    _consumePendingAlertTypeFilter();
+  }
+
+  void _consumePendingAlertTypeFilter() {
+    if (!mounted || _isApplyingPendingAlertType) return;
+    final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
+    final pending = alertsProvider.pendingAlertTypeLabel?.trim();
+    if (pending == null || pending.isEmpty) return;
+
+    _isApplyingPendingAlertType = true;
+    _searchController.clear();
+    alertsProvider.setSearchQuery('');
+    setState(() {
+      _selectedDeviceId = null;
+      _selectedAlertType = pending;
+    });
+    alertsProvider.setDeviceFilter(null);
+    alertsProvider.setAlertTypeFilter(pending);
+
+    final alreadyFetchingSameFilter = alertsProvider.isLoading &&
+        (alertsProvider.alertTypeFilter ?? '').trim().toLowerCase() ==
+            pending.toLowerCase();
+    alertsProvider.clearPendingAlertTypeLabel();
+    if (!alreadyFetchingSameFilter) {
+      alertsProvider.fetchAlerts(isRefresh: true, context: context);
+    }
+    _isApplyingPendingAlertType = false;
   }
 
   void _onScroll() {
@@ -75,7 +126,82 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
     alertsProvider.setDeviceFilter(_selectedDeviceId);
     alertsProvider.setAlertTypeFilter(
         _selectedAlertType == 'All' ? null : _selectedAlertType);
+    alertsProvider.setDateRangeFilter(from: _fromFilterDate, to: _toFilterDate);
     alertsProvider.fetchAlerts(isRefresh: true, context: context);
+  }
+
+  Future<void> _pickFromDateFilter() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _fromFilterDate ?? today,
+      firstDate: DateTime(2020),
+      lastDate: _toFilterDate == null
+          ? today
+          : (_toFilterDate!.isBefore(today) ? _toFilterDate! : today),
+    );
+    if (picked == null) return;
+    if (!mounted) return;
+    setState(() {
+      _selectedDatePreset = null;
+      _fromFilterDate = DateTime(picked.year, picked.month, picked.day);
+      _toFilterDate ??= _fromFilterDate;
+    });
+    _applyFilters();
+  }
+
+  Future<void> _pickToDateFilter() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _toFilterDate ?? _fromFilterDate ?? today,
+      firstDate: _fromFilterDate ?? DateTime(2020),
+      lastDate: today,
+    );
+    if (picked == null) return;
+    if (!mounted) return;
+    setState(() {
+      _selectedDatePreset = null;
+      _toFilterDate = DateTime(picked.year, picked.month, picked.day);
+      _fromFilterDate ??= _toFilterDate;
+    });
+    _applyFilters();
+  }
+
+  void _applyDatePreset(String preset) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    DateTime from;
+    DateTime to;
+    switch (preset) {
+      case 'Today':
+        from = today;
+        to = today;
+        break;
+      case 'Yesterday':
+        final y = today.subtract(const Duration(days: 1));
+        from = y;
+        to = y;
+        break;
+      case '7 Days':
+        from = today.subtract(const Duration(days: 6));
+        to = today;
+        break;
+      case '30 Days':
+        from = today.subtract(const Duration(days: 29));
+        to = today;
+        break;
+      default:
+        return;
+    }
+    setState(() {
+      _selectedDatePreset = preset;
+      _fromFilterDate = from;
+      _toFilterDate = to;
+    });
+    _applyFilters();
   }
 
   Widget _buildShimmerList() {
@@ -92,7 +218,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
-            leading: const CircleAvatar(radius: 20, backgroundColor: Colors.white),
+            leading:
+                const CircleAvatar(radius: 20, backgroundColor: Colors.white),
             title: Container(height: 16, color: Colors.white),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,9 +237,22 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _alertsProviderForListener?.removeListener(_onAlertsProviderChanged);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Future<void>.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        Provider.of<AlertsProvider>(context, listen: false)
+            .fetchAlerts(isRefresh: true, context: context);
+      });
+    }
   }
 
   @override
@@ -144,7 +284,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                     final alertTypes = alertsProvider.alertTypeList;
                     final alertCounts = alertsProvider.alertTypeCounts;
 
-                    final List<DeviceModel.Item> devices = devicesProvider.model?.items ?? [];
+                    final List<DeviceModel.Item> devices =
+                        devicesProvider.model?.items ?? [];
 
                     final vehicleItems = [
                       'All Vehicles',
@@ -156,19 +297,20 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                     } else {
                       try {
                         final device = devices.firstWhere(
-                              (d) => d.id == _selectedDeviceId,
+                          (d) => d.id == _selectedDeviceId,
                         );
-                        selectedVehicleName = device.name ?? 'Device ${device.id}';
+                        selectedVehicleName =
+                            device.name ?? 'Device ${device.id}';
                       } catch (e) {
                         selectedVehicleName = 'All Vehicles';
-                        _selectedDeviceId = null;
                       }
                     }
 
                     // Safe alert type selection
-                    String? selectedAlertType = alertTypes.contains(_selectedAlertType)
-                        ? _selectedAlertType
-                        : (alertTypes.isNotEmpty ? alertTypes.first : null);
+                    String? selectedAlertType =
+                        alertTypes.contains(_selectedAlertType)
+                            ? _selectedAlertType
+                            : (alertTypes.isNotEmpty ? alertTypes.first : null);
 
                     return SearchAndFilterBar(
                       alertTypes: alertTypes,
@@ -176,6 +318,16 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                       alertCounts: alertCounts,
                       selectedVehicle: selectedVehicleName,
                       selectedAlertType: selectedAlertType,
+                      selectedPreset: _selectedDatePreset,
+                      onPresetSelected: _applyDatePreset,
+                      fromDateLabel: _fromFilterDate == null
+                          ? "From Date"
+                          : DateFormat('dd/MM/yyyy').format(_fromFilterDate!),
+                      toDateLabel: _toFilterDate == null
+                          ? "To Date"
+                          : DateFormat('dd/MM/yyyy').format(_toFilterDate!),
+                      onFromDateTap: _pickFromDateFilter,
+                      onToDateTap: _pickToDateFilter,
                       searchController: _searchController,
                       onVehicleChanged: (val) {
                         setState(() {
@@ -184,35 +336,36 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                           } else {
                             try {
                               final device = devices.firstWhere(
-                                    (d) => (d.name ?? 'Device ${d.id}') == val,
+                                (d) => (d.name ?? 'Device ${d.id}') == val,
                               );
                               _selectedDeviceId = device.id;
                             } catch (e) {
                               _selectedDeviceId = null;
                             }
                           }
-                          _applyFilters();
                         });
+                        _applyFilters();
                       },
                       onAlertTypeChanged: (val) {
                         setState(() {
                           _selectedAlertType = val;
-                          _applyFilters();
-                        });
-                      },
-                      onSearchPressed: _applyFilters,
-
-                      onFilterReset: () {
-                        final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
-                        alertsProvider.resetFiltersOnly(context);
-                        setState(() {
-                          _selectedDeviceId = null;
-                          _selectedAlertType = 'All';
                         });
                         _applyFilters();
                       },
+                      onSearchPressed: _applyFilters,
+                      onFilterReset: () {
+                        final alertsProvider =
+                            Provider.of<AlertsProvider>(context, listen: false);
+                        setState(() {
+                          _selectedDeviceId = null;
+                          _selectedAlertType = 'All';
+                          _selectedDatePreset = null;
+                          _fromFilterDate = null;
+                          _toFilterDate = null;
+                        });
+                        alertsProvider.resetFiltersOnly(context);
+                      },
                     );
-
                   },
                 ),
               ),
@@ -227,23 +380,23 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                     decoration: BoxDecoration(
                       gradient: isDark
                           ? LinearGradient(
-                        colors: [
-                          theme.scaffoldBackgroundColor,
-                          theme.scaffoldBackgroundColor
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
+                              colors: [
+                                theme.scaffoldBackgroundColor,
+                                theme.scaffoldBackgroundColor
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            )
                           : LinearGradient(
-                        colors: [Colors.white, Colors.grey.shade100],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+                              colors: [Colors.white, Colors.grey.shade100],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: Column(
                       children: [
-                        verticalSpace(height: 3.h),
+                        verticalSpace(height: 2.h),
 
                         // Title + Delete Button
                         Row(
@@ -253,7 +406,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                               "Notifications",
                               style: AppStyles.boldTextStyle(context).copyWith(
                                 color: onSurface,
-                                fontSize: 18.sp,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -261,7 +414,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                               builder: (context, provider, child) {
                                 if (provider.selectedAlertIds.isNotEmpty) {
                                   return IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
                                     onPressed: () async {
                                       final confirm = await showDialog<bool>(
                                         context: context,
@@ -271,24 +425,26 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                                               "Delete ${provider.selectedAlertIds.length} alert(s)?"),
                                           actions: [
                                             TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(context, false),
+                                                onPressed: () => Navigator.pop(
+                                                    context, false),
                                                 child: const Text("Cancel")),
                                             TextButton(
                                               onPressed: () {
                                                 Navigator.pop(context, true);
                                               },
                                               child: const Text("Delete",
-                                                  style: TextStyle(color: Colors.red)),
+                                                  style: TextStyle(
+                                                      color: Colors.red)),
                                             ),
                                           ],
                                         ),
                                       );
                                       if (confirm == true) {
-                                        final success =
-                                        await provider.deleteSelectedAlerts();
+                                        final success = await provider
+                                            .deleteSelectedAlerts();
                                         if (context.mounted && success) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
                                                 content: Text(
                                                     "Alerts deleted successfully")),
@@ -306,13 +462,31 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
 
                         verticalSpace(height: 2.h),
 
+                        SizedBox(
+                          height: 5.7.h,
+                          child: CustomTextField(
+                            controller: _searchController,
+                            labelText: "Search Notification",
+                            borderRadius: 12.px,
+                            contentPaddingV: 1.15.h,
+                            fillColor: cardColor,
+                            showShadow: true,
+                            suffixIcon: Icons.search_outlined,
+                            onSuffixTap: _applyFilters,
+                            onSubmitted: (_) => _applyFilters(),
+                          ),
+                        ),
+
+                        verticalSpace(height: 1.1.h),
+
                         // Alerts List
                         Expanded(
                           child: RefreshIndicator(
                             onRefresh: _onRefresh,
                             child: Consumer<AlertsProvider>(
                               builder: (context, provider, child) {
-                                if (provider.isLoading && provider.model == null) {
+                                if (provider.isLoading &&
+                                    provider.model == null) {
                                   return _buildShimmerList();
                                 }
 
@@ -326,18 +500,19 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                                 if (items.isEmpty) {
                                   return Center(
                                       child: Text(
-                                        _searchController.text.isNotEmpty
-                                            ? "No alerts match your search"
-                                            : "No alerts found",
-                                      ));
+                                    _searchController.text.isNotEmpty
+                                        ? "No alerts match your search"
+                                        : "No alerts found",
+                                  ));
                                 }
 
                                 return ListView.builder(
                                   controller: _scrollController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
                                   padding: EdgeInsets.zero,
-                                  itemCount:
-                                  items.length + (provider.isLoadMore ? 1 : 0),
+                                  itemCount: items.length +
+                                      (provider.isLoadMore ? 1 : 0),
                                   itemBuilder: (context, index) {
                                     if (index == items.length) {
                                       return Padding(
@@ -358,92 +533,170 @@ class _NewNotificationScreenState extends State<NewNotificationScreen> {
                                     }
 
                                     final Item alert = items[index];
-                                    final bool isSelected =
-                                    provider.selectedAlertIds.contains(alert.id);
+                                    final bool isSelected = provider
+                                        .selectedAlertIds
+                                        .contains(alert.id);
 
                                     return GestureDetector(
                                       onLongPress: () =>
                                           provider.toggleSelection(alert.id),
                                       onTap: () {
-                                        if (provider.selectedAlertIds.isNotEmpty) {
+                                        if (provider
+                                            .selectedAlertIds.isNotEmpty) {
                                           provider.toggleSelection(alert.id);
+                                        } else {
+                                          final hasValidLocation =
+                                              alert.latitude != 0.0 ||
+                                                  alert.longitude != 0.0;
+                                          if (!hasValidLocation) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Location is not available for this alert'),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  AlertLocationScreen(
+                                                alert: alert,
+                                              ),
+                                            ),
+                                          );
                                         }
                                       },
                                       child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 200),
-                                        margin: EdgeInsets.only(bottom: 1.5.h),
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        margin: EdgeInsets.only(bottom: 0.7.h),
                                         decoration: BoxDecoration(
                                           color: cardColor,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(18),
                                           border: isSelected
                                               ? Border.all(
-                                              color: Colors.red, width: 2)
+                                                  color: Colors.redAccent,
+                                                  width: 1.6,
+                                                )
                                               : null,
                                           boxShadow: [
                                             BoxShadow(
                                               color: isDark
-                                                  ? Colors.black.withOpacity(0.4)
-                                                  : Colors.black.withOpacity(0.08),
-                                              blurRadius: 12,
-                                              offset: const Offset(0, 4),
+                                                  ? Colors.black
+                                                      .withValues(alpha: 0.36)
+                                                  : Colors.black
+                                                      .withValues(alpha: 0.07),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 3),
                                             ),
                                           ],
                                         ),
                                         child: ListTile(
+                                          contentPadding: EdgeInsets.symmetric(
+                                              horizontal: 3.8.w,
+                                              vertical: .4.h),
                                           leading: CircleAvatar(
-                                            radius: 20,
+                                            radius: 21,
                                             backgroundColor: isDark
-                                                ? Colors.redAccent.withOpacity(0.15)
-                                                : Colors.redAccent.withOpacity(0.1),
+                                                ? Colors.redAccent
+                                                    .withValues(alpha: 0.18)
+                                                : Colors.redAccent
+                                                    .withValues(alpha: 0.12),
                                             child: Icon(
                                               isSelected
                                                   ? Icons.check_circle
-                                                  : Icons.notifications_active_outlined,
+                                                  : Icons
+                                                      .notifications_active_outlined,
                                               color: isSelected
                                                   ? Colors.green
                                                   : Colors.redAccent,
+                                              size: 19.sp,
                                             ),
                                           ),
                                           title: Text(
                                             alert.deviceName,
-                                            style:
-                                            AppStyles.regularTextStyle(context)
+                                            style: AppStyles.regularTextStyle(
+                                                    context)
                                                 .copyWith(
                                               color: onSurface,
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14.sp,
                                             ),
                                           ),
                                           subtitle: Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 alert.message,
                                                 style: TextStyle(
-                                                    color: Colors.redAccent,
-                                                    fontSize: 15.sp),
-                                              ),
-                                              verticalSpace(height: 0.3.h),
-                                              Text(
-                                                alert.time
-                                                    ?.toLocal()
-                                                    .toString()
-                                                    .split('.')
-                                                    .first ??
-                                                    "No time",
-                                                style:
-                                                AppStyles.lightTextStyle(context)
-                                                    .copyWith(
-                                                  color: onSurface.withOpacity(0.6),
-                                                  fontSize: 13.sp,
+                                                  color: isDark
+                                                      ? Colors.redAccent
+                                                          .withValues(
+                                                              alpha: .88)
+                                                      : Colors.redAccent
+                                                          .withValues(
+                                                              alpha: .9),
+                                                  fontSize: 13.4.sp,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              verticalSpace(height: 0.35.h),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time_rounded,
+                                                    size: 14.sp,
+                                                    color: onSurface.withValues(
+                                                        alpha: 0.52),
+                                                  ),
+                                                  SizedBox(width: 1.w),
+                                                  Expanded(
+                                                    child: Text(
+                                                      alert.time
+                                                              ?.toLocal()
+                                                              .toString()
+                                                              .split('.')
+                                                              .first ??
+                                                          "No time",
+                                                      style: AppStyles
+                                                              .lightTextStyle(
+                                                                  context)
+                                                          .copyWith(
+                                                        color: onSurface
+                                                            .withValues(
+                                                                alpha: 0.62),
+                                                        fontSize: 12.sp,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                          trailing: Icon(
-                                            Icons.arrow_forward_ios,
-                                            color: onSurface.withOpacity(0.6),
-                                            size: 18,
+                                          trailing: Container(
+                                            height: 3.2.h,
+                                            width: 3.2.h,
+                                            decoration: BoxDecoration(
+                                              color: onSurface.withValues(
+                                                  alpha: isDark ? 0.12 : 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_forward_ios_rounded,
+                                              color: onSurface.withValues(
+                                                  alpha: 0.66),
+                                              size: 13.sp,
+                                            ),
                                           ),
                                         ),
                                       ),

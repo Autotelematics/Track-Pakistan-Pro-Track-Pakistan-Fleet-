@@ -6,6 +6,7 @@ class MotionBottomBarProvider extends ChangeNotifier {
   int get currentIndex => _currentIndex;
 
   void setIndex(int index) {
+    if (_currentIndex == index) return;
     _currentIndex = index;
     notifyListeners();
   }

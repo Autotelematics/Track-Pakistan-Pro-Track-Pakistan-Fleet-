@@ -117,7 +117,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
               verticalSpace(height: 2.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
-                child:CustomTextField(
+                child: CustomTextField(
                   controller: _searchController,
                   labelText: "Search Notification",
                   borderRadius: 15.px,
@@ -133,12 +133,12 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                     decoration: BoxDecoration(
                       gradient: isDark
                           ? LinearGradient(colors: [
-                        theme.scaffoldBackgroundColor,
-                        theme.scaffoldBackgroundColor
-                      ])
+                              theme.scaffoldBackgroundColor,
+                              theme.scaffoldBackgroundColor
+                            ])
                           : LinearGradient(
-                        colors: [Colors.white, Colors.grey.shade100],
-                      ),
+                              colors: [Colors.white, Colors.grey.shade100],
+                            ),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 5.w),
                     child: Column(
@@ -149,7 +149,8 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                             onRefresh: _onRefresh,
                             child: Consumer<GeofenceProvider>(
                               builder: (context, provider, child) {
-                                if (provider.isLoading && provider.model == null) {
+                                if (provider.isLoading &&
+                                    provider.model == null) {
                                   return _buildShimmer();
                                 }
                                 if (provider.errorMessage != null &&
@@ -170,7 +171,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
 
                                 return ListView.builder(
                                   physics:
-                                  const AlwaysScrollableScrollPhysics(),
+                                      const AlwaysScrollableScrollPhysics(),
                                   padding: EdgeInsets.zero,
                                   itemCount: items.length,
                                   itemBuilder: (context, index) {
@@ -180,17 +181,16 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         .replaceAll('#', '0xFF')));
 
                                     return Container(
-                                      margin:
-                                      EdgeInsets.only(bottom: 1.5.h),
+                                      margin: EdgeInsets.only(bottom: 1.5.h),
                                       decoration: BoxDecoration(
                                         color: cardColor,
-                                        borderRadius:
-                                        BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
                                             color: isDark
                                                 ? Colors.black.withOpacity(0.4)
-                                                : Colors.black.withOpacity(0.08),
+                                                : Colors.black
+                                                    .withOpacity(0.08),
                                             blurRadius: 12,
                                             offset: const Offset(0, 4),
                                           ),
@@ -200,7 +200,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         leading: CircleAvatar(
                                           radius: 22,
                                           backgroundColor:
-                                          color.withOpacity(0.2),
+                                              color.withOpacity(0.2),
                                           child: Icon(
                                             geofence.type == 'circle'
                                                 ? Icons.circle_outlined
@@ -211,7 +211,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         title: Text(
                                           geofence.name,
                                           style: AppStyles.regularTextStyle(
-                                              context)
+                                                  context)
                                               .copyWith(
                                             color: onSurface,
                                             fontWeight: FontWeight.w500,
@@ -219,33 +219,33 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         ),
                                         subtitle: Text(
                                           '${geofence.type.capitalize()} • ${geofence.type == 'circle' ? 'Radius: ${geofence.radius?.toInt()}m' : '${geofence.points.length} points'}',
-                                          style: AppStyles.lightTextStyle(
-                                              context)
-                                              .copyWith(
-                                            color:
-                                            onSurface.withOpacity(0.7),
+                                          style:
+                                              AppStyles.lightTextStyle(context)
+                                                  .copyWith(
+                                            color: onSurface.withOpacity(0.7),
                                           ),
                                         ),
                                         trailing: Switch(
                                           value: geofence.active,
-                                          activeColor: ConstantColor.primaryColor,
+                                          activeThumbColor:
+                                              ConstantColor.primaryColor,
                                           onChanged: provider.isLoading
                                               ? null
                                               : (val) async {
-                                            final success = await provider
-                                                .toggleGeofenceActive(
-                                                geofence.id);
-                                            if (context.mounted &&
-                                                !success) {
-                                              ScaffoldMessenger.of(
-                                                  context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                    content: Text(
-                                                        "Failed to update status")),
-                                              );
-                                            }
-                                          },
+                                                  final success = await provider
+                                                      .toggleGeofenceActive(
+                                                          geofence.id);
+                                                  if (context.mounted &&
+                                                      !success) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                          content: Text(
+                                                              "Failed to update status")),
+                                                    );
+                                                  }
+                                                },
                                         ),
                                       ),
                                     );

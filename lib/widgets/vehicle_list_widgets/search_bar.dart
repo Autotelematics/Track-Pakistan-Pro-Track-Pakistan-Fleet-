@@ -25,28 +25,46 @@ class _SearchFiledState extends State<SearchFiled> {
   Widget build(BuildContext context) {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
-        return TextField(
-          cursorColor: widget.primary,
-          style: AppStyles.regularTextStyle(context),
-          onChanged: provider.updateSearchQuery,
-          decoration: InputDecoration(
-            hintText: "Search",
-            hintStyle: TextStyle(color: widget.onSurface.withOpacity(0.5)),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: widget.outline, width: 1),
-              borderRadius: BorderRadius.circular(30),
+        return SizedBox(
+          height: 5.h,
+          child: TextField(
+            cursorColor: widget.primary,
+            style: AppStyles.regularTextStyle(context).copyWith(
+              fontSize: 14.8.sp,
             ),
-            isCollapsed: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 3.w),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: widget.primary, width: 1),
-              borderRadius: BorderRadius.circular(30),
+            onChanged: provider.updateSearchQuery,
+            decoration: InputDecoration(
+              hintText: "Search vehicle",
+              hintStyle: TextStyle(
+                color: widget.onSurface.withOpacity(0.52),
+                fontSize: 14.4.sp,
+              ),
+              filled: true,
+              fillColor: widget.primary.withOpacity(0.06),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: widget.outline.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: widget.outline.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: widget.primary, width: 1.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 2.8.w),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                size: 18.5.sp,
+                color: widget.onSurface.withOpacity(0.72),
+              ),
+              prefixIconConstraints: BoxConstraints(
+                minHeight: 5.h,
+                minWidth: 10.w,
+              ),
             ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 4.w),
-              child: Icon(Icons.search_outlined, size: 20.sp, color: widget.onSurface),
-            ),
-            prefixIconConstraints: BoxConstraints(maxHeight: 3.h),
           ),
         );
       },

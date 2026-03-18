@@ -1,79 +1,146 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:trackerapp/app/theme/app_colors.dart';
+import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
-import 'package:trackerapp/widgets/get_horizontal_space.dart';
 
 class VehicleStatusRow extends StatelessWidget {
   final Item vehicle;
+  final double horizontalPadding;
+  static final Map<int, String> _lastValidSatByVehicleId = {};
 
-  const VehicleStatusRow({super.key, required this.vehicle});
+  const VehicleStatusRow({
+    super.key,
+    required this.vehicle,
+    this.horizontalPadding = 3.2,
+  });
 
-  Widget _buildStatusIcon({required IconData icon, required Color color, required String value}) {
+  Widget _sensorItem({
+    required BuildContext context,
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+  }) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          padding: EdgeInsets.all(0.5.h),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.grey.withOpacity(0.3),
-                offset: const Offset(0, 0),
-                blurRadius: 4,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 16.sp,
+        Icon(icon, color: color, size: 16.0.sp),
+        SizedBox(width: 1.0.w),
+        Text(
+          "$label:",
+          style: AppStyles.regularTextStyle(context).copyWith(
+            fontSize: 12.0.sp,
+            color: onSurface.withValues(alpha: .62),
           ),
         ),
-
-        horizontalSpace(width: 2.w),
-        Text(value, style: TextStyle(fontSize: 14.sp, color: color, fontWeight: FontWeight.w400)),
+        SizedBox(width: 0.4.w),
+        Text(
+          value,
+          style: AppStyles.semiboldTextStyle(context).copyWith(
+            fontSize: 11.2.sp,
+            color: color,
+          ),
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final sensors = vehicle.sensors ?? [];
-    bool immobilizer = false;
-    String rssi = "N/A", ignition = "N/A", charging = "N/A", battery = "N/A";
-
-    for (var s in sensors) {
-      final name = s.name?.toLowerCase() ?? '';
-      final value = s.value?.toString().toLowerCase() ?? '';
-      if (name.contains('immobilizer')) immobilizer = value == 'on';
-      if (name == 'ignition') ignition = value == 'on' ? 'On' : 'Off';
-      if (name == 'charging') charging = value == 'on' ? 'On' : 'Off';
-      if (s.type == 'battery') battery = s.value?.toString() ?? 'N/A';
+    final param = vehicle.param;
+    bool parseFlag(String? value) {
+      final v = value?.trim().toLowerCase();
+      return v == 'true' || v == 'on' || v == '1' || v == 'yes';
     }
 
-    return Container(
-      margin:  EdgeInsets.symmetric(horizontal: 4.w),
+    final bool immobilizer = parseFlag(param?.blocked);
+    final bool ignOn = parseFlag(param?.ignition);
+    final bool chgOn = parseFlag(param?.charge);
 
-      padding: EdgeInsets.symmetric(horizontal: 2.w,vertical: .4.h),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.px),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 2.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildStatusIcon(icon: Icons.lock, color: immobilizer ? Colors.red : Colors.green, value: immobilizer ? 'On' : 'Off'),
-            _buildStatusIcon(icon: Icons.signal_cellular_alt, color: Colors.orange, value: rssi),
-            _buildStatusIcon(icon: Icons.key, color: ignition == 'On' ? Colors.green : Colors.red, value: ignition),
-            _buildStatusIcon(icon: Icons.battery_charging_full, color: charging == 'On' ? Colors.green : Colors.red, value: charging),
-            _buildStatusIcon(icon: Icons.satellite_alt_sharp, color: Colors.green, value: battery),
-          ],
-        ),
+    final int? rssiRaw = int.tryParse(param?.rssi?.trim() ?? '');
+    final String rssi =
+        rssiRaw == null ? 'N/A' : '${(rssiRaw.clamp(1, 5) * 20).toInt()}%';
+
+    final int? batteryRaw = int.tryParse(param?.batterylevel?.trim() ?? '');
+    final String battery =
+        batteryRaw == null ? 'N/A' : '${batteryRaw.clamp(0, 100).toInt()}%';
+
+    final String ignition = ignOn ? 'On' : 'Off';
+    final String charging = chgOn ? 'On' : 'Off';
+    final String rawSat = param?.sat?.trim() ?? '';
+    final int? satNumber = int.tryParse(rawSat);
+    final int? vehicleId = vehicle.id;
+    String sat = 'N/A';
+
+    if (satNumber != null && satNumber > 0) {
+      sat = satNumber.toString();
+      if (vehicleId != null) {
+        _lastValidSatByVehicleId[vehicleId] = sat;
+      }
+    } else if (satNumber == 0) {
+      final String? previousSat =
+          vehicleId != null ? _lastValidSatByVehicleId[vehicleId] : null;
+      sat = previousSat ?? '0';
+    } else if (rawSat.isNotEmpty) {
+      sat = rawSat;
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding.w),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 1.6.w,
+            runSpacing: .45.h,
+            children: [
+              _sensorItem(
+                context: context,
+                icon: Icons.lock_outline_rounded,
+                color: immobilizer ? Colors.red : Colors.green,
+                label: "Imm",
+                value: immobilizer ? "On" : "Off",
+              ),
+              _sensorItem(
+                context: context,
+                icon: Icons.signal_cellular_alt_rounded,
+                color: Colors.orange,
+                label: "RSSI",
+                value: rssi,
+              ),
+              _sensorItem(
+                context: context,
+                icon: Icons.satellite_alt_rounded,
+                color: Colors.blueGrey,
+                label: "Sat",
+                value: sat,
+              ),
+              _sensorItem(
+                context: context,
+                icon: Icons.vpn_key_rounded,
+                color: ignition == 'On' ? Colors.green : Colors.red,
+                label: "Ign",
+                value: ignition,
+              ),
+              _sensorItem(
+                context: context,
+                icon: Icons.battery_charging_full_rounded,
+                color: charging == 'On' ? Colors.green : Colors.red,
+                label: "Chg",
+                value: charging,
+              ),
+              _sensorItem(
+                context: context,
+                icon: Icons.sensors_rounded,
+                color: Colors.green,
+                label: "Bat",
+                value: battery,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

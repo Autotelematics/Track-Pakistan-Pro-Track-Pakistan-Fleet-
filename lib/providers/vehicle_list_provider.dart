@@ -72,7 +72,7 @@ class GetDevicesListProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await repository.fetchVehicleData(dialogContext: context);
+      final data = await _fetchWithRetry(context);
       if (data != null && data.items != null && data.items!.isNotEmpty) {
         _lastValidModel = data;
         _model = data;
@@ -84,14 +84,60 @@ class GetDevicesListProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _error = e.toString();
-      _filteredVehicles = hasValidData ? _filteredVehicles : [];
-      notifyListeners();
+      if (!hasValidData) {
+        _error = _friendlyErrorMessage(e);
+        _filteredVehicles = [];
+        notifyListeners();
+      } else {
+        // Keep previous data visible on transient network errors.
+        _error = null;
+      }
     } finally {
       _isLoading = false;
       _showLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<GetDevicesListModel?> _fetchWithRetry(BuildContext context) async {
+    const maxAttempts = 3;
+    Object? lastError;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final data = await repository.fetchVehicleData(dialogContext: context);
+        return data;
+      } catch (e) {
+        lastError = e;
+        if (!_isLikelyNetworkError(e) || attempt == maxAttempts) {
+          rethrow;
+        }
+        await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
+      }
+    }
+    if (lastError != null) throw lastError;
+    return null;
+  }
+
+  bool _isLikelyNetworkError(Object error) {
+    final text = error.toString().toLowerCase();
+    return text.contains('socketexception') ||
+        text.contains('failed host lookup') ||
+        text.contains('no address associated with hostname') ||
+        text.contains('connection closed') ||
+        text.contains('network is unreachable') ||
+        text.contains('timed out') ||
+        text.contains('clientexception');
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    if (_isLikelyNetworkError(error)) {
+      return "Unable to reach server right now. Please check internet and tap Retry.";
+    }
+    final text = error.toString().trim();
+    if (text.startsWith('Exception:')) {
+      return text.replaceFirst('Exception:', '').trim();
+    }
+    return text;
   }
 
   void updateSearchQuery(String query) {

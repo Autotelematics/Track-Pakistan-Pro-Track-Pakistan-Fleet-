@@ -9,6 +9,7 @@ class DriverProvider with ChangeNotifier {
   final DriverRepository driverRepository = DriverRepository();
 
   GetDriverModel? getDriverModel;
+  Datum? currentVehicleDriver;
   bool isLoading = false;
 
   /// ADD DRIVER
@@ -18,8 +19,7 @@ class DriverProvider with ChangeNotifier {
     required String phone,
     required String email,
     required String deviceId,
-  })
-  async {
+  }) async {
     isLoading = true;
     notifyListeners();
 
@@ -49,8 +49,7 @@ class DriverProvider with ChangeNotifier {
     required String phone,
     required String email,
     required String description,
-  })
-  async {
+  }) async {
     isLoading = true;
     notifyListeners();
     try {
@@ -71,8 +70,7 @@ class DriverProvider with ChangeNotifier {
   }
 
   /// GET DRIVERS
-  Future<void> getDriverUser({required String deviceId})
-  async {
+  Future<void> getDriverUser({required String deviceId}) async {
     isLoading = true;
     notifyListeners();
 
@@ -95,17 +93,40 @@ class DriverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// GET ASSIGNED DRIVER FOR A VEHICLE
+  Future<void> getVehicleDriver({required String deviceId}) async {
+    isLoading = true;
+    currentVehicleDriver = null;
+    notifyListeners();
+
+    try {
+      final response =
+          await driverRepository.getVehicleDriverMethod(deviceId: deviceId);
+      currentVehicleDriver = response;
+    } catch (e) {
+      debugPrint("getVehicleDriver error: $e");
+      AppSnackBar.error(message: "Something went wrong");
+      currentVehicleDriver = null;
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
   ///Assign Driver
   Future<void> assignDriver({
     required String deviceId,
-    required String driverId,
+    String? driverId,
   }) async {
     isLoading = true;
     notifyListeners();
     try {
       await driverRepository.addDeviceToDriverMethod(
           deviceId: deviceId, driverId: driverId);
-      AppSnackBar.success(message: "Driver Assign Successfully");
+      AppSnackBar.success(
+          message: (driverId == null || driverId.trim().isEmpty)
+              ? "Driver unassigned successfully"
+              : "Driver assigned successfully");
     } catch (e) {
       log("Error in Provider${e.toString()}");
       AppSnackBar.error(message: e.toString());

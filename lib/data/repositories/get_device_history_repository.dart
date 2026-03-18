@@ -30,7 +30,7 @@ class GetDeviceHistoryRepository {
             '&from_time=$fromTime'
             '&to_date=$toDate'
             '&to_time=$toTime'
-            '&snap_to_road=1',
+            '&snap_to_road=${snapToRoad ? 1 : 0}',
       );
 
       print("REQUEST URL:");

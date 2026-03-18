@@ -20,6 +20,9 @@ class AnalyticsFilterBar extends StatelessWidget {
   final VoidCallback onEndDateTap;
   final VoidCallback onStartTimeTap;
   final VoidCallback onEndTimeTap;
+  final bool showDateRangePicker;
+  final VoidCallback onDateRangeTap;
+  final VoidCallback onCloseDateRange;
 
   const AnalyticsFilterBar({
     super.key,
@@ -35,6 +38,9 @@ class AnalyticsFilterBar extends StatelessWidget {
     required this.onEndDateTap,
     required this.onStartTimeTap,
     required this.onEndTimeTap,
+    required this.showDateRangePicker,
+    required this.onDateRangeTap,
+    required this.onCloseDateRange,
   });
 
   String _formatDate(String apiDate) {
@@ -49,33 +55,52 @@ class AnalyticsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
+    final borderColor = isDark ? Colors.white12 : Colors.black12;
+    final textColor = isDark ? AppColors.white : AppColors.textBlack;
+
     return Column(
       children: [
         Container(
-          height: 5.h,
-          padding: EdgeInsets.symmetric(horizontal: 2.w),
+          height: 5.4.h,
+          padding: EdgeInsets.symmetric(horizontal: 2.5.w),
           decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(12.sp),
+            color: cardColor,
+            borderRadius: BorderRadius.circular(14.sp),
+            border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
-                color: AppColors.grey.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: isDark ? .18 : .07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Row(
             children: [
-              Icon(Icons.calendar_today,
-                  size: 18.sp, color: ConstantColor.primaryColor),
-              horizontalSpace(width: 2.w),
               Expanded(
-                child: Text(
-                  "${_formatDate(fromDate)} → ${_formatDate(toDate)}",
-                  style: AppStyles.semiboldTextStyle(context)
-                      .copyWith(fontSize: 14.sp),
-                  overflow: TextOverflow.ellipsis,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10.sp),
+                  onTap: onDateRangeTap,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: .5.h, horizontal: .8.w),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today,
+                            size: 17.sp, color: ConstantColor.primaryColor),
+                        horizontalSpace(width: 2.w),
+                        Expanded(
+                          child: Text(
+                            "${_formatDate(fromDate)} → ${_formatDate(toDate)}",
+                            style: AppStyles.semiboldTextStyle(context)
+                                .copyWith(fontSize: 13.2.sp, color: textColor),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               // Active filter badge
@@ -83,14 +108,17 @@ class AnalyticsFilterBar extends StatelessWidget {
                 padding:
                 EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
                 decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor,
-                  borderRadius: BorderRadius.circular(6.sp),
+                  color: ConstantColor.primaryColor.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(8.sp),
+                  border: Border.all(
+                    color: ConstantColor.primaryColor.withValues(alpha: .45),
+                  ),
                 ),
                 child: Text(
                   selectedFilter,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 14.sp,
-                    color: AppColors.white,
+                    fontSize: 11.9.sp,
+                    color: ConstantColor.primaryColor,
                   ),
                 ),
               ),
@@ -122,15 +150,16 @@ class AnalyticsFilterBar extends StatelessWidget {
                               size: 18.sp),
                         if (e == selectedFilter)
                           horizontalSpace(width: 2.w),
-                        Text(
+                          Text(
                           e,
                           style: TextStyle(
+                            fontSize: 12.6.sp,
                             fontWeight: e == selectedFilter
                                 ? FontWeight.bold
                                 : FontWeight.normal,
                             color: e == selectedFilter
                                 ? ConstantColor.primaryColor
-                                : Colors.black87,
+                                : textColor,
                           ),
                         ),
                       ],
@@ -143,9 +172,10 @@ class AnalyticsFilterBar extends StatelessWidget {
           ),
         ),
 
-        if (selectedFilter == "Custom") ...[
-          verticalSpace(height: 2.h),
+        if (showDateRangePicker) ...[
+          verticalSpace(height: 1.h),
           _AnalyticsCustomDatePicker(
+            onClose: onCloseDateRange,
             customStartDate: customStartDate,
             customEndDate: customEndDate,
             customStartTime: customStartTime,
@@ -162,6 +192,7 @@ class AnalyticsFilterBar extends StatelessWidget {
 }
 
 class _AnalyticsCustomDatePicker extends StatelessWidget {
+  final VoidCallback onClose;
   final DateTime? customStartDate;
   final DateTime? customEndDate;
   final TimeOfDay? customStartTime;
@@ -172,6 +203,7 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
   final VoidCallback onEndTimeTap;
 
   const _AnalyticsCustomDatePicker({
+    required this.onClose,
     required this.customStartDate,
     required this.customEndDate,
     required this.customStartTime,
@@ -184,28 +216,73 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.symmetric(horizontal: 3.8.w, vertical: 1.4.h),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12.sp),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [Colors.white.withValues(alpha: .08), Colors.white.withValues(alpha: .04)]
+              : [AppColors.white, Colors.grey.shade50],
+        ),
+        borderRadius: BorderRadius.circular(14.sp),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: isDark ? .18 : .07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Select Date & Time Range",
-            style: AppStyles.semiboldTextStyle(context)
-                .copyWith(fontSize: 17.sp),
+          Row(
+            children: [
+              Container(
+                width: 8.8.w,
+                height: 4.3.h,
+                decoration: BoxDecoration(
+                  color: ConstantColor.primaryColor.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(10.sp),
+                ),
+                child: Icon(
+                  Icons.date_range_rounded,
+                  color: ConstantColor.primaryColor,
+                  size: 17.sp,
+                ),
+              ),
+              horizontalSpace(width: 2.2.w),
+              Expanded(
+                child: Text(
+                  "Date & Time Range",
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 14.4.sp,
+                    color: onSurface,
+                  ),
+                ),
+              ),
+              InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onClose,
+                child: Container(
+                  padding: EdgeInsets.all(.55.h),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: .08)
+                        : Colors.black.withValues(alpha: .05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close_rounded, size: 16.sp, color: onSurface),
+                ),
+              )
+            ],
           ),
-          verticalSpace(height: 2.h),
+          verticalSpace(height: 1.1.h),
           Row(
             children: [
               Expanded(
@@ -252,18 +329,19 @@ class _DateTimeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 15.sp,
-            color: Colors.grey.shade700,
+            fontSize: 12.3.sp,
+            color: isDark ? Colors.white70 : Colors.grey.shade700,
             fontWeight: FontWeight.w700,
           ),
         ),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: .65.h),
         GestureDetector(
           onTap: onDateTap,
           child: _PickerTile(
@@ -274,7 +352,7 @@ class _DateTimeSelector extends StatelessWidget {
             hasValue: date != null,
           ),
         ),
-        verticalSpace(height: 1.2.h),
+        verticalSpace(height: .7.h),
         GestureDetector(
           onTap: onTimeTap,
           child: _PickerTile(
@@ -301,12 +379,14 @@ class _PickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.5.h),
+      padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 1.0.h),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(10.sp),
-        border: Border.all(color: ConstantColor.primaryColor.withOpacity(0.3)),
+        border:
+            Border.all(color: ConstantColor.primaryColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -316,8 +396,11 @@ class _PickerTile extends StatelessWidget {
             child: Text(
               text,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 14.sp,
-                color: hasValue ? Colors.black87 : Colors.grey.shade500,
+                fontSize: 12.2.sp,
+                color: hasValue
+                    ? (isDark ? Colors.white : Colors.black87)
+                    : (isDark ? Colors.white60 : Colors.grey.shade500),
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

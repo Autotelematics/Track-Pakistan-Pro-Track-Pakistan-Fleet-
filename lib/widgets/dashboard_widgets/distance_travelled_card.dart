@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -62,21 +63,25 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
 
   @override
   Widget build(BuildContext context) {
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-    final surface = Theme.of(context).colorScheme.surface;
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final cardColor = theme.cardColor;
+    final isDark = theme.brightness == Brightness.dark;
     final maxY = _getMaxY();
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 1.6.h, horizontal: 3.w),
-      margin: EdgeInsets.symmetric(horizontal: 6.w),
+      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
+      margin: EdgeInsets.symmetric(horizontal: 5.w),
       decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: isDark
+                ? Colors.black.withOpacity(0.55)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 14 : 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -85,21 +90,55 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
         children: [
           Text(
             "Distance Travelled",
-            style: AppStyles.semiboldTextStyle(context),
+            style:
+                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
           ),
-          verticalSpace(height: 1.5.h),
+          verticalSpace(height: 1.1.h),
           _buildStatRow(context),
-          verticalSpace(height: 2.h),
-          SizedBox(
-            height: 220,
+          verticalSpace(height: 1.5.h),
+          Container(
+            height: 24.h,
+            padding: EdgeInsets.only(
+              left: 2.w,
+              right: 2.w,
+              top: 1.2.h,
+              bottom: .6.h,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: onSurface.withOpacity(0.08)),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDark
+                    ? [
+                        Colors.white.withOpacity(0.02),
+                        Colors.white.withOpacity(0.01),
+                      ]
+                    : [
+                        Colors.white.withOpacity(0.95),
+                        Colors.grey.shade50,
+                      ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withOpacity(0.25)
+                      : Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
             child: BarChart(
               BarChartData(
                 maxY: maxY,
-                barTouchData: BarTouchData(enabled: true),
+                alignment: BarChartAlignment.spaceAround,
+                barTouchData: _buildTouchData(context, isDark),
                 titlesData: _buildTitlesData(onSurface),
                 gridData: _buildGridData(onSurface),
                 borderData: FlBorderData(show: false),
-                barGroups: _buildBarGroups(),
+                barGroups: _buildBarGroups(onSurface),
               ),
             ),
           ),
@@ -109,37 +148,39 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
   }
 
   Widget _buildStatRow(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      _statColumn(
-        context,
-        "Total Distance",
-        "${widget.historyData.summary.totalDistanceKm} km",
-      ),
-      _statColumn(
-        context,
-        "Average Distance",
-        "${widget.historyData.summary.averageDistanceKm} km",
-      ),
-    ],
-  );
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _statColumn(
+            context,
+            "Total Distance",
+            "${widget.historyData.summary.totalDistanceKm} km",
+          ),
+          _statColumn(
+            context,
+            "Average Distance",
+            "${widget.historyData.summary.averageDistanceKm} km",
+          ),
+        ],
+      );
 
-  Widget _statColumn(BuildContext context, String label, String value) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label,
-        style: AppStyles.regularTextStyle(context).copyWith(fontSize: 15.sp),
-      ),
-      Text(
-        value,
-        style: AppStyles.lightTextStyle(context).copyWith(
-          fontSize: 15.sp,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    ],
-  );
+  Widget _statColumn(BuildContext context, String label, String value) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style:
+                AppStyles.regularTextStyle(context).copyWith(fontSize: 14.sp),
+          ),
+          Text(
+            value,
+            style: AppStyles.lightTextStyle(context).copyWith(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      );
 
   FlTitlesData _buildTitlesData(Color onSurface) {
     final yInterval = _getYInterval();
@@ -151,7 +192,9 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
           reservedSize: 36,
           getTitlesWidget: (value, meta) {
             final index = value.toInt();
-            if (index < 0 || index >= _barLabels.length) return const SizedBox();
+            if (index < 0 || index >= _barLabels.length) {
+              return const SizedBox();
+            }
             return SideTitleWidget(
               meta: meta,
               child: Text(
@@ -172,7 +215,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
           getTitlesWidget: (value, meta) => Text(
             '${value.toInt()}',
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 13.sp,
+              fontSize: 12.sp,
             ),
           ),
         ),
@@ -182,37 +225,82 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
     );
   }
 
+  BarTouchData _buildTouchData(BuildContext context, bool isDark) {
+    return BarTouchData(
+      enabled: true,
+      handleBuiltInTouches: true,
+      touchTooltipData: BarTouchTooltipData(
+        tooltipBorderRadius: BorderRadius.circular(12),
+        tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        tooltipMargin: 10,
+        fitInsideHorizontally: true,
+        fitInsideVertically: true,
+        getTooltipColor: (_) =>
+            isDark ? const Color(0xFF1F2937) : const Color(0xFF111827),
+        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+          final index = group.x.toInt();
+          final label = index >= 0 && index < _barLabels.length
+              ? _barLabels[index]
+              : "Vehicle";
+          return BarTooltipItem(
+            '${_shortenLabel(label)}\n',
+            AppStyles.semiboldTextStyle(context).copyWith(
+              color: Colors.white,
+              fontSize: 12.sp,
+            ),
+            children: [
+              TextSpan(
+                text: '${rod.toY.toStringAsFixed(1)} km',
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  color: Colors.white.withOpacity(0.92),
+                  fontSize: 11.5.sp,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   FlGridData _buildGridData(Color onSurface) {
     final yInterval = _getYInterval();
     return FlGridData(
       show: true,
       drawHorizontalLine: true,
-      drawVerticalLine: true,
+      drawVerticalLine: false,
       horizontalInterval: yInterval,
-      verticalInterval: 1,
       getDrawingHorizontalLine: (value) => FlLine(
-        color: onSurface.withOpacity(0.3),
-        strokeWidth: 1,
-      ),
-      getDrawingVerticalLine: (value) => FlLine(
-        color: onSurface.withOpacity(0.3),
-        strokeWidth: 1,
+        color: onSurface.withOpacity(0.16),
+        strokeWidth: 1.1,
       ),
     );
   }
 
-  List<BarChartGroupData> _buildBarGroups() => List.generate(
-    _barValues.length,
+  List<BarChartGroupData> _buildBarGroups(Color onSurface) => List.generate(
+        _barValues.length,
         (i) => BarChartGroupData(
-      x: i,
-      barRods: [
-        BarChartRodData(
-          toY: _isVisible[i] ? _barValues[i] : 0.0,
-          width: 18,
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(4),
+          x: i,
+          barsSpace: 4,
+          barRods: [
+            BarChartRodData(
+              toY: _isVisible[i] ? _barValues[i] : 0.0,
+              width: 14,
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: i.isEven
+                    ? [const Color(0xFF3B82F6), const Color(0xFF22D3EE)]
+                    : [const Color(0xFF6366F1), const Color(0xFFA78BFA)],
+              ),
+              borderRadius: BorderRadius.circular(7),
+              backDrawRodData: BackgroundBarChartRodData(
+                show: true,
+                toY: _getMaxY(),
+                color: onSurface.withOpacity(0.06),
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }

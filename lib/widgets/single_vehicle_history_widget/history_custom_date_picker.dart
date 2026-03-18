@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
-import 'common_widgets.dart';
 
 class HistoryCustomDateTimePicker extends StatelessWidget {
   final DateTime? customStartDate;
@@ -15,8 +12,10 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
   final TimeOfDay? customEndTime;
   final VoidCallback onClose;
   final VoidCallback onApply;
-  final void Function(DateTime date, bool isStart) onDatePicked;
-  final void Function(TimeOfDay time, bool isStart) onTimePicked;
+  final VoidCallback onFromDateTap;
+  final VoidCallback onToDateTap;
+  final VoidCallback onFromTimeTap;
+  final VoidCallback onToTimeTap;
 
   const HistoryCustomDateTimePicker({
     super.key,
@@ -26,84 +25,109 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
     required this.customEndTime,
     required this.onClose,
     required this.onApply,
-    required this.onDatePicked,
-    required this.onTimePicked,
+    required this.onFromDateTap,
+    required this.onToDateTap,
+    required this.onFromTimeTap,
+    required this.onToTimeTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Positioned(
-      top: 14.h,
+      top: 16.0.h,
       left: 3.w,
       right: 3.w,
       child: Container(
-        padding: EdgeInsets.all(4.w),
+        padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.2.h),
         decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(12.sp),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: isDark ? const Color(0xFF1A2433) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Select Date & Time Range",
-                    style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(fontSize: 17.sp)),
-                IconButton(
-                  icon: Icon(Icons.cancel_outlined,
-                      color: AppColors.red, size: 20.sp),
-                  onPressed: onClose,
+                Expanded(
+                  child: _RangePickerTile(
+                    title: 'From Date',
+                    value: _formatDate(customStartDate),
+                    icon: Icons.event,
+                    onTap: onFromDateTap,
+                  ),
+                ),
+                horizontalSpace(width: 2.w),
+                Expanded(
+                  child: _RangePickerTile(
+                    title: 'To Date',
+                    value: _formatDate(customEndDate),
+                    icon: Icons.event_available,
+                    onTap: onToDateTap,
+                  ),
                 ),
               ],
             ),
-            verticalSpace(height: 2.h),
+            verticalSpace(height: .8.h),
             Row(
               children: [
                 Expanded(
-                    child: _DateTimeField(
-                      label: "Start",
-                      isStart: true,
-                      date: customStartDate,
-                      time: customStartTime,
-                      onDatePicked: onDatePicked,
-                      onTimePicked: onTimePicked,
-                    )),
+                  child: _RangePickerTile(
+                    title: 'From Time',
+                    value: _formatTime(context, customStartTime),
+                    icon: Icons.access_time,
+                    onTap: onFromTimeTap,
+                  ),
+                ),
                 horizontalSpace(width: 3.w),
                 Expanded(
-                    child: _DateTimeField(
-                      label: "End",
-                      isStart: false,
-                      date: customEndDate,
-                      time: customEndTime,
-                      onDatePicked: onDatePicked,
-                      onTimePicked: onTimePicked,
-                    )),
+                  child: _RangePickerTile(
+                    title: 'To Time',
+                    value: _formatTime(context, customEndTime),
+                    icon: Icons.timelapse_rounded,
+                    onTap: onToTimeTap,
+                  ),
+                ),
               ],
             ),
-            verticalSpace(height: 2.h),
+            verticalSpace(height: .4.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onApply,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ConstantColor.primaryColor,
-                  padding: EdgeInsets.symmetric(vertical: 1.5.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.sp),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text('Apply Filter',
-                    style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(color: Colors.white, fontSize: 16.sp)),
+                child: Text(
+                  'Apply Range',
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    color: Colors.white,
+                    fontSize: 12.3.sp,
+                  ),
+                ),
+              ),
+            ),
+            verticalSpace(height: .0.h),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: onClose,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: .0.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  "Cancel",
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    fontSize: 12.8.sp,
+                  ),
+                ),
               ),
             ),
           ],
@@ -111,63 +135,77 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
       ),
     );
   }
+
+  String _formatDate(DateTime? value) {
+    if (value == null) return 'Select Date';
+    return "${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}";
+  }
+
+  String _formatTime(BuildContext context, TimeOfDay? value) {
+    if (value == null) return 'Select Time';
+    return value.format(context);
+  }
 }
 
-// ── Private field widget ──────────────────────────────────────────────────────
-class _DateTimeField extends StatelessWidget {
-  final String label;
-  final bool isStart;
-  final DateTime? date;
-  final TimeOfDay? time;
-  final void Function(DateTime, bool) onDatePicked;
-  final void Function(TimeOfDay, bool) onTimePicked;
+class _RangePickerTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final VoidCallback onTap;
 
-  const _DateTimeField({
-    required this.label,
-    required this.isStart,
-    required this.date,
-    required this.time,
-    required this.onDatePicked,
-    required this.onTimePicked,
+  const _RangePickerTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: AppStyles.regularTextStyle(context)
-                .copyWith(fontSize: 15.sp, fontWeight: FontWeight.w500)),
-        verticalSpace(height: 0.8.h),
-        DateTimeTile(
-          icon: Icons.calendar_today,
-          text: date != null
-              ? "${date!.day}/${date!.month}/${date!.year}"
-              : "Select Date",
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: date ?? DateTime.now(),
-              firstDate: DateTime(2020),
-              lastDate: DateTime.now(),
-            );
-            if (picked != null) onDatePicked(picked, isStart);
-          },
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .75.h),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: ConstantColor.primaryColor.withValues(alpha: .25),
+          ),
         ),
-        verticalSpace(height: 1.2.h),
-        DateTimeTile(
-          icon: Icons.access_time,
-          text: time != null ? time!.format(context) : "Select Time",
-          onTap: () async {
-            final picked = await showTimePicker(
-              context: context,
-              initialTime: time ?? TimeOfDay.now(),
-            );
-            if (picked != null) onTimePicked(picked, isStart);
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: 12.8.sp,
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            verticalSpace(height: .2.h),
+            Row(
+              children: [
+                Icon(icon, size: 14.sp, color: ConstantColor.primaryColor),
+                horizontalSpace(width: 1.2.w),
+                Expanded(
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.semiboldTextStyle(context)
+                        .copyWith(fontSize: 12.5.sp),
+                  ),
+                ),
+              ],
+            )
+          ],
         ),
-      ],
+      ),
     );
   }
 }

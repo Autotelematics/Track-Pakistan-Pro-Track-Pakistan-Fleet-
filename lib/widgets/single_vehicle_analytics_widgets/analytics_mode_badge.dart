@@ -11,14 +11,15 @@ class AnalyticsModeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isMultiDay ? AppColors.purple : AppColors.blueCyan;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.8.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.9.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20.sp),
-        border: Border.all(color: color.withOpacity(0.4)),
+        color: isDark ? color.withValues(alpha: 0.16) : color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(22.sp),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -32,9 +33,9 @@ class AnalyticsModeBadge extends StatelessWidget {
           Text(
             isMultiDay ? "Charts grouped by date" : "Charts grouped by hour",
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 13.sp,
+              fontSize: 12.8.sp,
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

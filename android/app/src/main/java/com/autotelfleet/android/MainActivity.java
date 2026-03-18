@@ -1,4 +1,4 @@
-package com.autotelnew.android;
+package com.autotelfleet.android;
 
 import io.flutter.embedding.android.FlutterActivity;
 

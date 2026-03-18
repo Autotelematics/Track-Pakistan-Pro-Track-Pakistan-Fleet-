@@ -14,6 +14,11 @@ class MaintenanceField extends StatelessWidget {
 
   final double? height;
   final double? width;
+  final double? titleFontSize;
+  final double? fieldFontSize;
+  final double? hintFontSize;
+  final double? titleBottomSpacing;
+  final double? inputVerticalPadding;
 
   const MaintenanceField({
     super.key,
@@ -25,6 +30,11 @@ class MaintenanceField extends StatelessWidget {
     this.maxLines = 1,
     this.height,
     this.width,
+    this.titleFontSize,
+    this.fieldFontSize,
+    this.hintFontSize,
+    this.titleBottomSpacing,
+    this.inputVerticalPadding,
   });
 
   @override
@@ -33,6 +43,11 @@ class MaintenanceField extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final borderColor = theme.dividerColor.withOpacity(.4);
     final primaryOpacity = theme.colorScheme.primary.withOpacity(.8);
+    final effectiveTitleFontSize = titleFontSize ?? 16.sp;
+    final effectiveFieldFontSize = fieldFontSize ?? 16.sp;
+    final effectiveHintFontSize = hintFontSize ?? 16.sp;
+    final effectiveTitleBottomSpacing = titleBottomSpacing ?? 1.h;
+    final effectiveInputVerticalPadding = inputVerticalPadding ?? 1.8.h;
 
     OutlineInputBorder getBorder(Color color) => OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -47,17 +62,19 @@ class MaintenanceField extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
-        style: TextStyle(fontSize: 16.sp, color: onSurface),
+        style: TextStyle(fontSize: effectiveFieldFontSize, color: onSurface),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
             color: onSurface.withOpacity(.5),
-            fontSize: 16.sp,
+            fontSize: effectiveHintFontSize,
           ),
           filled: true,
           fillColor: theme.cardColor,
-          contentPadding:
-          EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.8.h),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 3.w,
+            vertical: effectiveInputVerticalPadding,
+          ),
           enabledBorder: getBorder(borderColor),
           focusedBorder: getBorder(primaryOpacity),
           border: getBorder(borderColor),
@@ -69,8 +86,10 @@ class MaintenanceField extends StatelessWidget {
       fieldWidget = GestureDetector(
         onTap: onTap,
         child: Container(
-          padding:
-          EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.8.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: 3.w,
+            vertical: effectiveInputVerticalPadding,
+          ),
           decoration: BoxDecoration(
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
@@ -81,7 +100,7 @@ class MaintenanceField extends StatelessWidget {
             child: Text(
               hint,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: effectiveHintFontSize,
                 color: onSurface.withOpacity(.6),
               ),
             ),
@@ -110,12 +129,12 @@ class MaintenanceField extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: effectiveTitleFontSize,
             color: onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: effectiveTitleBottomSpacing),
         sizedField,
       ],
     );

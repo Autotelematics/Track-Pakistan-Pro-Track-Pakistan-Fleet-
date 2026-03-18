@@ -36,7 +36,7 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
   // ── Chart data ─────────────────────────────────────────────────
   List<AnalyticsChartData> speedChartData = [];
   List<AnalyticsChartData> distanceChartData = [];
-  List<AnalyticsChartData> fuelChartData = [];       // only valid in hourly mode
+  List<AnalyticsChartData> fuelChartData = []; // only valid in hourly mode
   List<AnalyticsBarChartData> stopDurationChartData = [];
   List<AnalyticsChartData> engineHoursChartData = [];
 
@@ -109,10 +109,13 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
   }
 
   void _computeStatsFromSummary(HistorySummary summary) {
-    totalDistance = summary.totalDistance.isNotEmpty ? summary.totalDistance : "0 km";
+    totalDistance =
+        summary.totalDistance.isNotEmpty ? summary.totalDistance : "0 km";
     maxSpeed = summary.topSpeed.isNotEmpty ? summary.topSpeed : "0 km/h";
-    driveTime = summary.moveDuration.isNotEmpty ? summary.moveDuration : "0h 0m";
-    stopTime = summary.stopDuration1.isNotEmpty ? summary.stopDuration1 : "0h 0m";
+    driveTime =
+        summary.moveDuration.isNotEmpty ? summary.moveDuration : "0h 0m";
+    stopTime =
+        summary.stopDuration1.isNotEmpty ? summary.stopDuration1 : "0h 0m";
     fuelUsed = "${summary.fuelSpent.totalFuelSpent.toStringAsFixed(2)} LTR";
     amountSpent = "PKR ${summary.fuelSpent.totalFuelCost.toStringAsFixed(0)}";
   }
@@ -120,7 +123,7 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
   // ── Master chart builder ───────────────────────────────────────
 
   void _buildChartData() {
-    if (_allPoints.isEmpty) return;
+    if (_allPoints.isEmpty && _historyItems.isEmpty) return;
 
     if (groupMode == AnalyticsGroupMode.hourly) {
       _buildHourlyCharts();
@@ -147,22 +150,33 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
     // Speed – max speed per hour
     speedChartData = sortedKeys.map((key) {
       final pts = buckets[key]!;
-      final maxSpd = pts.map((p) => p.speed.toDouble()).reduce((a, b) => a > b ? a : b);
+      final maxSpd =
+          pts.map((p) => p.speed.toDouble()).reduce((a, b) => a > b ? a : b);
       return AnalyticsChartData(key, maxSpd);
     }).toList();
 
-    // Distance – cumulative distance at last point of each hour
-    distanceChartData = sortedKeys.map((key) {
-      final pts = buckets[key]!;
-      return AnalyticsChartData(key, pts.last.distance);
+    // Distance – prefer API moving-block distance; fallback to point-derived.
+    final historyDistance = _distanceByHourFromHistory();
+    final distanceKeys = <String>{...sortedKeys, ...historyDistance.keys}.toList()
+      ..sort((a, b) => _parseHourLabel(a).compareTo(_parseHourLabel(b)));
+    distanceChartData = distanceKeys.map((key) {
+      final fromHistory = historyDistance[key] ?? 0.0;
+      final fromPoints =
+          _distanceFromPoints(buckets[key] ?? const <LocationItem>[]);
+      final km = fromHistory > 0 ? fromHistory : fromPoints;
+      return AnalyticsChartData(key, double.parse(km.toStringAsFixed(2)));
     }).toList();
 
-    // Fuel – proportional to distance per hour
-    final totalDist = _allPoints.last.distance;
+    // Fuel – proportional to per-hour distance share from summary total fuel.
+    final totalDist = distanceChartData.fold<double>(
+      0,
+      (sum, d) => sum + d.value,
+    );
     final totalFuel = _parseFuel();
     fuelChartData = distanceChartData.map((d) {
       final fuelVal = totalDist > 0 ? (d.value / totalDist) * totalFuel : 0.0;
-      return AnalyticsChartData(d.label, double.parse(fuelVal.toStringAsFixed(2)));
+      return AnalyticsChartData(
+          d.label, double.parse(fuelVal.toStringAsFixed(2)));
     }).toList();
 
     // Engine hours – cumulative moving time per hour bucket
@@ -185,17 +199,21 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
     // Speed – max speed per day
     speedChartData = sortedKeys.map((key) {
       final pts = buckets[key]!;
-      final maxSpd = pts.map((p) => p.speed.toDouble()).reduce((a, b) => a > b ? a : b);
+      final maxSpd =
+          pts.map((p) => p.speed.toDouble()).reduce((a, b) => a > b ? a : b);
       return AnalyticsChartData(key, maxSpd);
     }).toList();
 
-    // Distance – total distance covered each day
-    // We compute per-day distance from first to last point of that day
-    distanceChartData = sortedKeys.map((key) {
-      final pts = buckets[key]!;
-      // Distance field is cumulative across entire trip; so day delta = last - first
-      final dayDelta = (pts.last.distance - pts.first.distance).clamp(0, double.infinity).toDouble();
-      return AnalyticsChartData(key, double.parse(dayDelta.toStringAsFixed(2)));
+    // Distance – prefer API moving-block distance; fallback to point-derived.
+    final historyDistance = _distanceByDayFromHistory();
+    final distanceKeys = <String>{...sortedKeys, ...historyDistance.keys}.toList()
+      ..sort((a, b) => _parseDateLabel(a).compareTo(_parseDateLabel(b)));
+    distanceChartData = distanceKeys.map((key) {
+      final fromHistory = historyDistance[key] ?? 0.0;
+      final fromPoints =
+          _distanceFromPoints(buckets[key] ?? const <LocationItem>[]);
+      final km = fromHistory > 0 ? fromHistory : fromPoints;
+      return AnalyticsChartData(key, double.parse(km.toStringAsFixed(2)));
     }).toList();
 
     // Fuel graph is NOT shown in daily mode (fuelChartData stays empty)
@@ -209,9 +227,9 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
 
   /// Hourly cumulative engine hours
   List<AnalyticsChartData> _buildEngineHours(
-      List<String> sortedKeys,
-      Map<String, List<LocationItem>> buckets,
-      ) {
+    List<String> sortedKeys,
+    Map<String, List<LocationItem>> buckets,
+  ) {
     double cumulativeHours = 0;
     final result = <AnalyticsChartData>[];
     DateTime? prevTime;
@@ -221,21 +239,22 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
       for (final p in pts) {
         final currentTime = _parseTime(p.rawTime);
         if (p.speed > 0 && prevTime != null) {
-          final diffSecs = currentTime.difference(prevTime!).inSeconds.abs();
+          final diffSecs = currentTime.difference(prevTime).inSeconds.abs();
           cumulativeHours += diffSecs / 3600.0;
         }
         prevTime = currentTime;
       }
-      result.add(AnalyticsChartData(key, double.parse(cumulativeHours.toStringAsFixed(2))));
+      result.add(AnalyticsChartData(
+          key, double.parse(cumulativeHours.toStringAsFixed(2))));
     }
     return result;
   }
 
   /// Daily engine hours (moving time per day, not cumulative across days)
   List<AnalyticsChartData> _buildEngineHoursDaily(
-      List<String> sortedKeys,
-      Map<String, List<LocationItem>> buckets,
-      ) {
+    List<String> sortedKeys,
+    Map<String, List<LocationItem>> buckets,
+  ) {
     final result = <AnalyticsChartData>[];
 
     for (final key in sortedKeys) {
@@ -246,12 +265,13 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
       for (final p in pts) {
         final currentTime = _parseTime(p.rawTime);
         if (p.speed > 0 && prevTime != null) {
-          final diffSecs = currentTime.difference(prevTime!).inSeconds.abs();
+          final diffSecs = currentTime.difference(prevTime).inSeconds.abs();
           dayHours += diffSecs / 3600.0;
         }
         prevTime = currentTime;
       }
-      result.add(AnalyticsChartData(key, double.parse(dayHours.toStringAsFixed(2))));
+      result.add(
+          AnalyticsChartData(key, double.parse(dayHours.toStringAsFixed(2))));
     }
     return result;
   }
@@ -263,7 +283,9 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
     int stopCount = 0;
 
     for (final item in _historyItems) {
-      if (item.status == 0 && item.timeSeconds != null && item.timeSeconds! > 0) {
+      if (item.status == 0 &&
+          item.timeSeconds != null &&
+          item.timeSeconds! > 0) {
         stopCount++;
         final mins = (item.timeSeconds! / 60).roundToDouble();
         stops.add(AnalyticsBarChartData("Stop $stopCount", mins));
@@ -282,13 +304,25 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
         } else {
           if (stopStart != null) {
             final stopEnd = _parseTime(_allPoints[i - 1].rawTime);
-            final mins = stopEnd.difference(stopStart!).inMinutes.abs();
+            final mins = stopEnd.difference(stopStart).inMinutes.abs();
             if (mins > 0) {
               fallbackCount++;
-              stops.add(AnalyticsBarChartData("Stop $fallbackCount", mins.toDouble()));
+              stops.add(AnalyticsBarChartData(
+                  "Stop $fallbackCount", mins.toDouble()));
             }
             stopStart = null;
           }
+        }
+      }
+
+      // If still stopped at the final point, close that stop interval.
+      if (stopStart != null) {
+        final stopEnd = _parseTime(_allPoints.last.rawTime);
+        final mins = stopEnd.difference(stopStart).inMinutes.abs();
+        if (mins > 0) {
+          fallbackCount++;
+          stops.add(
+              AnalyticsBarChartData("Stop $fallbackCount", mins.toDouble()));
         }
       }
     }
@@ -309,8 +343,8 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
       final displayHour = hour == 0
           ? 12
           : hour > 12
-          ? hour - 12
-          : hour;
+              ? hour - 12
+              : hour;
       return "$displayHour$suffix";
     } catch (_) {
       return rawTime ?? "00";
@@ -375,5 +409,39 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
     } catch (_) {
       return 0.0;
     }
+  }
+
+  Map<String, double> _distanceByHourFromHistory() {
+    final result = <String, double>{};
+    for (final item in _historyItems) {
+      if (item.status != 1 || item.distance <= 0) continue;
+      final key = _hourLabel(item.rawTime);
+      result[key] = (result[key] ?? 0.0) + item.distance;
+    }
+    return result;
+  }
+
+  Map<String, double> _distanceByDayFromHistory() {
+    final result = <String, double>{};
+    for (final item in _historyItems) {
+      if (item.status != 1 || item.distance <= 0) continue;
+      final key = _dateLabel(item.rawTime);
+      result[key] = (result[key] ?? 0.0) + item.distance;
+    }
+    return result;
+  }
+
+  double _distanceFromPoints(List<LocationItem> points) {
+    if (points.length < 2) return 0.0;
+    final sorted = [...points]
+      ..sort((a, b) => _parseTime(a.rawTime).compareTo(_parseTime(b.rawTime)));
+    double total = 0.0;
+    for (int i = 1; i < sorted.length; i++) {
+      final delta = sorted[i].distance - sorted[i - 1].distance;
+      if (delta > 0) {
+        total += delta;
+      }
+    }
+    return total;
   }
 }

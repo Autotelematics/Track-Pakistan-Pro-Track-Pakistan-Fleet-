@@ -9,7 +9,7 @@ import 'package:trackerapp/utils/shared_preference.dart';
 
 
 class VehicleRepository {
-  Future<GetDevicesListModel?> fetchVehicleData({required BuildContext dialogContext}) async {
+  Future<GetDevicesListModel?> fetchVehicleData({BuildContext? dialogContext}) async {
     try {
       String? userApiHashKey =  MySharedPreferences.getString(authTokenKey);
       final headers = {"Content-Type": "application/json"};

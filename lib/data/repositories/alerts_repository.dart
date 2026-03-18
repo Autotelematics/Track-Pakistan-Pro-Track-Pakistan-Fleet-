@@ -14,13 +14,30 @@ class AlertsRepository {
     required String userApiHashKey,
     String? deviceId,
     String? alertType,
+    String? from,
+    String? to,
   }) async {
     try {
-      final uri = Uri.parse(
-        '$_baseUrl${AppUrl.alertsEp}$userApiHashKey&page=$page'
-            '${deviceId != null && deviceId.isNotEmpty ? '&device_id=$deviceId' : ''}'
-            '${alertType != null && alertType.isNotEmpty ? '&type=$alertType' : ''}',
-      );
+      final query = <String, String>{
+        'user_api_hash': userApiHashKey,
+        'page': '$page',
+        'paginate': '0',
+      };
+      if (deviceId != null && deviceId.isNotEmpty) {
+        query['device_id'] = deviceId;
+      }
+      if (alertType != null && alertType.isNotEmpty) {
+        query['type'] = alertType;
+      }
+      if (from != null && from.isNotEmpty) {
+        query['from'] = from;
+      }
+      if (to != null && to.isNotEmpty) {
+        query['to'] = to;
+      }
+
+      final uri = Uri.parse('$_baseUrl/get_alert_list')
+          .replace(queryParameters: query);
 
       log('GET ALERTS URL: $uri');
 
@@ -46,6 +63,76 @@ class AlertsRepository {
       log('ERROR GETTING ALERTS: $e');
       return null;
     }
+  }
+
+  /// GET ONE ALERT BY ALERT ID
+  Future<Item?> getAlertById({
+    required int alertId,
+    required String userApiHashKey,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/get_alert_list').replace(
+        queryParameters: <String, String>{
+          'user_api_hash': userApiHashKey,
+          'alert_id': '$alertId',
+          'page': '1',
+          'paginate': '0',
+        },
+      );
+
+      log('GET ALERT BY ID URL: $uri');
+
+      final response = await http.get(
+        uri,
+        headers: const {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      log('GET ALERT BY ID STATUS CODE: ${response.statusCode}');
+      log('GET ALERT BY ID RESPONSE BODY: ${response.body}');
+
+      if (response.statusCode != 200) return null;
+
+      final decoded = json.decode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        return _extractItemFromMap(decoded);
+      }
+      return null;
+    } catch (e) {
+      log('ERROR GETTING ALERT BY ID: $e');
+      return null;
+    }
+  }
+
+  Item? _extractItemFromMap(Map<String, dynamic> jsonMap) {
+    final directItems = jsonMap['items'];
+    if (directItems is List && directItems.isNotEmpty) {
+      final first = directItems.first;
+      if (first is Map<String, dynamic>) return Item.fromJson(first);
+    }
+
+    final item = jsonMap['item'];
+    if (item is Map<String, dynamic>) {
+      return Item.fromJson(item);
+    }
+
+    final data = jsonMap['data'];
+    if (data is Map<String, dynamic>) {
+      final nestedItems = data['items'];
+      if (nestedItems is List && nestedItems.isNotEmpty) {
+        final first = nestedItems.first;
+        if (first is Map<String, dynamic>) return Item.fromJson(first);
+      }
+      if (data['id'] != null) {
+        return Item.fromJson(data);
+      }
+    }
+
+    if (jsonMap['id'] != null) {
+      return Item.fromJson(jsonMap);
+    }
+    return null;
   }
 
   /// DELETE ALERTS

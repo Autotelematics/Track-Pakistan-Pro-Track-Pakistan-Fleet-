@@ -1,6 +1,7 @@
 // repository/get_device_status_repository.dart
 import 'dart:convert';
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:trackerapp/data/models/get_device_status_model.dart';
@@ -10,13 +11,13 @@ import 'package:trackerapp/utils/shared_preference.dart';
 
 class GetDeviceStatusRepository {
   Future<GetDeviceStatusModel?> getDeviceStatusApi({
-    required BuildContext dialogContext,
+    BuildContext? dialogContext,
   }) async {
     try {
       String? userApiHashKey = MySharedPreferences.getString(authTokenKey);
       print("User API Hash Key: $userApiHashKey");
 
-      if (userApiHashKey == null || userApiHashKey.isEmpty) {
+      if (userApiHashKey.isEmpty) {
         print("No auth token found!");
         return null;
       }

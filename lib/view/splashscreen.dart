@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:trackerapp/utils/local_notification_service.dart';
 import 'package:trackerapp/utils/motion_bottom_navigation_bar.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/view/auth_screens/login_screen.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -16,15 +18,29 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 1), (() async {
+      if (!mounted) return;
       var isLogin = MySharedPreferences.getBool(isLoggedInKey);
       if (isLogin) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MotionBottomNavigationBar()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MotionBottomNavigationBar(),
+          ),
+          (route) => false,
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          unawaited(
+            LocalNotificationService.instance.processPendingNotificationTap(),
+          );
+        });
       } else {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => LoginScreen()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
       }
     }));
   }

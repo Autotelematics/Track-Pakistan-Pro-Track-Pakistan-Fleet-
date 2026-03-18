@@ -31,13 +31,8 @@ class GetAlertsModel {
     page: json["page"] ?? 1,
     perPage: json["per_page"] ?? 10,
     total: json["total"] ?? 0,
-    counts: (json["counts"] as Map<String, dynamic>?)
-        ?.map((k, v) => MapEntry(k, v as int)) ??
-        {},
-    items: json["items"] != null
-        ? List<Item>.from(
-        (json["items"] as List).map((x) => Item.fromJson(x)))
-        : [],
+    counts: _parseCounts(json["counts"]),
+    items: _parseItems(json["items"]),
     message: json["message"],
   );
 
@@ -70,6 +65,33 @@ class GetAlertsModel {
         items: items ?? this.items,
         message: message ?? this.message,
       );
+}
+
+Map<String, int> _parseCounts(dynamic raw) {
+  if (raw is! Map) return <String, int>{};
+  final parsed = <String, int>{};
+  raw.forEach((key, value) {
+    final k = key.toString();
+    if (k.isEmpty) return;
+    if (value is int) {
+      parsed[k] = value;
+      return;
+    }
+    if (value is num) {
+      parsed[k] = value.toInt();
+      return;
+    }
+    parsed[k] = int.tryParse(value.toString()) ?? 0;
+  });
+  return parsed;
+}
+
+List<Item> _parseItems(dynamic raw) {
+  if (raw is! List) return <Item>[];
+  return raw
+      .whereType<Map<String, dynamic>>()
+      .map(Item.fromJson)
+      .toList();
 }
 
 // Counts model
