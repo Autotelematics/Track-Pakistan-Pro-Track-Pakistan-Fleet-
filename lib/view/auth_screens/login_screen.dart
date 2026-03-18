@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -10,7 +9,6 @@ import 'package:trackerapp/providers/auth_provider.dart';
 import 'package:trackerapp/utils/app_loading.dart';
 import 'package:trackerapp/utils/app_validators.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
-import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/custom_text_field.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -250,57 +248,57 @@ class _LoginScreenState extends State<LoginScreen> {
                                             onPressed: () =>
                                                 _onLoginPressed(context),
                                           ),
-                                          SizedBox(height: 2.3.h),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              _SocialButton(
-                                                tooltip: "Facebook",
-                                                onTap: () => _launchExternal(
-                                                    CompanyInfo.facebook),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  child: Image.asset(
-                                                    "assets/images/facebook.png",
-                                                    width: 10.2.w,
-                                                    height: 10.2.w,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 4.w),
-                                              _SocialButton(
-                                                tooltip: "Instagram",
-                                                onTap: () => _launchExternal(
-                                                    CompanyInfo.instagram),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  child: Image.asset(
-                                                    "assets/images/instagram.jpg",
-                                                    width: 6.2.w,
-                                                    height: 6.2.w,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 4.w),
-                                              _SocialButton(
-                                                tooltip: "Website",
-                                                onTap: () => _launchExternal(
-                                                    CompanyInfo.website),
-                                                child: SvgPicture.asset(
-                                                  "assets/images/websitenewa.svg",
-                                                  width: 6.2.w,
-                                                  height: 6.2.w,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          // SizedBox(height: 2.3.h),
+                                          // Row(
+                                          //   mainAxisAlignment:
+                                          //       MainAxisAlignment.center,
+                                          //   children: [
+                                          //     _SocialButton(
+                                          //       tooltip: "Facebook",
+                                          //       onTap: () => _launchExternal(
+                                          //           CompanyInfo.facebook),
+                                          //       child: ClipRRect(
+                                          //         borderRadius:
+                                          //             BorderRadius.circular(
+                                          //                 100),
+                                          //         child: Image.asset(
+                                          //           "assets/images/facebook.png",
+                                          //           width: 10.2.w,
+                                          //           height: 10.2.w,
+                                          //           fit: BoxFit.cover,
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //     SizedBox(width: 4.w),
+                                          //     _SocialButton(
+                                          //       tooltip: "Instagram",
+                                          //       onTap: () => _launchExternal(
+                                          //           CompanyInfo.instagram),
+                                          //       child: ClipRRect(
+                                          //         borderRadius:
+                                          //             BorderRadius.circular(
+                                          //                 100),
+                                          //         child: Image.asset(
+                                          //           "assets/images/instagram.jpg",
+                                          //           width: 6.2.w,
+                                          //           height: 6.2.w,
+                                          //           fit: BoxFit.cover,
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //     SizedBox(width: 4.w),
+                                          //     _SocialButton(
+                                          //       tooltip: "Website",
+                                          //       onTap: () => _launchExternal(
+                                          //           CompanyInfo.website),
+                                          //       child: SvgPicture.asset(
+                                          //         "assets/images/websitenewa.svg",
+                                          //         width: 6.2.w,
+                                          //         height: 6.2.w,
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
                                         ],
                                       ),
                                     ),
