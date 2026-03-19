@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -65,12 +66,29 @@ Future<FirebaseApp> _ensureFirebaseInitialized() async {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   await MySharedPreferences.init();
+  await LocalNotificationService.instance.init(requestPermissions: false);
   await _ensureFirebaseInitialized();
+  final hasVisibleNotification =
+      (message.notification?.title ?? '').trim().isNotEmpty ||
+      (message.notification?.body ?? '').trim().isNotEmpty;
+  final hasUsableData = message.data.entries.any(
+    (entry) => entry.key.trim().isNotEmpty && entry.value.toString().trim().isNotEmpty,
+  );
+  if (!hasVisibleNotification && !hasUsableData) {
+    return;
+  }
+  if (Platform.isAndroid) {
+    await LocalNotificationService.instance.showRemoteMessageNotification(
+      message,
+    );
+  }
   if (Platform.isAndroid) {
     await AlertTtsService.instance.speakFromRemoteMessage(
       message,
       isBackground: true,
+      delay: const Duration(milliseconds: 1200),
     );
   }
 }
@@ -118,13 +136,16 @@ void main() async {
 
   await AlertTtsService.instance.init();
   FirebaseMessaging.onMessage.listen((message) async {
-    await LocalNotificationService.instance.showRemoteMessageNotification(
-      message,
-    );
+    if (message.notification == null) {
+      await LocalNotificationService.instance.showRemoteMessageNotification(
+        message,
+      );
+    }
     if (Platform.isAndroid) {
       await AlertTtsService.instance.speakFromRemoteMessage(
         message,
         isBackground: false,
+        delay: const Duration(milliseconds: 700),
       );
     }
   });
@@ -133,6 +154,7 @@ void main() async {
       await AlertTtsService.instance.speakFromRemoteMessage(
         message,
         isBackground: false,
+        delay: Duration.zero,
       );
     }
     LocalNotificationService.instance.registerRemoteMessageTap(message);
@@ -144,6 +166,7 @@ void main() async {
       await AlertTtsService.instance.speakFromRemoteMessage(
         initialMessage,
         isBackground: false,
+        delay: Duration.zero,
       );
     }
     LocalNotificationService.instance.registerRemoteMessageTap(initialMessage);

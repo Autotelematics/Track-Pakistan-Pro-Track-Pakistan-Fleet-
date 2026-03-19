@@ -86,6 +86,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 335;
+        final chartSize = isCompact ? 17.h : 16.2.h;
         return Container(
           padding: EdgeInsets.symmetric(
             horizontal: 4.w,
@@ -97,14 +98,14 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withOpacity(0.6)
-                    : Colors.black.withOpacity(0.15),
+                    ? Colors.black.withValues(alpha: 0.6)
+                    : Colors.black.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
               if (isDark)
                 BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.2),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
                   blurRadius: 16,
                 ),
             ],
@@ -120,7 +121,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
                       ),
                     ),
                     verticalSpace(height: 1.2.h),
-                    _buildPieChart(context),
+                    _buildPieChart(context, size: chartSize),
                   ],
                 )
               : Row(
@@ -129,8 +130,8 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
                       width: 43.w,
                       child: _buildLegend(context),
                     ),
-                    const Spacer(),
-                    _buildPieChart(context),
+                    SizedBox(width: 1.w),
+                    _buildPieChart(context, size: chartSize),
                   ],
                 ),
         );
@@ -211,7 +212,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
     );
   }
 
-  Widget _buildPieChart(BuildContext context) {
+  Widget _buildPieChart(BuildContext context, {required double size}) {
     final status = widget.data1.statusCounts;
 
     return FadeTransition(
@@ -219,13 +220,13 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
       child: ScaleTransition(
         scale: _chartScale,
         child: Container(
-          height: 17.h,
-          width: 17.h,
+          height: size,
+          width: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 25,
                 spreadRadius: 3,
                 offset: const Offset(0, 6),
@@ -316,7 +317,8 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
           explodeIndex: explodeIndex,
           explodeOffset: '${explodeOffset.toStringAsFixed(1)}%',
           strokeWidth: 1.5,
-          strokeColor: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.1),
+          strokeColor:
+              const Color.fromARGB(255, 0, 0, 0).withValues(alpha: 0.1),
           onPointTap: (details) {
             final index = details.pointIndex ?? -1;
             if (index == -1) return;

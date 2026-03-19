@@ -43,7 +43,7 @@ class LocalNotificationService {
     importance: Importance.high,
   );
 
-  Future<void> init() async {
+  Future<void> init({bool requestPermissions = true}) async {
     if (_isInitialized) return;
 
     tzdata.initializeTimeZones();
@@ -80,18 +80,20 @@ class LocalNotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    if (requestPermissions) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    }
 
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp ?? false) {
@@ -526,12 +528,14 @@ class LocalNotificationService {
     final fallbackBody = (message.data['body'] ?? message.data['message'] ?? '')
         .toString()
         .trim();
+    if (title.isEmpty && body.isEmpty && fallbackBody.isEmpty) {
+      return;
+    }
     final resolvedTitle = title.isNotEmpty ? title : 'Notification';
     final resolvedBody = body.isNotEmpty
         ? body
         : (fallbackBody.isNotEmpty ? fallbackBody : 'New alert received');
     final iosSound = _resolveIosSoundFile(message);
-    debugPrint('iOS alert sound selected: $iosSound');
 
     final payloadMap = _extractRemoteAlertPayload(message);
     final payload =

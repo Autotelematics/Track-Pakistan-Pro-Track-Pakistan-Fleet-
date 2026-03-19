@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/repositories/alert_settings_repository.dart';
+import 'package:trackerapp/utils/alert_tts_service.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
@@ -57,6 +58,13 @@ class SettingsProvider extends ChangeNotifier {
         }
       }
       await MySharedPreferences.setBool(playAlertsAnnouncementKey, enabled);
+      if (Platform.isAndroid && enabled) {
+        await AlertTtsService.instance.speakText(
+          'Alert announcements enabled',
+          isBackground: false,
+          delay: const Duration(milliseconds: 150),
+        );
+      }
     } catch (_) {
       _playAlertsAnnouncement = previous;
       notifyListeners();
