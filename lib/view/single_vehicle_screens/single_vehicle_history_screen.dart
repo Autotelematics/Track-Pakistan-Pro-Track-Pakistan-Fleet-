@@ -122,7 +122,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     if (widget.initialLivePosition == null) return;
     try {
       final icon = await BitmapDescriptor.asset(
-        const ImageConfiguration(size: Size(18, 34)),
+        const ImageConfiguration(size: Size(18, 42)),
         _liveStatusToCarAsset(widget.initialLiveStatus),
       );
       if (!mounted) return;

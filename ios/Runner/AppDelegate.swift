@@ -14,11 +14,11 @@ import GoogleMaps
     FirebaseApp.configure()
     GeneratedPluginRegistrant.register(with: self)
     if #available(iOS 10.0, *) {
-  UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
-  }
-  FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { (registry) in
-    GeneratedPluginRegistrant.register(with: registry)
-  }
+      UNUserNotificationCenter.current().delegate = self
+    }
+    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

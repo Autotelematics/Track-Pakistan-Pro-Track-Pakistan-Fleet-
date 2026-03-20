@@ -232,7 +232,8 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       final ByteData data = await rootBundle.load(path);
       final ui.Codec codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
-        targetHeight: 45,
+        targetWidth: 18,
+        targetHeight: 42,
       );
       final ui.FrameInfo frame = await codec.getNextFrame();
       final ByteData? bytes =
