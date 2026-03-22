@@ -7,6 +7,8 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/popups.dart';
 import 'package:trackerapp/data/models/get_device_live_tracking_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
+import 'package:trackerapp/utils/app_snackbar.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
@@ -26,7 +28,8 @@ class MovingChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final isMoving = text.toLowerCase() == "moving";
+    final isMoving = text.toLowerCase() == "moving" ||
+        text == context.l10n.moving;
     final statusColor = color ?? (isMoving ? AppColors.green : AppColors.red);
     final bg = isDark ? Colors.grey.shade900.withOpacity(.85) : AppColors.white;
     final textColor = isDark ? AppColors.white : AppColors.textBlack;
@@ -801,9 +804,17 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
   }
 }
 
-class BottomActions extends StatelessWidget {
+class BottomActions extends StatefulWidget {
   final String deviceId;
   const BottomActions({super.key, required this.deviceId});
+
+  @override
+  State<BottomActions> createState() => _BottomActionsState();
+}
+
+class _BottomActionsState extends State<BottomActions> {
+  bool _isCallPressed = false;
+  bool _isImmobilizerPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -819,126 +830,156 @@ class BottomActions extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12.px),
-            onTap: () {
-              showDriverDetailPopup(context, deviceId: deviceId);
-            },
-            child: Container(
-              height: 4.35.h,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(12.px),
-                border: Border.all(
-                  color:
-                      isDark ? Colors.white24 : AppColors.grey.withOpacity(.55),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? .18 : .08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 90),
+            curve: Curves.easeOutCubic,
+            scale: _isCallPressed ? 0.97 : 1,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12.px),
+              onHighlightChanged: (isPressed) {
+                if (_isCallPressed == isPressed) return;
+                setState(() => _isCallPressed = isPressed);
+              },
+              onTap: () {
+                showDriverDetailPopup(context, deviceId: widget.deviceId);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 90),
+                curve: Curves.easeOutCubic,
+                height: 4.35.h,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(12.px),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white24
+                        : AppColors.grey.withOpacity(.55),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.call_rounded, color: textColor, size: 1.85.h),
-                  SizedBox(width: .8.w),
-                  Text("Call To Driver",
-                      style: AppStyles.regularTextStyle(context).copyWith(
-                        color: textColor,
-                        fontSize: 12.6.sp,
-                        fontWeight: FontWeight.w600,
-                      )),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? .18 : .08),
+                      blurRadius: _isCallPressed ? 5 : 10,
+                      offset: Offset(0, _isCallPressed ? 1 : 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.call_rounded, color: textColor, size: 1.85.h),
+                    SizedBox(width: .8.w),
+                    Text(context.l10n.callToDriver,
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          color: textColor,
+                          fontSize: 12.6.sp,
+                          fontWeight: FontWeight.w600,
+                        )),
+                  ],
+                ),
               ),
             ),
           ),
         ),
         horizontalSpace(width: 3.w),
         Expanded(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: canSendCommand
-                ? () {
-                    showDeviceCommandsPopup(context, deviceId);
-                  }
-                : null,
-            child: Stack(
-              children: [
-                Container(
-                  height: 4.35.h,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: canSendCommand
-                          ? [
-                              ConstantColor.primaryColor,
-                              ConstantColor.primaryColor.withOpacity(.86),
-                            ]
-                          : [
-                              Colors.grey.shade500,
-                              Colors.grey.shade600,
-                            ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (canSendCommand
-                                ? ConstantColor.primaryColor
-                                : Colors.black54)
-                            .withOpacity(.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 90),
+            curve: Curves.easeOutCubic,
+            scale: _isImmobilizerPressed ? 0.97 : 1,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onHighlightChanged: canSendCommand
+                  ? (isPressed) {
+                      if (_isImmobilizerPressed == isPressed) return;
+                      setState(() => _isImmobilizerPressed = isPressed);
+                    }
+                  : null,
+              onTap: () {
+                if (!canSendCommand) {
+                  AppSnackBar.error(
+                    message: "You Dont Have Permission to use this Feature",
+                  );
+                  return;
+                }
+                showDeviceCommandsPopup(context, widget.deviceId);
+              },
+              child: Stack(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 90),
+                    curve: Curves.easeOutCubic,
+                    height: 4.35.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: canSendCommand
+                            ? [
+                                ConstantColor.primaryColor,
+                                ConstantColor.primaryColor.withOpacity(.86),
+                              ]
+                            : [
+                                Colors.grey.shade500,
+                                Colors.grey.shade600,
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (canSendCommand
+                                  ? ConstantColor.primaryColor
+                                  : Colors.black54)
+                              .withOpacity(.25),
+                          blurRadius: _isImmobilizerPressed ? 6 : 12,
+                          offset: Offset(0, _isImmobilizerPressed ? 1 : 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.electric_bolt,
+                            color: AppColors.white, size: 1.9.h),
+                        horizontalSpace(width: .8.w),
+                        Text(context.l10n.immobilizer,
+                            style:
+                                AppStyles.regularTextStyle(context).copyWith(
+                              color: AppColors.white,
+                              fontSize: 12.6.sp,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: .2,
+                            )),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.electric_bolt,
-                          color: AppColors.white, size: 1.9.h),
-                      horizontalSpace(width: .8.w),
-                      Text("IMMOBILIZER",
-                          style: AppStyles.regularTextStyle(context).copyWith(
-                            color: AppColors.white,
-                            fontSize: 12.6.sp,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: .2,
-                          )),
-                    ],
-                  ),
-                ),
-                if (!canSendCommand)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Center(
-                        child: Container(
-                          width: 8.6.w,
-                          height: 8.6.w,
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: .16),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.red.withValues(alpha: .58),
-                              width: 1.0,
+                  if (!canSendCommand)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            width: 8.6.w,
+                            height: 8.6.w,
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: .16),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.red.withValues(alpha: .58),
+                                width: 1.0,
+                              ),
                             ),
-                          ),
-                          child: Icon(
-                            Icons.cancel_outlined,
-                            size: 1.7.h,
-                            color: Colors.red.shade300,
+                            child: Icon(
+                              Icons.cancel_outlined,
+                              size: 1.7.h,
+                              color: Colors.red.shade300,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

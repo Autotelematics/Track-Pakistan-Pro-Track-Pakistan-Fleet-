@@ -8,6 +8,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/dashboard_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -25,19 +26,20 @@ class _SettingsHeaderState extends State<SettingsHeader> {
 
   Future<void> _showGalleryPermissionHelp() async {
     if (!mounted) return;
+    final l10n = context.l10n;
     final platform = Platform.isIOS ? "iPhone Settings" : "App Settings";
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text("Gallery Permission Required"),
+          title: Text(l10n.galleryPermissionRequired),
           content: Text(
-            "Please allow Photos access from $platform for this app, then try again.",
+            l10n.galleryPermissionMessage(platform),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("OK"),
+              child: Text(l10n.ok),
             ),
           ],
         );
@@ -120,7 +122,8 @@ class _SettingsHeaderState extends State<SettingsHeader> {
     final userEmail = userEmailFromApi.trim().isNotEmpty
         ? userEmailFromApi.trim()
         : storedUserEmail;
-    final greeting = userEmail.isNotEmpty ? "Hi, $userEmail" : "Hi";
+    final l10n = context.l10n;
+    final greeting = userEmail.isNotEmpty ? l10n.hiUser(userEmail) : l10n.hi;
 
     return Column(
       children: [
@@ -215,7 +218,7 @@ class _SettingsHeaderState extends State<SettingsHeader> {
         ),
         verticalSpace(height: 1.0.h),
         Text(
-          'Settings',
+          l10n.settings,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 19.sp,
             color: isDark ? onSurface : AppColors.white,

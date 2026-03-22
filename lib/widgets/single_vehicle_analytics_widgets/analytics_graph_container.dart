@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class AnalyticsGraphContainer extends StatelessWidget {
@@ -18,6 +19,7 @@ class AnalyticsGraphContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? Colors.white.withValues(alpha: .06) : Colors.white;
     final border = isDark ? Colors.white12 : Colors.black12;
@@ -65,7 +67,7 @@ class AnalyticsGraphContainer extends StatelessWidget {
               ),
               if (isEmpty)
                 Text(
-                  "No data",
+                  l10n.noData,
                   style: AppStyles.regularTextStyle(context).copyWith(
                     fontSize: 12.sp,
                     color: subtitleColor,
@@ -87,6 +89,7 @@ class AnalyticsGraphContainer extends StatelessWidget {
 class _EmptyChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
@@ -99,7 +102,7 @@ class _EmptyChart extends StatelessWidget {
           ),
           SizedBox(height: 1.h),
           Text(
-            "No data available",
+            l10n.noDataAvailable,
             style: TextStyle(
               color: isDark ? Colors.white54 : Colors.grey.shade400,
               fontSize: 13.sp,

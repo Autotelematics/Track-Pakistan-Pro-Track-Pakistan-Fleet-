@@ -19,8 +19,17 @@ class DriverRepository {
   }) async {
     final userApiHashKey = MySharedPreferences.getString(authTokenKey);
     final header = {'Content-Type': 'application/json'};
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.addDriverUserEp}$userApiHashKey&name=$name&device_id=$deviceId&rfid=$rfId&phone=$phone&email=$email");
+    final endpointPath = AppUrl.addDriverUserEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+        'name': name,
+        'device_id': deviceId,
+        'rfid': rfId,
+        'phone': phone,
+        'email': email,
+      },
+    );
     final response = await http.put(url, headers: header);
     log("Api hit statuscode:${response.statusCode}");
     log("Api hit body:${response.body}");
@@ -42,8 +51,18 @@ class DriverRepository {
     required String description,
   }) async {
     final userAuthToken = MySharedPreferences.getString(authTokenKey);
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.editDriverUserEp}$userAuthToken&name=$name&rfid=$rfid&phone=$phone&email=$email&description=$description&id=$driverId");
+    final endpointPath = AppUrl.editDriverUserEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userAuthToken,
+        'name': name,
+        'rfid': rfid,
+        'phone': phone,
+        'email': email,
+        'description': description,
+        'id': driverId,
+      },
+    );
     final headers = {"Content-Type": "application/json"};
     final response = await http.put(url, headers: headers);
     if (response.statusCode == 200) {
@@ -60,8 +79,12 @@ class DriverRepository {
   }) async {
     try {
       final userApiHashKey = MySharedPreferences.getString(authTokenKey);
-      final url = Uri.parse(
-          "${AppUrl.baseURL}${AppUrl.getDriverUserEp}$userApiHashKey");
+      final endpointPath = AppUrl.getDriverUserEp.split('?').first;
+      final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+        },
+      );
       final headers = {"Content-Type": "application/json"};
       final response = await http.get(url, headers: headers);
       if (response.statusCode == 200) {
@@ -86,11 +109,17 @@ class DriverRepository {
   }) async {
     final userApiHashKey = MySharedPreferences.getString(authTokenKey);
     final header = {'Content-Type': 'application/json'};
-    final driverParam = (driverId != null && driverId.trim().isNotEmpty)
-        ? "&driver_id=$driverId"
-        : "";
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.setDeviceDriverEp}$userApiHashKey&device_id=$deviceId$driverParam");
+    final queryParams = <String, String>{
+      'user_api_hash': userApiHashKey,
+      'device_id': deviceId,
+    };
+    if (driverId != null && driverId.trim().isNotEmpty) {
+      queryParams['driver_id'] = driverId;
+    }
+    final endpointPath = AppUrl.setDeviceDriverEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: queryParams,
+    );
     final response = await http.post(url, headers: header);
     log("Api hit statuscode:${response.statusCode}");
     log("Api hit body:${response.body}");
@@ -112,8 +141,13 @@ class DriverRepository {
   }) async {
     try {
       final userApiHashKey = MySharedPreferences.getString(authTokenKey);
-      final url = Uri.parse(
-          "${AppUrl.baseURL}${AppUrl.getVehicleDriverEp}$userApiHashKey&device_id=$deviceId");
+      final endpointPath = AppUrl.getVehicleDriverEp.split('?').first;
+      final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+          'device_id': deviceId,
+        },
+      );
       final headers = {"Content-Type": "application/json"};
       http.Response response = await http.get(url, headers: headers);
 

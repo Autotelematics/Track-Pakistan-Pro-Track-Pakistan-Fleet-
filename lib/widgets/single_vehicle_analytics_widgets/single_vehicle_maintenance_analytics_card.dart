@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/device_service_model.dart';
 import 'package:trackerapp/providers/device_service_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -46,6 +47,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -206,7 +208,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                   children: [
                     Expanded(
                       child: Text(
-                        "Maintenance Analytics",
+                        l10n.maintenanceAnalytics,
                         style: AppStyles.boldTextStyle(context)
                             .copyWith(fontSize: 14.6.sp),
                       ),
@@ -228,7 +230,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                         criticalRows: criticalRows,
                       ),
                       icon: const Icon(Icons.ios_share_rounded),
-                      tooltip: 'Share',
+                      tooltip: l10n.share,
                     ),
                   ],
                 ),
@@ -238,9 +240,9 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                     Expanded(
                       child: _kpiTile(
                         context,
-                        title: 'Health Score',
+                        title: l10n.healthScore,
                         value: '${healthPct.toStringAsFixed(1)}%',
-                        subtitle: '${ok.length}/$total healthy',
+                        subtitle: l10n.healthyStateSummary(ok.length, total),
                         color: const Color(0xFF16A34A),
                       ),
                     ),
@@ -248,9 +250,9 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                     Expanded(
                       child: _kpiTile(
                         context,
-                        title: 'Due Soon',
+                        title: l10n.dueSoon,
                         value: due.toString(),
-                        subtitle: 'Overdue: ${overdue.length}',
+                        subtitle: l10n.overdueCountLabel(overdue.length),
                         color: const Color(0xFFF59E0B),
                       ),
                     ),
@@ -259,7 +261,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Due Soon Windows',
+                  title: l10n.dueSoonWindows,
                   child: Row(
                     children: [
                       Expanded(
@@ -270,7 +272,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                           const Color(0xFFF59E0B),
                           onTap: () => _showDueSoonWindowSheet(
                             context,
-                            title: 'Due in Next 7 Days',
+                            title: l10n.dueInNextDays(7),
                             rows: _dueSoonRows(entries, 7),
                           ),
                         ),
@@ -284,7 +286,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                           const Color(0xFFD97706),
                           onTap: () => _showDueSoonWindowSheet(
                             context,
-                            title: 'Due in Next 14 Days',
+                            title: l10n.dueInNextDays(14),
                             rows: _dueSoonRows(entries, 14),
                           ),
                         ),
@@ -298,7 +300,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                           const Color(0xFFB45309),
                           onTap: () => _showDueSoonWindowSheet(
                             context,
-                            title: 'Due in Next 30 Days',
+                            title: l10n.dueInNextDays(30),
                             rows: _dueSoonRows(entries, 30),
                           ),
                         ),
@@ -309,7 +311,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Overdue by Type',
+                  title: l10n.overdueByType,
                   child: Row(
                     children: overdueByType.entries
                         .toList()
@@ -341,41 +343,41 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Top Overdue Services',
+                  title: l10n.topOverdueServices,
                   child: _listBlock(
                     context,
                     overdueServiceRows,
-                    emptyTitle: 'No overdue services',
+                    emptyTitle: l10n.noOverdueVehicles,
                   ),
                 ),
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Next Due by Left Value',
+                  title: l10n.nextDueByLeftValue,
                   child: _listBlock(
                     context,
                     nextDueRows,
-                    emptyTitle: 'No upcoming by left',
+                    emptyTitle: l10n.noUpcomingByLeft,
                   ),
                 ),
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Upcoming Calendar',
+                  title: l10n.upcomingCalendar,
                   child: _listBlock(
                     context,
                     upcomingDateRows,
-                    emptyTitle: 'No upcoming dates',
+                    emptyTitle: l10n.noUpcomingDates,
                   ),
                 ),
                 verticalSpace(height: .8.h),
                 _innerCard(
                   context,
-                  title: 'Critical Maintenance Alerts',
+                  title: l10n.criticalMaintenanceAlerts,
                   child: _listBlock(
                     context,
                     criticalRows,
-                    emptyTitle: 'No critical maintenance alerts',
+                    emptyTitle: l10n.noCriticalMaintenanceAlerts,
                   ),
                 ),
               ],
@@ -391,6 +393,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
     required String error,
     required VoidCallback onRetry,
   }) {
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.05.h),
@@ -417,7 +420,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
           TextButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Retry'),
+            label: Text(l10n.retry),
           ),
         ],
       ),

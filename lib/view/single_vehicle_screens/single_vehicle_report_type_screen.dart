@@ -10,6 +10,7 @@ import 'package:trackerapp/data/models/initial_reports.dart';
 import 'package:trackerapp/providers/get_device_reports_provider.dart';
 import 'package:trackerapp/view/view_report_screen.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/utils/app_validation_dialog.dart';
@@ -46,6 +47,24 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     {"label": "Last 30 Days", "icon": Icons.calendar_month_rounded},
     {"label": "Custom", "icon": Icons.edit_calendar_rounded},
   ];
+
+  String _filterLabel(BuildContext context, int index) {
+    final l10n = context.l10n;
+    switch (index) {
+      case 0:
+        return l10n.today;
+      case 1:
+        return l10n.yesterday;
+      case 2:
+        return l10n.last7Days;
+      case 3:
+        return l10n.last30Days;
+      case 4:
+        return l10n.custom;
+      default:
+        return filters[index]["label"] as String;
+    }
+  }
 
   @override
   void initState() {
@@ -134,6 +153,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 36.h,
@@ -158,11 +178,11 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Date",
+                      l10n.selectDate,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -170,7 +190,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempDate),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -208,6 +228,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 34.h,
@@ -232,11 +253,11 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Time",
+                      l10n.selectTime,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -244,7 +265,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempTime),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -295,14 +316,14 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     if (fromDate.isEmpty || toDate.isEmpty) {
       showValidationErrorDialog(
         context,
-        message: 'Please select date range first',
+        message: context.l10n.pleaseSelectDateRangeFirst,
       );
       return;
     }
     if (!_isValidDateRangeStrings(fromDate, toDate)) {
       showValidationErrorDialog(
         context,
-        message: 'From date cannot be later than To date',
+        message: context.l10n.fromDateCannotBeLaterThanToDate,
       );
       return;
     }
@@ -505,7 +526,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                               ),
                             ),
                             child: Text(
-                              filters[i]['label'] as String,
+                              _filterLabel(context, i),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -815,7 +836,7 @@ class _ReportDateRangeCard extends StatelessWidget {
   });
 
   String _formatDate(String value) {
-    if (value.isEmpty) return 'Select Date';
+    if (value.isEmpty) return '';
     try {
       final dt = DateFormat('yyyy-MM-dd').parse(value);
       return DateFormat('dd/MM/yyyy').format(dt);
@@ -825,7 +846,7 @@ class _ReportDateRangeCard extends StatelessWidget {
   }
 
   String _formatTime(String value) {
-    if (value.isEmpty) return 'Select Time';
+    if (value.isEmpty) return '';
     try {
       final dt = DateFormat('hh:mm:ss a').parse(value);
       return DateFormat('hh:mm a').format(dt);
@@ -836,6 +857,7 @@ class _ReportDateRangeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -851,8 +873,9 @@ class _ReportDateRangeCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _RangePickerTile(
-                  title: 'From Date',
+                  title: l10n.fromDate,
                   value: _formatDate(fromDate),
+                  emptyValue: l10n.selectDate,
                   icon: Icons.event,
                   onTap: onFromDateTap,
                 ),
@@ -860,8 +883,9 @@ class _ReportDateRangeCard extends StatelessWidget {
               horizontalSpace(width: 2.w),
               Expanded(
                 child: _RangePickerTile(
-                  title: 'To Date',
+                  title: l10n.toDate,
                   value: _formatDate(toDate),
+                  emptyValue: l10n.selectDate,
                   icon: Icons.event_available,
                   onTap: onToDateTap,
                 ),
@@ -873,8 +897,9 @@ class _ReportDateRangeCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _RangePickerTile(
-                  title: 'From Time',
+                  title: l10n.fromTime,
                   value: _formatTime(fromTime),
+                  emptyValue: l10n.selectTime,
                   icon: Icons.access_time,
                   onTap: onFromTimeTap,
                 ),
@@ -882,8 +907,9 @@ class _ReportDateRangeCard extends StatelessWidget {
               horizontalSpace(width: 2.w),
               Expanded(
                 child: _RangePickerTile(
-                  title: 'To Time',
+                  title: l10n.toTime,
                   value: _formatTime(toTime),
+                  emptyValue: l10n.selectTime,
                   icon: Icons.timelapse_rounded,
                   onTap: onToTimeTap,
                 ),
@@ -900,7 +926,7 @@ class _ReportDateRangeCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: onApply,
-              child: const Text('Apply Range'),
+              child: Text(l10n.applyRange),
             ),
           )
         ],
@@ -912,12 +938,14 @@ class _ReportDateRangeCard extends StatelessWidget {
 class _RangePickerTile extends StatelessWidget {
   final String title;
   final String value;
+  final String emptyValue;
   final IconData icon;
   final VoidCallback onTap;
 
   const _RangePickerTile({
     required this.title,
     required this.value,
+    required this.emptyValue,
     required this.icon,
     required this.onTap,
   });
@@ -957,7 +985,7 @@ class _RangePickerTile extends StatelessWidget {
                 horizontalSpace(width: 1.2.w),
                 Expanded(
                   child: Text(
-                    value,
+                    value.isEmpty ? emptyValue : value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context)

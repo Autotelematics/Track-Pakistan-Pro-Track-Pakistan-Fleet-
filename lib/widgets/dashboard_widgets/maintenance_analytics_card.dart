@@ -5,6 +5,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -130,7 +131,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Maintenance Analytics',
+                  context.l10n.maintenanceAnalytics,
                   style: AppStyles.semiboldTextStyle(context)
                       .copyWith(fontSize: 15.sp),
                 ),
@@ -151,7 +152,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
                   criticalRows: criticalRows,
                 ),
                 icon: const Icon(Icons.ios_share_rounded),
-                tooltip: 'Share',
+                tooltip: context.l10n.share,
                 iconSize: 19,
                 padding: EdgeInsets.zero,
                 visualDensity: const VisualDensity(
@@ -173,7 +174,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
                   Expanded(
                     child: _kpiTile(
                       context,
-                      title: 'Health Score',
+                      title: context.l10n.healthScore,
                       value: '${healthPct.toStringAsFixed(1)}%',
                       subtitle: '${ok.length}/$total in healthy state',
                       color: const Color(0xFF16A34A),
@@ -183,9 +184,9 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
                   Expanded(
                     child: _kpiTile(
                       context,
-                      title: 'Due Soon',
+                      title: context.l10n.dueSoon,
                       value: due.toString(),
-                      subtitle: 'Overdue: ${overdue.length}',
+                      subtitle: context.l10n.overdueCountLabel(overdue.length),
                       color: const Color(0xFFF59E0B),
                     ),
                   ),
@@ -196,7 +197,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           verticalSpace(height: 1.h),
           _innerCard(
             context,
-            title: 'Due Soon Windows',
+            title: context.l10n.dueSoonWindows,
             child: Row(
               children: [
                 Expanded(
@@ -275,41 +276,41 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           verticalSpace(height: .8.h),
           _innerCard(
             context,
-            title: 'Top Vehicles by Overdue',
+            title: context.l10n.topVehiclesByOverdue,
             child: _listBlock(
               context,
               topVehiclesRows,
-              emptyTitle: 'No overdue vehicles',
+              emptyTitle: context.l10n.noOverdueVehicles,
             ),
           ),
           verticalSpace(height: .8.h),
           _innerCard(
             context,
-            title: 'Next Due by Left Value',
+            title: context.l10n.nextDueByLeftValue,
             child: _listBlock(
               context,
               nextDueRows,
-              emptyTitle: 'No upcoming by left',
+              emptyTitle: context.l10n.noUpcomingByLeft,
             ),
           ),
           verticalSpace(height: .8.h),
           _innerCard(
             context,
-            title: 'Upcoming Calendar',
+            title: context.l10n.upcomingCalendar,
             child: _listBlock(
               context,
               upcomingDateRows,
-              emptyTitle: 'No upcoming dates',
+              emptyTitle: context.l10n.noUpcomingDates,
             ),
           ),
           verticalSpace(height: .8.h),
           _innerCard(
             context,
-            title: 'Critical Maintenance Alerts',
+            title: context.l10n.criticalMaintenanceAlerts,
             child: _listBlock(
               context,
               criticalRows,
-              emptyTitle: 'No critical maintenance alerts',
+              emptyTitle: context.l10n.noCriticalMaintenanceAlerts,
             ),
           ),
         ],

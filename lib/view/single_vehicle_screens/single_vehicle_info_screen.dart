@@ -17,6 +17,7 @@ import 'package:trackerapp/providers/device_expense_provider.dart';
 import 'package:trackerapp/providers/device_service_provider.dart';
 import 'package:trackerapp/providers/reminder_provider.dart';
 import 'package:trackerapp/providers/update_device_data_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
 import 'package:trackerapp/view/setting_screens/manager_chat_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_expense_screen.dart';
@@ -46,6 +47,7 @@ class SingleVehicleInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -76,9 +78,9 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.person_outline,
               iconBg: const Color(0xFFEAF1FF),
               iconColor: const Color(0xFF3B82F6),
-              title: "Driver Assignment",
-              actionText: "Assign",
-              bodyText: "See driver",
+              title: l10n.driverAssignment,
+              actionText: l10n.assign,
+              bodyText: l10n.seeDriver,
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -88,9 +90,9 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.assignment_turned_in,
               iconBg: const Color(0xFFEAF1FF),
               iconColor: const Color(0xFF3B82F6),
-              title: "Alert Assign",
-              actionText: "Assign",
-              bodyText: "No Alert assigned",
+              title: l10n.alertAssign,
+              actionText: l10n.assign,
+              bodyText: l10n.noAlertAssigned,
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -100,9 +102,9 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.build_outlined,
               iconBg: const Color(0xFFFFF3E8),
               iconColor: const Color(0xFFF97316),
-              title: "Maintenance",
-              actionText: "Add",
-              bodyText: "No upcoming maintenance",
+              title: l10n.maintenance,
+              actionText: l10n.add,
+              bodyText: l10n.noUpcomingMaintenance,
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -112,10 +114,10 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.attach_money,
               iconBg: const Color(0xFFE9F9F1),
               iconColor: const Color(0xFF10B981),
-              title: "Expenses",
-              subtitle: "Track and manage expenses",
-              actionText: "Add",
-              bodyText: "View all expenses",
+              title: l10n.expenses,
+              subtitle: l10n.trackManageExpenses,
+              actionText: l10n.add,
+              bodyText: l10n.viewAllExpenses,
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -125,9 +127,9 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.notifications_none_outlined,
               iconBg: const Color(0xFFFFF1F2),
               iconColor: const Color(0xFFE4395E),
-              title: "Reminders",
-              actionText: "Add",
-              bodyText: "No active reminders",
+              title: l10n.reminders,
+              actionText: l10n.add,
+              bodyText: l10n.noActiveReminders,
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -137,10 +139,10 @@ class SingleVehicleInfoScreen extends StatelessWidget {
               icon: Icons.report_problem_outlined,
               iconBg: const Color(0xFFFFF4E5),
               iconColor: const Color(0xFFD97706),
-              title: "Complain About this Vehicle",
-              subtitle: "Open support chat with this vehicle selected",
-              actionText: "Complain",
-              bodyText: "Talk to support about $vehicleName",
+              title: l10n.complainVehicle,
+              subtitle: l10n.supportChatVehicle,
+              actionText: l10n.complain,
+              bodyText: l10n.talkToSupportVehicle(vehicleName),
               deviceId: deviceId,
               vehicleName: vehicleName,
             ),
@@ -182,6 +184,7 @@ class _SensorsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Container(
       decoration: BoxDecoration(
@@ -221,14 +224,14 @@ class _SensorsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Vehicle Sensors",
+                    l10n.vehicleSensors,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       fontSize: 14.2.sp,
                       color: isDark ? AppColors.white : AppColors.textBlack,
                     ),
                   ),
                   Text(
-                    "${sensors.length} items",
+                    l10n.sensorItemsCount(sensors.length),
                     style: AppStyles.regularTextStyle(context).copyWith(
                       fontSize: 11.2.sp,
                       color: isDark ? Colors.white60 : Colors.black54,
@@ -244,7 +247,7 @@ class _SensorsCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(vertical: 1.2.h),
               child: Text(
-                "No sensors available",
+                l10n.noSensorsAvailable,
                 style: AppStyles.regularTextStyle(context).copyWith(
                   color: isDark ? Colors.white60 : Colors.black54,
                 ),
@@ -262,7 +265,8 @@ class _SensorsCard extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final sensor = sensors[index];
-                final label = sensor.name ?? sensor.type ?? "Unknown";
+                final label =
+                    sensor.name ?? sensor.type ?? l10n.vehicleStatusUnknown;
                 final value = sensor.value ?? sensor.val?.toString() ?? "-";
                 final sensorIcon = _sensorIcons[label] ?? _fallbackIcon;
 
@@ -432,6 +436,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.25.h),
@@ -467,7 +472,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
               horizontalSpace(width: 2.4.w),
               Expanded(
                 child: Text(
-                  "Vehicle Info",
+                  l10n.vehicleInfo,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     fontSize: 13.8.sp,
                     color: isDark ? AppColors.white : AppColors.textBlack,
@@ -515,7 +520,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                                 ),
                           horizontalSpace(width: .8.w),
                           Text(
-                            "Update",
+                            l10n.update,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 11.4.sp,
@@ -532,11 +537,11 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
             ],
           ),
           verticalSpace(height: 1.2.h),
-          _valueTile(context, "Average Per Liter", _kmPerLiter),
+          _valueTile(context, l10n.averagePerLiter, _kmPerLiter),
           verticalSpace(height: .8.h),
-          _valueTile(context, "Engine Type", _engineType),
+          _valueTile(context, l10n.engineType, _engineType),
           verticalSpace(height: .8.h),
-          _valueTile(context, "Vehicle Type", _vehicleType),
+          _valueTile(context, l10n.vehicleType, _vehicleType),
         ],
       ),
     );
@@ -597,6 +602,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l10n = context.l10n;
             return AlertDialog(
               backgroundColor: theme.cardColor,
               title: SizedBox(
@@ -617,7 +623,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                     Align(
                       alignment: Alignment.topLeft,
                       child: Text(
-                        "Update Vehicle Info",
+                        l10n.updateVehicleInfo,
                         style: AppStyles.boldTextStyle(context).copyWith(
                           fontSize: 16.2.sp,
                           fontWeight: FontWeight.w700,
@@ -635,37 +641,37 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _dialogFieldLabel(context, "Average Per Liter"),
+                      _dialogFieldLabel(context, l10n.averagePerLiter),
                       verticalSpace(height: .5.h),
                       _dialogTextField(
                         context: context,
                         isDark: isDark,
                         controller: _dialogKmController,
-                        hintText: "e.g. 11.00",
+                        hintText: l10n.exampleAveragePerLiter,
                       ),
                       verticalSpace(height: 1.2.h),
-                      _dialogFieldLabel(context, "Engine Type"),
+                      _dialogFieldLabel(context, l10n.engineType),
                       verticalSpace(height: .5.h),
                       _dialogDropdownField(
                         context: context,
                         isDark: isDark,
                         fieldWidth: dialogFieldWidth,
                         value: selectedEngineType,
-                        hintText: "Select engine type",
+                        hintText: l10n.selectEngineType,
                         items: _engineOptions,
                         onChanged: (value) {
                           setDialogState(() => selectedEngineType = value);
                         },
                       ),
                       verticalSpace(height: 1.2.h),
-                      _dialogFieldLabel(context, "Vehicle Type"),
+                      _dialogFieldLabel(context, l10n.vehicleType),
                       verticalSpace(height: .5.h),
                       _dialogDropdownField(
                         context: context,
                         isDark: isDark,
                         fieldWidth: dialogFieldWidth,
                         value: selectedVehicleType,
-                        hintText: "Select vehicle type",
+                        hintText: l10n.selectVehicleType,
                         items: _vehicleOptions,
                         onChanged: (value) {
                           setDialogState(() => selectedVehicleType = value);
@@ -679,7 +685,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
                   child: Text(
-                    "Cancel",
+                    l10n.cancel,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
@@ -698,7 +704,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                                   value <= 0) {
                                 AppSnackBar.error(
                                   message:
-                                      "Please enter a valid Average Per Liter",
+                                      l10n.pleaseEnterValidAveragePerLiter,
                                 );
                                 return;
                               }
@@ -746,7 +752,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                               ),
                             )
                           : Text(
-                              "Save",
+                              l10n.save,
                               style: AppStyles.semiboldTextStyle(context)
                                   .copyWith(color: Colors.white),
                             ),
@@ -928,6 +934,7 @@ class _InfoCard extends StatelessWidget {
   });
 
   Future<void> _onPrimaryTap(BuildContext context) async {
+    final l10n = context.l10n;
     if (index == 0) {
       showAssignDriverPopup(context, deviceId.toString());
     } else if (index == 1) {
@@ -952,7 +959,7 @@ class _InfoCard extends StatelessWidget {
           mobilePhone: formData.mobilePhone,
           description: formData.description,
         );
-        AppSnackBar.success(message: "Service added successfully");
+        AppSnackBar.success(message: l10n.serviceAddedSuccessfully);
       } catch (e) {
         AppSnackBar.error(message: e.toString());
       }
@@ -974,7 +981,7 @@ class _InfoCard extends StatelessWidget {
           supplier: formData.supplier,
           comment: formData.comment,
         );
-        AppSnackBar.success(message: "Expense added successfully");
+        AppSnackBar.success(message: l10n.expenseAddedSuccessfully);
       } catch (e) {
         AppSnackBar.error(message: e.toString());
       }
@@ -1042,6 +1049,7 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     final activeReminderText = index == 5
         ? context.select<ReminderProvider, String>((provider) {
@@ -1051,9 +1059,9 @@ class _InfoCard extends StatelessWidget {
                     r.deviceId == deviceId &&
                     (r.repeatType != "none" || !r.dueAt.isBefore(now)))
                 .length;
-            if (active == 0) return "No active reminders";
-            if (active == 1) return "1 active reminder";
-            return "$active active reminders";
+            if (active == 0) return l10n.noActiveReminders;
+            if (active == 1) return l10n.singleActiveReminder;
+            return l10n.multipleActiveReminders(active);
           })
         : "";
     final pastReminderText = index == 5
@@ -1065,9 +1073,9 @@ class _InfoCard extends StatelessWidget {
                     r.repeatType == "none" &&
                     r.dueAt.isBefore(now))
                 .length;
-            if (past == 0) return "No past reminders";
-            if (past == 1) return "1 past reminder";
-            return "$past past reminders";
+            if (past == 0) return l10n.noPastReminders;
+            if (past == 1) return l10n.singlePastReminder;
+            return l10n.multiplePastReminders(past);
           })
         : "";
 
@@ -1358,6 +1366,7 @@ void _showReminderListBottomSheet(
 }) {
   final theme = Theme.of(context);
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
 
   showModalBottomSheet(
     context: context,
@@ -1407,7 +1416,7 @@ void _showReminderListBottomSheet(
                           ),
                           verticalSpace(height: 1.2.h),
                           Text(
-                            "Active Reminders",
+                            l10n.activeReminders,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 14.sp,
@@ -1424,7 +1433,7 @@ void _showReminderListBottomSheet(
                           ),
                           verticalSpace(height: 2.2.h),
                           Text(
-                            "No active reminders",
+                            l10n.noActiveReminders,
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 12.8.sp,
                               color: onSurface.withValues(alpha: .65),
@@ -1443,7 +1452,7 @@ void _showReminderListBottomSheet(
                                   );
                                 },
                                 icon: const Icon(Icons.history_rounded),
-                                label: const Text("Old Reminders"),
+                                label: Text(l10n.oldReminders),
                               ),
                             ),
                           ],
@@ -1463,7 +1472,7 @@ void _showReminderListBottomSheet(
                         ),
                         verticalSpace(height: 1.2.h),
                         Text(
-                          "Active Reminders",
+                          l10n.activeReminders,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
                             fontSize: 14.sp,
                             color: onSurface,
@@ -1505,7 +1514,7 @@ void _showReminderListBottomSheet(
                                       .read<ReminderProvider>()
                                       .deleteReminder(reminder.id);
                                   AppSnackBar.success(
-                                      message: "Reminder deleted");
+                                      message: l10n.reminderDeleted);
                                 },
                               );
                             },
@@ -1524,7 +1533,7 @@ void _showReminderListBottomSheet(
                                 );
                               },
                               icon: const Icon(Icons.history_rounded),
-                              label: const Text("Old Reminders"),
+                              label: Text(l10n.oldReminders),
                             ),
                           ),
                         ],
@@ -1545,6 +1554,7 @@ void _showOldReminderHistoryBottomSheet(
 }) {
   final theme = Theme.of(context);
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -1585,7 +1595,7 @@ void _showOldReminderHistoryBottomSheet(
                         ),
                         verticalSpace(height: 1.2.h),
                         Text(
-                          "Old Reminders",
+                          l10n.oldReminders,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
                             fontSize: 14.sp,
                             color: onSurface,
@@ -1601,7 +1611,7 @@ void _showOldReminderHistoryBottomSheet(
                         ),
                         verticalSpace(height: 2.2.h),
                         Text(
-                          "No old reminders",
+                          l10n.noOldReminders,
                           style: AppStyles.regularTextStyle(context).copyWith(
                             fontSize: 12.8.sp,
                             color: onSurface.withValues(alpha: .65),
@@ -1622,7 +1632,7 @@ void _showOldReminderHistoryBottomSheet(
                         ),
                         verticalSpace(height: 1.2.h),
                         Text(
-                          "Old Reminders",
+                          l10n.oldReminders,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
                             fontSize: 14.sp,
                             color: onSurface,
@@ -1664,7 +1674,7 @@ void _showOldReminderHistoryBottomSheet(
                                       .read<ReminderProvider>()
                                       .deleteReminder(reminder.id);
                                   AppSnackBar.success(
-                                      message: "Reminder deleted");
+                                      message: l10n.reminderDeleted);
                                 },
                               );
                             },
@@ -1687,6 +1697,7 @@ void _showExpenseListBottomSheet(
 }) {
   final theme = Theme.of(context);
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
 
   showModalBottomSheet(
     context: context,
@@ -1722,7 +1733,7 @@ void _showExpenseListBottomSheet(
                       children: [
                         Expanded(
                           child: Text(
-                            "Expenses",
+                            l10n.expenses,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 14.sp,
@@ -1739,7 +1750,7 @@ void _showExpenseListBottomSheet(
                                     items: provider.expenses,
                                   ),
                           icon: const Icon(Icons.ios_share_rounded),
-                          tooltip: "Share",
+                          tooltip: l10n.share,
                         ),
                       ],
                     ),
@@ -1753,7 +1764,7 @@ void _showExpenseListBottomSheet(
                     ),
                     verticalSpace(height: .5.h),
                     Text(
-                      "Total: Rs ${provider.total.toStringAsFixed(2)}",
+                      l10n.totalCurrencyRs(provider.total.toStringAsFixed(2)),
                       style: AppStyles.semiboldTextStyle(context).copyWith(
                         fontSize: 14.8.sp,
                         color: AppColors.green,
@@ -1810,7 +1821,12 @@ void _showExpenseListBottomSheet(
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: .45.h),
                                 child: Text(
-                                  "From: ${provider.fromDate == null ? '-' : DateFormat('dd/MM/yyyy').format(provider.fromDate!)}",
+                                  l10n.fromValue(
+                                    provider.fromDate == null
+                                        ? '-'
+                                        : DateFormat('dd/MM/yyyy')
+                                            .format(provider.fromDate!),
+                                  ),
                                   style: AppStyles.regularTextStyle(context)
                                       .copyWith(
                                     fontSize: 13.8.sp,
@@ -1853,7 +1869,12 @@ void _showExpenseListBottomSheet(
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: .45.h),
                                 child: Text(
-                                  "To: ${provider.toDate == null ? '-' : DateFormat('dd/MM/yyyy').format(provider.toDate!)}",
+                                  l10n.toValue(
+                                    provider.toDate == null
+                                        ? '-'
+                                        : DateFormat('dd/MM/yyyy')
+                                            .format(provider.toDate!),
+                                  ),
                                   style: AppStyles.regularTextStyle(context)
                                       .copyWith(
                                     fontSize: 13.8.sp,
@@ -1877,7 +1898,7 @@ void _showExpenseListBottomSheet(
                               Icons.clear_rounded,
                               size: 17.sp,
                             ),
-                            tooltip: "Clear date filter",
+                            tooltip: l10n.clearDateFilter,
                             visualDensity: VisualDensity.compact,
                           ),
                         ],
@@ -1892,7 +1913,7 @@ void _showExpenseListBottomSheet(
                       Expanded(
                         child: Center(
                           child: Text(
-                            "No expenses recorded",
+                            l10n.noExpensesRecorded,
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 12.8.sp,
                               color: onSurface.withValues(alpha: .65),
@@ -1967,6 +1988,7 @@ void _showServiceListBottomSheet(
 }) {
   final theme = Theme.of(context);
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
 
   showModalBottomSheet(
     context: context,
@@ -2002,7 +2024,7 @@ void _showServiceListBottomSheet(
                       children: [
                         Expanded(
                           child: Text(
-                            "Maintenance",
+                            l10n.maintenance,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 14.sp,
@@ -2018,7 +2040,7 @@ void _showServiceListBottomSheet(
                                     items: provider.services,
                                   ),
                           icon: const Icon(Icons.ios_share_rounded),
-                          tooltip: "Share",
+                          tooltip: l10n.share,
                         ),
                       ],
                     ),
@@ -2032,7 +2054,7 @@ void _showServiceListBottomSheet(
                     ),
                     verticalSpace(height: .5.h),
                     Text(
-                      "Total: ${provider.total}",
+                      l10n.totalLabel(provider.total),
                       style: AppStyles.semiboldTextStyle(context).copyWith(
                         fontSize: 14.8.sp,
                         color: AppColors.yellow,
@@ -2047,7 +2069,7 @@ void _showServiceListBottomSheet(
                       Expanded(
                         child: Center(
                           child: Text(
-                            "No services recorded",
+                            l10n.noServicesRecorded,
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 12.8.sp,
                               color: onSurface.withValues(alpha: .65),
@@ -2181,19 +2203,20 @@ Future<void> _shareExpenseSummary({
 }
 
 Future<bool> _confirmDeleteExpense(BuildContext context) async {
+  final l10n = context.l10n;
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text("Delete Expense"),
-      content: const Text("Are you sure you want to delete this expense?"),
+      title: Text(l10n.deleteExpense),
+      content: Text(l10n.deleteExpenseConfirmation),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text("Cancel"),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text("Delete"),
+          child: Text(l10n.delete),
         ),
       ],
     ),
@@ -2202,19 +2225,20 @@ Future<bool> _confirmDeleteExpense(BuildContext context) async {
 }
 
 Future<bool> _confirmDeleteService(BuildContext context) async {
+  final l10n = context.l10n;
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text("Delete Service"),
-      content: const Text("Are you sure you want to delete this service?"),
+      title: Text(l10n.deleteService),
+      content: Text(l10n.deleteServiceConfirmation),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text("Cancel"),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text("Delete"),
+          child: Text(l10n.delete),
         ),
       ],
     ),
@@ -2223,19 +2247,20 @@ Future<bool> _confirmDeleteService(BuildContext context) async {
 }
 
 Future<bool> _confirmDeleteReminder(BuildContext context) async {
+  final l10n = context.l10n;
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text("Delete Reminder"),
-      content: const Text("Are you sure you want to delete this reminder?"),
+      title: Text(l10n.deleteReminder),
+      content: Text(l10n.deleteReminderConfirmation),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text("Cancel"),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text("Delete"),
+          child: Text(l10n.delete),
         ),
       ],
     ),
@@ -2266,6 +2291,7 @@ class _ExpenseListTile extends StatelessWidget {
         : DateFormat('dd/MM/yyyy').format(expense.date!);
     final type = expense.typeName.isNotEmpty ? expense.typeName : fallbackType;
     final amount = expense.totalCost.toStringAsFixed(2);
+    final l10n = context.l10n;
 
     return Container(
       width: double.infinity,
@@ -2322,7 +2348,9 @@ class _ExpenseListTile extends StatelessWidget {
           ),
           verticalSpace(height: .35.h),
           Text(
-            expense.name.trim().isEmpty ? "No name" : "Name: ${expense.name}",
+            expense.name.trim().isEmpty
+                ? l10n.noName
+                : l10n.nameValue(expense.name),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
@@ -2332,7 +2360,11 @@ class _ExpenseListTile extends StatelessWidget {
           ),
           verticalSpace(height: .25.h),
           Text(
-            "$date  •  Qty: ${expense.quantity}  •  Unit: Rs ${expense.unitCost.toStringAsFixed(2)}",
+            l10n.expenseQtyUnitRow(
+              date,
+              expense.quantity,
+              expense.unitCost.toStringAsFixed(2),
+            ),
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 12.8.sp,
               color: onSurface.withValues(alpha: .72),
@@ -2341,7 +2373,7 @@ class _ExpenseListTile extends StatelessWidget {
           if (expense.supplier.trim().isNotEmpty) ...[
             verticalSpace(height: .2.h),
             Text(
-              "Supplier: ${expense.supplier}",
+              l10n.supplierValue(expense.supplier),
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 12.8.sp,
                 color: onSurface.withValues(alpha: .72),
@@ -2350,7 +2382,7 @@ class _ExpenseListTile extends StatelessWidget {
           ],
           verticalSpace(height: .2.h),
           Text(
-            "Amount: Rs $amount",
+            l10n.amountCurrencyRs(amount),
             style: AppStyles.semiboldTextStyle(context).copyWith(
               fontSize: 13.4.sp,
               color: AppColors.green,
@@ -2385,7 +2417,10 @@ class _ServiceListTile extends StatelessWidget {
         ? "-"
         : DateFormat('dd/MM/yyyy').format(service.remindDate!);
     final title =
-        service.name.isEmpty ? "Service #${service.id}" : service.name;
+        service.name.isEmpty
+            ? context.l10n.serviceNumber(service.id)
+            : service.name;
+    final l10n = context.l10n;
 
     return Container(
       width: double.infinity,
@@ -2442,7 +2477,9 @@ class _ServiceListTile extends StatelessWidget {
           ),
           verticalSpace(height: .35.h),
           Text(
-            "Type: ${service.expirationBy.isEmpty ? '-' : service.expirationBy}",
+            l10n.typeValue(
+              service.expirationBy.isEmpty ? '-' : service.expirationBy,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
@@ -2452,7 +2489,10 @@ class _ServiceListTile extends StatelessWidget {
           ),
           verticalSpace(height: .25.h),
           Text(
-            "Interval: ${service.interval.isEmpty ? '-' : service.interval}  •  Last: ${service.lastService.isEmpty ? '-' : service.lastService}",
+            l10n.intervalLastRow(
+              service.interval.isEmpty ? '-' : service.interval,
+              service.lastService.isEmpty ? '-' : service.lastService,
+            ),
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 12.8.sp,
               color: onSurface.withValues(alpha: .72),
@@ -2460,7 +2500,7 @@ class _ServiceListTile extends StatelessWidget {
           ),
           verticalSpace(height: .2.h),
           Text(
-            "Expires: $expiresDate  •  Remind: $remindDate",
+            l10n.expiresRemindRow(expiresDate, remindDate),
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 12.8.sp,
               color: onSurface.withValues(alpha: .72),
@@ -2480,7 +2520,12 @@ class _ServiceListTile extends StatelessWidget {
           ],
           verticalSpace(height: .2.h),
           Text(
-            "Current Odometer: ${service.currentOdometer?.toString() ?? '-'}  •  Engine Hours: ${service.currentEngineHours.isEmpty ? '-' : service.currentEngineHours}",
+            l10n.currentOdometerEngineHoursRow(
+              service.currentOdometer?.toString() ?? '-',
+              service.currentEngineHours.isEmpty
+                  ? '-'
+                  : service.currentEngineHours,
+            ),
             style: AppStyles.semiboldTextStyle(context).copyWith(
               fontSize: 13.4.sp,
               color: AppColors.yellow,
@@ -2513,8 +2558,8 @@ class _ReminderTile extends StatelessWidget {
     final dueTime = DateFormat('hh:mm a').format(reminder.dueAt);
     final description = reminder.description.trim();
     final repeatLabel = reminder.repeatType == "none"
-        ? "One-time"
-        : "Recurring • ${_prettyRepeat(reminder.repeatType)}";
+        ? context.l10n.repeatOneTime
+        : "${context.l10n.repeatRecurring} • ${_prettyRepeat(context, reminder.repeatType)}";
 
     return Container(
       width: double.infinity,
@@ -2571,7 +2616,7 @@ class _ReminderTile extends StatelessWidget {
           ),
           verticalSpace(height: .35.h),
           Text(
-            description.isEmpty ? "No description" : description,
+            description.isEmpty ? context.l10n.noDescription : description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
@@ -2623,16 +2668,16 @@ class _ReminderTile extends StatelessWidget {
     );
   }
 
-  String _prettyRepeat(String repeatType) {
+  String _prettyRepeat(BuildContext context, String repeatType) {
     switch (repeatType) {
       case "daily":
-        return "Daily";
+        return context.l10n.daily;
       case "weekly":
-        return "Weekly";
+        return context.l10n.weekly;
       case "monthly":
-        return "Monthly";
+        return context.l10n.monthly;
       case "yearly":
-        return "Yearly";
+        return context.l10n.yearly;
       default:
         return repeatType;
     }

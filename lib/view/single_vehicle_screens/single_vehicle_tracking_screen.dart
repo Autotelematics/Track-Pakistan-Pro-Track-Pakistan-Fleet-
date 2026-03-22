@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
 import 'package:trackerapp/utils/animated_marker.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/single_vehicle_tracking_widget/top_bar.dart';
 import 'package:trackerapp/widgets/single_vehicle_tracking_widget/tracking_scale.dart';
 import 'package:trackerapp/widgets/single_vehicle_tracking_widget/vehicle_bottom_card.dart';
@@ -163,13 +164,14 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   }
 
   Future<void> _openDirectionsToVehicle(VehicleTrackingProvider prov) async {
+    final l10n = context.l10n;
     final destinationLat = prov.latitude;
     final destinationLng = prov.longitude;
 
     if (destinationLat == 0.0 || destinationLng == 0.0) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vehicle location is unavailable.')),
+        SnackBar(content: Text(l10n.vehicleLocationUnavailable)),
       );
       return;
     }
@@ -190,7 +192,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
 
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open map directions.')),
+        SnackBar(content: Text(l10n.unableOpenDirections)),
       );
     }
   }
@@ -257,6 +259,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final textScale = trackingTextScale(context);
     final iconScale = trackingIconScale(context);
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
@@ -271,15 +274,14 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
             if (prov.hasNoData) {
               return _buildStatusState(
                 icon: Icons.sensors_off_rounded,
-                title: "No live data",
-                subtitle:
-                    prov.noDataMessage ?? "This vehicle has no data available.",
+                title: l10n.noLiveData,
+                subtitle: prov.noDataMessage ?? l10n.noVehicleDataAvailable,
               );
             }
             if (prov.errorMessage != null && prov.deviceData == null) {
               return _buildStatusState(
                 icon: Icons.error_outline_rounded,
-                title: "Unable to load tracking",
+                title: l10n.unableLoadTracking,
                 subtitle: prov.errorMessage!,
               );
             }
@@ -288,8 +290,8 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                 prov.deviceData == null) {
               return _buildStatusState(
                 icon: Icons.location_off_rounded,
-                title: "Location unavailable",
-                subtitle: "Live location is not available for this vehicle.",
+                title: l10n.locationUnavailable,
+                subtitle: l10n.liveLocationUnavailableVehicle,
               );
             }
             final pos = LatLng(prov.latitude, prov.longitude);
@@ -340,7 +342,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                         icon: BitmapDescriptor.defaultMarkerWithHue(
                           BitmapDescriptor.hueAzure,
                         ),
-                        infoWindow: const InfoWindow(title: 'Your Location'),
+                        infoWindow: InfoWindow(title: l10n.yourLocation),
                       );
 
                 Widget mapWidget;

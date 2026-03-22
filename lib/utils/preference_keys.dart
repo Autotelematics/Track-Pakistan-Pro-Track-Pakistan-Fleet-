@@ -9,6 +9,7 @@ const canSendCommandViewKey = "canSendCommandView";
 const localRemindersKey = "localReminders";
 const profileImagePathKey = "profileImagePath";
 const playAlertsAnnouncementKey = "playAlertsAnnouncement";
+const appLanguageCodeKey = "appLanguageCode";
 const dashboardCardOrderKey = "dashboardCardOrder";
 const dashboardCardVisibilityKey = "dashboardCardVisibility";
 const latestFcmTokenKey = "latestFcmToken";

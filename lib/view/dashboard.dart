@@ -8,10 +8,12 @@ import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/providers/dashboard_layout_provider.dart';
 import 'package:trackerapp/providers/dashboard_provider.dart';
 import 'package:trackerapp/providers/task_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/alert_grid.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/distance_travelled_card.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/expense_analytics_card.dart';
+import 'package:trackerapp/widgets/dashboard_widgets/fleet_insight_card.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/fuel_price_card.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/header_widget.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/local_reminder_card.dart';
@@ -67,6 +69,7 @@ class _NewDashboardState extends State<NewDashboard>
   Widget build(BuildContext context) {
     final textScale = dashboardTextScale(context);
     final iconScale = dashboardIconScale(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -75,8 +78,8 @@ class _NewDashboardState extends State<NewDashboard>
             .copyWith(textScaler: TextScaler.linear(textScale)),
         child: IconTheme(
           data: IconTheme.of(context).copyWith(size: 24 * iconScale),
-          child:
-              Consumer3<DashboardProvider, DashboardLayoutProvider, TaskProvider>(
+          child: Consumer3<DashboardProvider, DashboardLayoutProvider,
+              TaskProvider>(
             builder: (context, provider, layoutProvider, taskProvider, child) {
               if (provider.dashboardModel == null) {
                 if (provider.error != null) {
@@ -128,7 +131,7 @@ class _NewDashboardState extends State<NewDashboard>
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 5.w, vertical: 2.h),
                                   child: Text(
-                                    "No dashboard cards selected. Tap Customize to enable cards.",
+                                    l10n.noDashboardCardsSelected,
                                     textAlign: TextAlign.center,
                                     style: AppStyles.regularTextStyle(context)
                                         .copyWith(fontSize: 13.2.sp),
@@ -170,6 +173,11 @@ class _NewDashboardState extends State<NewDashboard>
     required bool hideLatestTasks,
   }) {
     final cards = <String, Widget>{
+      'fleet_insight': FleetInsightCard(
+        dashboard: data1,
+        history: historyData,
+        offlineOver24hCount: provider.offlineVehiclesOver24h.length,
+      ),
       'alert_grid': AlertGrid(data: data1),
       'maintenance': MaintenanceCard(data: data1),
       'maintenance_analytics': MaintenanceAnalyticsCard(data: data1),
@@ -216,29 +224,33 @@ class _DashboardCustomizeBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final softGreenBg =
+        isDark ? const Color(0xFF1D3026) : const Color(0xFFEAF8EE);
+    final softGreenBorder =
+        isDark ? const Color(0xFF3E6F53) : const Color(0xFFAED9BE);
+    final softGreenAccent =
+        isDark ? const Color(0xFF8BD3A7) : const Color(0xFF3F8F63);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 5.w),
       padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: .85.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .12),
+          color: softGreenBorder,
         ),
-        color: isDark
-            ? Colors.white.withValues(alpha: .03)
-            : Colors.white.withValues(alpha: .95),
+        color: softGreenBg,
       ),
       child: Row(
         children: [
           Icon(
             Icons.dashboard_customize_rounded,
             size: 17.sp,
-            color: const Color(0xFF0284C7),
+            color: softGreenAccent,
           ),
           horizontalSpace(width: 2.2.w),
           Expanded(
             child: Text(
-              "Customize Dashboard",
+              context.l10n.customizeDashboard,
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
@@ -253,10 +265,11 @@ class _DashboardCustomizeBar extends StatelessWidget {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              "Edit",
+              context.l10n.edit,
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 13.2.sp,
                 fontWeight: FontWeight.w700,
+                color: softGreenAccent,
               ),
             ),
           ),
@@ -281,9 +294,9 @@ class _DashboardCustomizeSheet extends StatelessWidget {
                 .where((item) => item.id != 'latest_tasks')
                 .toList(growable: false)
             : allItems;
-        final displayedIds = items.map((item) => item.id).toList(growable: false);
-        final allIds =
-            allItems.map((item) => item.id).toList(growable: false);
+        final displayedIds =
+            items.map((item) => item.id).toList(growable: false);
+        final allIds = allItems.map((item) => item.id).toList(growable: false);
         return Container(
           width: double.infinity,
           constraints: BoxConstraints(minHeight: 78.h, maxHeight: 78.h),
@@ -311,19 +324,19 @@ class _DashboardCustomizeSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "Customize Dashboard",
+                        context.l10n.customizeDashboard,
                         style: AppStyles.semiboldTextStyle(context)
                             .copyWith(fontSize: 15.sp),
                       ),
                     ),
                     TextButton(
                       onPressed: layoutProvider.resetDefaults,
-                      child: const Text("Reset"),
+                      child: Text(context.l10n.reset),
                     ),
                   ],
                 ),
                 Text(
-                  "Drag to reorder cards. Toggle switch to hide/show cards.",
+                  context.l10n.dashboardCustomizeHint,
                   style: AppStyles.regularTextStyle(context).copyWith(
                     fontSize: 11.5.sp,
                     color: Theme.of(context)
@@ -437,7 +450,7 @@ class _DashboardErrorState extends StatelessWidget {
             ),
             verticalSpace(height: 2.h),
             Text(
-              'Error: $error',
+              context.l10n.errorLabel(error),
               textAlign: TextAlign.center,
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 16.sp,
@@ -447,7 +460,7 @@ class _DashboardErrorState extends StatelessWidget {
             verticalSpace(height: 2.h),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('Retry'),
+              child: Text(context.l10n.retry),
             ),
           ],
         ),

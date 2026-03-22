@@ -6,6 +6,7 @@ import 'package:trackerapp/utils/shared_preference.dart';
 
 class DashboardLayoutProvider with ChangeNotifier {
   static const List<String> _defaultOrder = <String>[
+    'fleet_insight',
     'alert_grid',
     'latest_tasks',
     'maintenance',
@@ -19,6 +20,7 @@ class DashboardLayoutProvider with ChangeNotifier {
   ];
 
   static const Map<String, String> _labels = <String, String>{
+    'fleet_insight': 'Fleet Insight Ai',
     'alert_grid': 'Alerts Summary',
     'latest_tasks': 'Latest Tasks',
     'maintenance': 'Maintenance Reminder',
@@ -112,7 +114,8 @@ class DashboardLayoutProvider with ChangeNotifier {
   }
 
   Map<String, bool> _loadVisibility(List<String> order) {
-    final raw = MySharedPreferences.getString(dashboardCardVisibilityKey).trim();
+    final raw =
+        MySharedPreferences.getString(dashboardCardVisibilityKey).trim();
     final defaults = <String, bool>{for (final id in order) id: true};
     if (raw.isEmpty) return defaults;
 

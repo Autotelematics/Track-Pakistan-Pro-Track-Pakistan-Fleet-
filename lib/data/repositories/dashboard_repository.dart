@@ -12,8 +12,12 @@ import 'package:http/http.dart' as http;
 class DashboardRepository {
   //Fetch Dashboard data From Api
   Future<GetDashboardModel?> getDashboardData({required String token}) async {
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.getDashboardEp}user_api_hash=$token");
+    final endpointPath = AppUrl.getDashboardEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final headers = {"Content-Type": "application/json"};
     try {
       final response = await http
@@ -135,8 +139,12 @@ class DashboardRepository {
   //get dashboard History
   Future<GetDashboardHistoryModel?> getDashboardHistoryData({required String token})
   async {
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.getDashboardHistoryEp}user_api_hash=$token");
+    final endpointPath = AppUrl.getDashboardHistoryEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final headers = {"Content-Type": "application/json"};
     try {
       final response = await http

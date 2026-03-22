@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_detail_screen.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -203,10 +204,12 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
     final iconScale = vehicleListIconScale(context);
     final message =
         provider.filterStatus == 'all' && provider.selectedGroupId == null
-            ? 'No vehicles available.'
+            ? context.l10n.noVehiclesAvailable
             : provider.selectedGroupId == null
-                ? 'No vehicles are currently ${provider.filterStatus}.'
-                : 'No vehicles available in the selected group.';
+                ? context.l10n.noVehiclesCurrentStatus(
+                    _statusLabel(context, provider.filterStatus),
+                  )
+                : context.l10n.noVehiclesInSelectedGroup;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(4.w),
@@ -230,11 +233,11 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             verticalSpace(height: 2.h),
             ElevatedButton(
               onPressed: () {
-                provider.setGroupFilter(null, 'All');
+                provider.setGroupFilter(null, context.l10n.vehicleStatusAll);
                 provider.setFilter('all');
                 provider.updateSearchQuery('');
               },
-              child: const Text('View All Vehicles'),
+              child: Text(context.l10n.viewAllVehicles),
             ),
           ],
         ),
@@ -246,31 +249,38 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
       GetDevicesListProvider provider, Color onSurface, Color cardColor) {
     final statuses = [
       _StatusData(
-          title: "All",
+          key: 'all',
+          title: context.l10n.vehicleStatusAll,
           count: provider.getCountForStatus('all'),
           color: AppColors.brownMain),
       _StatusData(
-          title: "Running",
+          key: 'running',
+          title: context.l10n.vehicleStatusRunning,
           count: provider.getCountForStatus('running'),
           color: AppColors.green),
       _StatusData(
-          title: "Stopped",
+          key: 'stopped',
+          title: context.l10n.vehicleStatusStopped,
           count: provider.getCountForStatus('stopped'),
           color: AppColors.red),
       _StatusData(
-          title: "Idle",
+          key: 'idle',
+          title: context.l10n.vehicleStatusIdle,
           count: provider.getCountForStatus('idle'),
           color: AppColors.yellow),
       _StatusData(
-          title: "Offline",
+          key: 'offline',
+          title: context.l10n.vehicleStatusOffline,
           count: provider.getCountForStatus('offline'),
           color: AppColors.blueCyan),
       _StatusData(
-          title: "No Data",
+          key: 'nodata',
+          title: context.l10n.vehicleStatusNoData,
           count: provider.getCountForStatus('nodata'),
           color: AppColors.grey),
       _StatusData(
-          title: "Expired",
+          key: 'expired',
+          title: context.l10n.vehicleStatusExpired,
           count: provider.getCountForStatus('expired'),
           color: AppColors.brown),
     ];
@@ -282,6 +292,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
         padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: .8.h),
         itemCount: statuses.length,
         itemBuilder: (context, index) => StatusBox(
+          statusKey: statuses[index].key,
           title: statuses[index].title,
           count: statuses[index].count,
           color: statuses[index].color,
@@ -414,7 +425,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
                           Column(
                             children: [
                               GroupFilterItem(
-                                title: 'All',
+                                title: context.l10n.vehicleStatusAll,
                                 groupId: null,
                               ),
                               ...groups.map(
@@ -483,7 +494,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Error: ${provider.error}',
+              context.l10n.errorLabel(provider.error ?? ''),
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 14.4.sp,
@@ -491,17 +502,44 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             ),
             verticalSpace(height: 2.h),
             ElevatedButton(
-                onPressed: provider.fetchData, child: const Text('Retry')),
+                onPressed: provider.fetchData,
+                child: Text(context.l10n.retry)),
           ],
         ),
       ),
     );
   }
+
+  String _statusLabel(BuildContext context, String statusKey) {
+    final l10n = context.l10n;
+    switch (statusKey) {
+      case 'running':
+        return l10n.vehicleStatusRunning;
+      case 'stopped':
+        return l10n.vehicleStatusStopped;
+      case 'idle':
+        return l10n.vehicleStatusIdle;
+      case 'offline':
+        return l10n.vehicleStatusOffline;
+      case 'nodata':
+        return l10n.vehicleStatusNoData;
+      case 'expired':
+        return l10n.vehicleStatusExpired;
+      default:
+        return l10n.vehicleStatusAll;
+    }
+  }
 }
 
 class _StatusData {
+  final String key;
   final String title;
   final int count;
   final Color color;
-  _StatusData({required this.title, required this.count, required this.color});
+  _StatusData({
+    required this.key,
+    required this.title,
+    required this.count,
+    required this.color,
+  });
 }

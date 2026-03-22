@@ -14,8 +14,13 @@ class GetDeviceCommandsRepository {
       {required String deviceId})
   async {
     final userAuthToken = MySharedPreferences.getString(authTokenKey);
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.getDeviceCommandsEp}$userAuthToken&device_id=$deviceId");
+    final endpointPath = AppUrl.getDeviceCommandsEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userAuthToken,
+        'device_id': deviceId,
+      },
+    );
     final headers = {"Content-Type": "application/json"};
     final response = await http.get(url, headers: headers);
     if (response.statusCode == 200) {
@@ -29,8 +34,14 @@ class GetDeviceCommandsRepository {
   Future<void> sendDeviceCommands({required String deviceId,commandType})
   async {
     final userAuthToken = MySharedPreferences.getString(authTokenKey);
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.sendDeviceCommandsEp}$userAuthToken&device_id=$deviceId&type=$commandType");
+    final endpointPath = AppUrl.sendDeviceCommandsEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userAuthToken,
+        'device_id': deviceId,
+        'type': '$commandType',
+      },
+    );
     final headers = {"Content-Type": "application/json"};
     final response = await http.post(url, headers: headers);
     if (response.statusCode == 200) {

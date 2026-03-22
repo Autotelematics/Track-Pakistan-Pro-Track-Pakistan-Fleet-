@@ -888,7 +888,7 @@ class StatusBox extends StatelessWidget {
       curve: Curves.easeOut,
       width: 18.3.w,
       height: 3.8.h,
-      padding: EdgeInsets.symmetric(horizontal: 1.1.w),
+      padding: EdgeInsets.symmetric(horizontal: 0.7.w),
       decoration: BoxDecoration(
         color: isSelected
             ? color.withValues(alpha: 0.2)
@@ -911,13 +911,13 @@ class StatusBox extends StatelessWidget {
               color: color,
             ),
           ),
-          SizedBox(width: .9.w),
+          SizedBox(width: 1.2.w),
           Expanded(
             child: Text(
               title,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 11.5.sp,
+                fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600,
                 color: isSelected ? color : onSurface.withValues(alpha: .85),
               ),

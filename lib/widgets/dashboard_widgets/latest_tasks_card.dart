@@ -4,6 +4,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/task_model.dart';
 import 'package:trackerapp/providers/task_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/tasks/all_tasks_screen.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
@@ -59,7 +60,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Tasks Analytics',
+                      context.l10n.tasksAnalytics,
                       style: AppStyles.semiboldTextStyle(context)
                           .copyWith(fontSize: 15.sp),
                     ),
@@ -122,7 +123,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    'See more',
+                    context.l10n.seeMore,
                     style: AppStyles.regularTextStyle(context).copyWith(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
@@ -159,7 +160,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           verticalSpace(height: .8.h),
           TextButton(
             onPressed: () => provider.fetchTasks(force: true),
-            child: const Text('Retry'),
+            child: Text(context.l10n.retry),
           ),
         ],
       );
@@ -169,7 +170,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: .8.h),
         child: Text(
-          'No tasks available',
+          context.l10n.noTasksAvailable,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 13.sp,
           ),
@@ -186,7 +187,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           color: onSurface.withValues(alpha: 0.12),
         ),
         Text(
-          'Latest Tasks',
+          context.l10n.latestTasks,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.4.sp,
             fontWeight: FontWeight.w800,
@@ -253,7 +254,9 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
     }
 
     final total = tasks.length;
-    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final isDark = theme.brightness == Brightness.dark;
     final newColor = const Color(0xFFEAB308);
     final progressColor = const Color(0xFF16A34A);
     final completedColor = const Color(0xFF2563EB);
@@ -283,7 +286,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           Text(
             '$label: $count',
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.2.sp,
+              fontSize: 13.0.sp,
               fontWeight: FontWeight.w700,
               color: onSurface.withValues(alpha: .86),
             ),
@@ -312,7 +315,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
               Text(
                 label,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 11.4.sp,
+                  fontSize: 12.4.sp,
                   fontWeight: FontWeight.w700,
                   color: onSurface.withValues(alpha: .72),
                 ),
@@ -330,7 +333,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                 Text(
                   subtitle,
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 10.4.sp,
+                    fontSize: 11.4.sp,
                     fontWeight: FontWeight.w600,
                     color: onSurface.withValues(alpha: .58),
                   ),
@@ -361,7 +364,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                 label,
                 textAlign: TextAlign.center,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 10.8.sp,
+                  fontSize: 11.8.sp,
                   fontWeight: FontWeight.w700,
                   color: onSurface.withValues(alpha: .7),
                 ),
@@ -384,7 +387,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Task Funnel',
+          context.l10n.taskFunnel,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.6.sp,
             fontWeight: FontWeight.w800,
@@ -432,20 +435,21 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           spacing: 3.w,
           runSpacing: .5.h,
           children: [
-            legend(color: newColor, label: 'New', count: newCount),
+            legend(
+                color: newColor, label: context.l10n.taskNew, count: newCount),
             legend(
               color: progressColor,
-              label: 'In Progress',
+              label: context.l10n.taskInProgress,
               count: inProgressCount,
             ),
             legend(
               color: completedColor,
-              label: 'Completed',
+              label: context.l10n.taskCompleted,
               count: completedCount,
             ),
             legend(
               color: failedColor,
-              label: 'Failed',
+              label: context.l10n.taskFailed,
               count: failedCount,
             ),
           ],
@@ -454,23 +458,23 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
         Row(
           children: [
             metricCard(
-              label: 'Completion Rate',
+              label: context.l10n.completionRate,
               value: '${(completionRate * 100).toStringAsFixed(1)}%',
-              subtitle: '$completedCount of $total tasks',
+              subtitle: context.l10n.tasksCountSummary(completedCount, total),
               color: completedColor,
             ),
             horizontalSpace(width: 2.4.w),
             metricCard(
-              label: 'Failure Rate',
+              label: context.l10n.failureRate,
               value: '${(failureRate * 100).toStringAsFixed(1)}%',
-              subtitle: '$failedCount of $total tasks',
+              subtitle: context.l10n.tasksCountSummary(failedCount, total),
               color: failedColor,
             ),
           ],
         ),
         verticalSpace(height: 1.3.h),
         Text(
-          'Unstarted Task Aging',
+          context.l10n.unstartedTaskAging,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.2.sp,
             fontWeight: FontWeight.w800,
@@ -501,7 +505,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
         ),
         verticalSpace(height: 1.3.h),
         Text(
-          'In Progress Aging',
+          context.l10n.inProgressAging,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.2.sp,
             fontWeight: FontWeight.w800,
@@ -513,10 +517,11 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
           decoration: BoxDecoration(
-            color: const Color(0xFFEEF2FF),
+            color: isDark ? const Color(0xFF232647) : const Color(0xFFEEF2FF),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFF6366F1).withValues(alpha: .18),
+              color:
+                  const Color(0xFF6366F1).withValues(alpha: isDark ? .38 : .18),
             ),
           ),
           child: Row(
@@ -532,11 +537,13 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
               horizontalSpace(width: 2.4.w),
               Expanded(
                 child: Text(
-                  'Tasks not completed within 10 days',
+                  context.l10n.tasksNotCompletedWithin10Days,
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 11.7.sp,
+                    fontSize: 12.5.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF312E81),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: .88)
+                        : const Color(0xFF312E81),
                   ),
                 ),
               ),
@@ -544,7 +551,9 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                 '$inProgressOver10Days',
                 style: AppStyles.semiboldTextStyle(context).copyWith(
                   fontSize: 15.2.sp,
-                  color: const Color(0xFF312E81),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: .92)
+                      : const Color(0xFF312E81),
                 ),
               ),
             ],
@@ -552,7 +561,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
         ),
         verticalSpace(height: 1.3.h),
         Text(
-          'Vehicle Workload Distribution',
+          context.l10n.vehicleWorkloadDistribution,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.2.sp,
             fontWeight: FontWeight.w800,
@@ -562,7 +571,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
         verticalSpace(height: .7.h),
         if (topVehicles.isEmpty)
           Text(
-            'No vehicle workload data available',
+            context.l10n.noVehicleWorkloadData,
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 11.6.sp,
               color: onSurface.withValues(alpha: .62),
@@ -570,7 +579,8 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
           )
         else
           ...topVehicles.take(5).map((entry) {
-            final maxValue = topVehicles.first.value == 0 ? 1 : topVehicles.first.value;
+            final maxValue =
+                topVehicles.first.value == 0 ? 1 : topVehicles.first.value;
             final widthFactor = entry.value / maxValue;
             return Padding(
               padding: EdgeInsets.only(bottom: .85.h),
@@ -583,7 +593,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 11.2.sp,
+                        fontSize: 12.2.sp,
                         fontWeight: FontWeight.w700,
                         color: onSurface.withValues(alpha: .76),
                       ),
@@ -607,7 +617,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
                   Text(
                     '${entry.value}',
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 11.6.sp,
+                      fontSize: 12.6.sp,
                       color: const Color(0xFF075985),
                     ),
                   ),
@@ -656,7 +666,7 @@ class _LatestTasksCardState extends State<LatestTasksCard> {
               ),
               verticalSpace(height: .1.h),
               Text(
-                '${task.vehicleName} • ${task.statusName.trim().isEmpty ? 'Unknown' : task.statusName.trim()}',
+                '${task.vehicleName} • ${task.statusName.trim().isEmpty ? context.l10n.vehicleStatusUnknown : task.statusName.trim()}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppStyles.regularTextStyle(context).copyWith(

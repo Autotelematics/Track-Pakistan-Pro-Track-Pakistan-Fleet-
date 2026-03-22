@@ -3,6 +3,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 
 import 'analytics_graph_container.dart';
 
@@ -22,9 +23,6 @@ NumericAxis _yAxis(String format) => NumericAxis(
   ),
 );
 
-TooltipBehavior _tooltip(TooltipBehavior t) => t;
-
-
 class AnalyticsSpeedChart extends StatelessWidget {
   final SingleVehicleAnalyticsProvider provider;
   final bool isMultiDay;
@@ -40,7 +38,9 @@ class AnalyticsSpeedChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnalyticsGraphContainer(
-      title: isMultiDay ? "Max Speed per Day (km/h)" : "Speed (km/h)",
+      title: isMultiDay
+          ? context.l10n.maxSpeedPerDay
+          : context.l10n.speedKmh,
       isEmpty: provider.speedChartData.isEmpty,
       child: SfCartesianChart(
         tooltipBehavior: tooltip,
@@ -85,7 +85,9 @@ class AnalyticsDistanceChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnalyticsGraphContainer(
-      title: isMultiDay ? "Distance per Day (km)" : "Distance (km)",
+      title: isMultiDay
+          ? context.l10n.distancePerDay
+          : context.l10n.distanceKm,
       isEmpty: provider.distanceChartData.isEmpty,
       child: SfCartesianChart(
         tooltipBehavior: tooltip,
@@ -136,7 +138,7 @@ class AnalyticsFuelChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnalyticsGraphContainer(
-      title: "Fuel Used (Liters)",
+      title: context.l10n.fuelUsedLiters,
       isEmpty: provider.fuelChartData.isEmpty,
       child: SfCartesianChart(
         tooltipBehavior: tooltip,
@@ -179,7 +181,7 @@ class AnalyticsStopDurationChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnalyticsGraphContainer(
-      title: "Stop Duration (Minutes)",
+      title: context.l10n.stopDurationMinutes,
       isEmpty: provider.stopDurationChartData.isEmpty,
       child: SfCartesianChart(
         tooltipBehavior: tooltip,
@@ -224,8 +226,9 @@ class AnalyticsEngineHoursChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnalyticsGraphContainer(
-      title:
-      isMultiDay ? "Engine Hours per Day" : "Engine Hours (Cumulative)",
+      title: isMultiDay
+          ? context.l10n.engineHoursPerDay
+          : context.l10n.engineHoursCumulative,
       isEmpty: provider.engineHoursChartData.isEmpty,
       child: SfCartesianChart(
         tooltipBehavior: tooltip,

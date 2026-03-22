@@ -22,15 +22,17 @@ class GetDeviceHistoryRepository {
       final token = MySharedPreferences.getString(authTokenKey);
       print("TOKEN: $token");
 
-      final url = Uri.parse(
-        '${AppUrl.baseURL}${AppUrl.getDeviceHistoryEp}'
-            '$token'
-            '&device_id=$deviceId'
-            '&from_date=$fromDate'
-            '&from_time=$fromTime'
-            '&to_date=$toDate'
-            '&to_time=$toTime'
-            '&snap_to_road=${snapToRoad ? 1 : 0}',
+      final endpointPath = AppUrl.getDeviceHistoryEp.split('?').first;
+      final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': token,
+          'device_id': deviceId,
+          'from_date': fromDate,
+          'from_time': fromTime,
+          'to_date': toDate,
+          'to_time': toTime,
+          'snap_to_road': snapToRoad ? '1' : '0',
+        },
       );
 
       print("REQUEST URL:");

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -33,6 +34,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Positioned(
       top: 16.0.h,
@@ -50,18 +52,20 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _RangePickerTile(
-                    title: 'From Date',
+                child: _RangePickerTile(
+                    title: l10n.fromDate,
                     value: _formatDate(customStartDate),
+                    emptyValue: l10n.selectDate,
                     icon: Icons.event,
                     onTap: onFromDateTap,
                   ),
                 ),
                 horizontalSpace(width: 2.w),
                 Expanded(
-                  child: _RangePickerTile(
-                    title: 'To Date',
+                child: _RangePickerTile(
+                    title: l10n.toDate,
                     value: _formatDate(customEndDate),
+                    emptyValue: l10n.selectDate,
                     icon: Icons.event_available,
                     onTap: onToDateTap,
                   ),
@@ -72,18 +76,20 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _RangePickerTile(
-                    title: 'From Time',
+                child: _RangePickerTile(
+                    title: l10n.fromTime,
                     value: _formatTime(context, customStartTime),
+                    emptyValue: l10n.selectTime,
                     icon: Icons.access_time,
                     onTap: onFromTimeTap,
                   ),
                 ),
                 horizontalSpace(width: 3.w),
                 Expanded(
-                  child: _RangePickerTile(
-                    title: 'To Time',
+                child: _RangePickerTile(
+                    title: l10n.toTime,
                     value: _formatTime(context, customEndTime),
+                    emptyValue: l10n.selectTime,
                     icon: Icons.timelapse_rounded,
                     onTap: onToTimeTap,
                   ),
@@ -102,7 +108,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Apply Range',
+                  l10n.applyRange,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     color: Colors.white,
                     fontSize: 12.3.sp,
@@ -122,7 +128,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  "Cancel",
+                  l10n.cancel,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     color: isDark ? Colors.white70 : Colors.black54,
                     fontSize: 12.8.sp,
@@ -137,12 +143,12 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
   }
 
   String _formatDate(DateTime? value) {
-    if (value == null) return 'Select Date';
+    if (value == null) return '';
     return "${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}";
   }
 
   String _formatTime(BuildContext context, TimeOfDay? value) {
-    if (value == null) return 'Select Time';
+    if (value == null) return '';
     return value.format(context);
   }
 }
@@ -150,12 +156,14 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
 class _RangePickerTile extends StatelessWidget {
   final String title;
   final String value;
+  final String emptyValue;
   final IconData icon;
   final VoidCallback onTap;
 
   const _RangePickerTile({
     required this.title,
     required this.value,
+    required this.emptyValue,
     required this.icon,
     required this.onTap,
   });
@@ -194,7 +202,7 @@ class _RangePickerTile extends StatelessWidget {
                 horizontalSpace(width: 1.2.w),
                 Expanded(
                   child: Text(
-                    value,
+                    value.isEmpty ? emptyValue : value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context)

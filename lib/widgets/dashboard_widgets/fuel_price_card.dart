@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -46,7 +47,7 @@ class FuelPriceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Fuel Prices",
+            context.l10n.fuelPrices,
             style:
                 AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
           ),
@@ -83,14 +84,14 @@ class FuelPriceCard extends StatelessWidget {
               children: [
                 _fuelRow(
                   context,
-                  label: "Petrol",
+                  label: context.l10n.petrol,
                   price: "${data.petrolPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFF16A34A),
                 ),
                 Divider(height: 1.6.h, color: onSurface.withOpacity(0.12)),
                 _fuelRow(
                   context,
-                  label: "Diesel",
+                  label: context.l10n.diesel,
                   price: "${data.dieselPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFFF59E0B),
                 ),
@@ -113,7 +114,7 @@ class FuelPriceCard extends StatelessWidget {
                     horizontalSpace(width: 1.w),
                     Expanded(
                       child: Text(
-                        "Last Updated",
+                        context.l10n.lastUpdated,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,

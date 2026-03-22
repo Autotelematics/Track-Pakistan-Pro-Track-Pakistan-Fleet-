@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/single_vehicle_history_widget/history_bottom_sheet.dart';
@@ -276,6 +277,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 36.h,
@@ -300,11 +302,11 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Date",
+                      l10n.selectDate,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -312,7 +314,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempDate),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -350,6 +352,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 34.h,
@@ -374,11 +377,11 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Time",
+                      l10n.selectTime,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -386,7 +389,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempTime),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),

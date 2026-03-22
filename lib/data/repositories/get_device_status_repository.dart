@@ -14,7 +14,7 @@ class GetDeviceStatusRepository {
     BuildContext? dialogContext,
   }) async {
     try {
-      String? userApiHashKey = MySharedPreferences.getString(authTokenKey);
+      final userApiHashKey = MySharedPreferences.getString(authTokenKey);
       print("User API Hash Key: $userApiHashKey");
 
       if (userApiHashKey.isEmpty) {
@@ -22,8 +22,12 @@ class GetDeviceStatusRepository {
         return null;
       }
 
-      final url = Uri.parse(
-          "${AppUrl.baseURL}${AppUrl.getDeviceStatusEp}$userApiHashKey");
+      final endpointPath = AppUrl.getDeviceStatusEp.split('?').first;
+      final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+        },
+      );
       print("Calling API: $url");
 
       final response = await http.get(

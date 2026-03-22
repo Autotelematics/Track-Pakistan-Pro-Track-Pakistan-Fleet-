@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -59,7 +60,7 @@ class MaintenanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Maintenance Reminder",
+            context.l10n.maintenanceReminder,
             style:
                 AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
           ),
@@ -96,37 +97,37 @@ class MaintenanceCard extends StatelessWidget {
               children: [
                 _maintenanceRow(
                   context,
-                  title: "All",
+                  title: context.l10n.vehicleStatusAll,
                   iconColor: const Color(0xFF2563EB),
                   count: allCount,
                   onTap: () => _showMaintenanceSheet(
                     context,
-                    title: "All Maintenance",
+                    title: context.l10n.allMaintenance,
                     items: valid,
                   ),
                 ),
                 Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
                 _maintenanceRow(
                   context,
-                  title: "Due",
+                  title: context.l10n.dueSoon,
                   iconColor: const Color(0xFFF59E0B),
                   count: dueCount,
                   onTap: () => _showMaintenanceSheet(
                     context,
-                    title: "Due Maintenance",
+                    title: context.l10n.dueMaintenance,
                     items: due,
                   ),
                 ),
                 Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
                 _maintenanceRow(
                   context,
-                  title: "Overdue",
+                  title: context.l10n.overdue,
                   iconColor: const Color(0xFFDC2626),
                   count: overdueCount,
                   isCritical: true,
                   onTap: () => _showMaintenanceSheet(
                     context,
-                    title: "Overdue Maintenance",
+                    title: context.l10n.overdueMaintenance,
                     items: overdue,
                   ),
                 ),
@@ -163,7 +164,9 @@ class MaintenanceCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                title == "All" ? Icons.build_circle : Icons.calendar_month,
+                title == context.l10n.vehicleStatusAll
+                    ? Icons.build_circle
+                    : Icons.calendar_month,
                 color: iconColor,
                 size: (17 * iconScale).sp,
               ),
@@ -187,7 +190,7 @@ class MaintenanceCard extends StatelessWidget {
                 border: Border.all(color: iconColor.withOpacity(0.28)),
               ),
               child: Text(
-                '$count Items',
+                context.l10n.itemsCount(count),
                 style: AppStyles.regularTextStyle(context)
                     .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5.sp),
               ),

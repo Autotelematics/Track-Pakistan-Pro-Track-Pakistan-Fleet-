@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/data/repositories/fcm_token_repository.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/local_notification_service.dart';
 import 'package:trackerapp/utils/logout_popup.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
@@ -14,6 +15,7 @@ class ModernSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -39,9 +41,9 @@ class ModernSettingsScreen extends StatelessWidget {
                       onTap: () {
                         showCustomPopup(
                           context: context,
-                          title: "Logout",
-                          subtitle: "Are you sure you want to logout?",
-                          btnText: "Logout",
+                          title: l10n.logout,
+                          subtitle: l10n.logoutConfirmation,
+                          btnText: l10n.logout,
                           imagePath: "assets/images/logout.png",
                           onConfirm: () async {
                             await LocalNotificationService.instance
@@ -82,7 +84,7 @@ class ModernSettingsScreen extends StatelessWidget {
                                 color: AppColors.white, size: 17.sp),
                             SizedBox(width: 1.6.w),
                             Text(
-                              "Logout",
+                              l10n.logout,
                               style: TextStyle(
                                 color: AppColors.white,
                                 fontSize: 14.sp,

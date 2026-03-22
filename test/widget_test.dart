@@ -8,13 +8,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trackerapp/main.dart';
+import 'package:trackerapp/providers/language_provider.dart';
 import 'package:trackerapp/providers/reminder_provider.dart';
 import 'package:trackerapp/providers/theme_provider.dart';
+
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       MyApp(
+        languageProvider: LanguageProvider(),
         themeProvider: ThemeProvider(),
         reminderProvider: ReminderProvider(),
       ),

@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/performance_kpi_model.dart';
 import 'package:trackerapp/providers/performance_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -94,7 +95,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      "Performance Analytics",
+                      context.l10n.performanceAnalytics,
                       style: AppStyles.semiboldTextStyle(context)
                           .copyWith(fontSize: 15.0.sp),
                     ),
@@ -104,7 +105,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                         ? null
                         : () => _sharePerformanceSummary(provider),
                     icon: const Icon(Icons.ios_share_rounded),
-                    tooltip: "Share",
+                    tooltip: context.l10n.share,
                     iconSize: 19,
                     padding: EdgeInsets.zero,
                     visualDensity: const VisualDensity(
@@ -121,7 +122,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                         ? null
                         : () => _loadForPreset(forceRefresh: true),
                     icon: const Icon(Icons.refresh_rounded),
-                    tooltip: "Refresh",
+                    tooltip: context.l10n.refresh,
                     iconSize: 19,
                     padding: EdgeInsets.zero,
                     visualDensity: const VisualDensity(
@@ -156,25 +157,25 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
               else if (vehicles.isEmpty)
                 _EmptyBlock(
                   message:
-                      "No idle/overspeed alerts found for selected date range.",
+                      context.l10n.noAlertsForDateRange,
                 )
               else ...[
                 Row(
                   children: [
                     Expanded(
                       child: _KpiTile(
-                        title: "Vehicles",
+                        title: context.l10n.vehicles,
                         value: "${vehicles.length}",
-                        subtitle: "Scored from alerts",
+                        subtitle: context.l10n.scoredFromAlerts,
                         color: const Color(0xFF2563EB),
                       ),
                     ),
                     horizontalSpace(width: 2.w),
                     Expanded(
                       child: _KpiTile(
-                        title: "Drivers",
+                        title: context.l10n.drivers,
                         value: "${drivers.length}",
-                        subtitle: "Mapped from current assignment",
+                        subtitle: context.l10n.mappedFromAssignment,
                         color: const Color(0xFF16A34A),
                       ),
                     ),
@@ -182,7 +183,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                 ),
                 verticalSpace(height: 1.h),
                 _SectionCard(
-                  title: "Top Vehicles",
+                  title: context.l10n.topVehicles,
                   child: _VehicleList(
                     items: provider.topVehiclePerformance,
                     onShowMore: () =>
@@ -191,7 +192,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                 ),
                 verticalSpace(height: .9.h),
                 _SectionCard(
-                  title: "Top Drivers",
+                  title: context.l10n.topDrivers,
                   child: _DriverList(
                     items: provider.topDriverPerformance,
                     onShowMore: () =>
@@ -212,7 +213,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _AllPerformanceSheet(
-        title: "All Vehicle Performance",
+        title: context.l10n.allVehiclePerformance,
         child: ListView.separated(
           itemCount: items.length,
           separatorBuilder: (_, __) => SizedBox(height: .55.h),
@@ -238,7 +239,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _AllPerformanceSheet(
-        title: "All Driver Performance",
+        title: context.l10n.allDriverPerformance,
         child: ListView.separated(
           itemCount: items.length,
           separatorBuilder: (_, __) => SizedBox(height: .55.h),
@@ -753,7 +754,7 @@ class _ErrorBlock extends StatelessWidget {
           verticalSpace(height: .8.h),
           OutlinedButton(
             onPressed: onRetry,
-            child: const Text("Retry"),
+            child: Text(context.l10n.retry),
           ),
         ],
       ),

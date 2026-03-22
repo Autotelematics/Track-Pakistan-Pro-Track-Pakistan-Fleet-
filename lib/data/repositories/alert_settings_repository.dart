@@ -10,13 +10,16 @@ class AlertSettingsRepository {
     String? deviceId,
   }) async {
     final userApiHashKey = MySharedPreferences.getString(authTokenKey);
-    var url = "${AppUrl.baseURL}${AppUrl.getAlertSettingEp}$userApiHashKey";
-    if (deviceId != null && deviceId.isNotEmpty) {
-      url = "$url&device_id=$deviceId";
-    }
+    final endpointPath = AppUrl.getAlertSettingEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+        if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
+      },
+    );
     final headers = {"Content-Type": "application/json"};
 
-    final response = await http.get(Uri.parse(url), headers: headers);
+    final response = await http.get(url, headers: headers);
     if (response.statusCode != 200) return null;
 
     final decoded = jsonDecode(response.body);
@@ -30,11 +33,28 @@ class AlertSettingsRepository {
     int? active,
   }) async {
     final userApiHashKey = MySharedPreferences.getString(authTokenKey);
-    final idsQuery = alertIds.map((id) => "&alert_ids[]=$id").join();
     final isDeviceSync = deviceId != null && deviceId.isNotEmpty;
-    final url = Uri.parse(isDeviceSync
-        ? "${AppUrl.baseURL}${AppUrl.syncAlertSettingEp}$userApiHashKey&device_id=$deviceId$idsQuery"
-        : "${AppUrl.baseURL}${AppUrl.syncAlertActiveEp}$userApiHashKey$idsQuery&active=${active ?? 1}");
+    final endpointPath = (isDeviceSync
+            ? AppUrl.syncAlertSettingEp
+            : AppUrl.syncAlertActiveEp)
+        .split('?')
+        .first;
+    final query = <String, List<String>>{
+      'user_api_hash': [userApiHashKey],
+      'alert_ids[]': alertIds.map((id) => id.toString()).toList(),
+    };
+    if (isDeviceSync) {
+      query['device_id'] = [deviceId];
+    } else {
+      query['active'] = ['${active ?? 1}'];
+    }
+    final queryString = query.entries
+        .expand((entry) => entry.value.map(
+              (value) =>
+                  '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(value)}',
+            ))
+        .join('&');
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath?$queryString');
     final headers = {"Content-Type": "application/json"};
 
     http.Response response = await http.post(url, headers: headers);
@@ -66,8 +86,12 @@ class AlertSettingsRepository {
     final userApiHashKey = MySharedPreferences.getString(authTokenKey).trim();
     if (userApiHashKey.isEmpty) return false;
 
-    final url = Uri.parse(
-      "${AppUrl.baseURL}${AppUrl.syncAlertAnnouncementEp}$userApiHashKey&alert_announcement=${enabled ? 1 : 0}",
+    final endpointPath = AppUrl.syncAlertAnnouncementEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+        'alert_announcement': enabled ? '1' : '0',
+      },
     );
     final headers = {"Content-Type": "application/json"};
 

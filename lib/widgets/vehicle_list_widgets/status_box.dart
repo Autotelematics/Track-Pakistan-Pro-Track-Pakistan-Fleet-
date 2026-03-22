@@ -5,6 +5,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
 
 class StatusBox extends StatelessWidget {
+  final String statusKey;
   final String title;
   final int count;
   final Color color;
@@ -13,6 +14,7 @@ class StatusBox extends StatelessWidget {
 
   const StatusBox({
     super.key,
+    required this.statusKey,
     required this.title,
     required this.count,
     required this.color,
@@ -20,23 +22,10 @@ class StatusBox extends StatelessWidget {
     required this.cardColor,
   });
 
-  String get _statusKey {
-    switch (title) {
-      case 'All': return 'all';
-      case 'Running': return 'running';
-      case 'Stopped': return 'stopped';
-      case 'Idle': return 'idle';
-      case 'Offline': return 'offline';
-      case 'No Data': return 'nodata';
-      case 'Expired': return 'expired';
-      default: return 'all';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
-    final isSelected = provider.filterStatus == _statusKey;
+    final isSelected = provider.filterStatus == statusKey;
 
     final countStr = count.toString();
     final digits = countStr.length;
@@ -47,7 +36,7 @@ class StatusBox extends StatelessWidget {
     final boxHeight = 3.2.h;
 
     return GestureDetector(
-      onTap: () => provider.setFilter(_statusKey),
+      onTap: () => provider.setFilter(statusKey),
       child: Padding(
         padding: EdgeInsets.only(right: 1.w),
         child: SizedBox(

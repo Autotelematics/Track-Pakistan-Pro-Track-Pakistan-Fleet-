@@ -6,6 +6,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/popups.dart';
 import 'package:trackerapp/data/models/local_reminder_model.dart';
 import 'package:trackerapp/providers/reminder_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
@@ -53,7 +54,7 @@ class LocalReminderCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Local Reminders",
+            context.l10n.localReminders,
             style: AppStyles.semiboldTextStyle(context).copyWith(
               fontSize: 15.sp,
             ),
@@ -91,7 +92,7 @@ class LocalReminderCard extends StatelessWidget {
               children: [
                 _reminderRow(
                   context,
-                  title: "Active reminders",
+                  title: context.l10n.activeReminders,
                   icon: Icons.notifications_active_outlined,
                   iconColor: const Color(0xFF2563EB),
                   count: activeCount.toString(),
@@ -102,7 +103,7 @@ class LocalReminderCard extends StatelessWidget {
                     height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
                 _reminderRow(
                   context,
-                  title: "Past reminders",
+                  title: context.l10n.pastReminders,
                   icon: Icons.history_rounded,
                   iconColor: const Color(0xFF6B7280),
                   count: pastCount.toString(),
@@ -163,7 +164,7 @@ class LocalReminderCard extends StatelessWidget {
                 border: Border.all(color: iconColor.withValues(alpha: 0.28)),
               ),
               child: Text(
-                "$count Items",
+                context.l10n.itemsCount(count),
                 style: AppStyles.regularTextStyle(context).copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 11.5.sp,
@@ -186,16 +187,16 @@ class LocalReminderCard extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Delete Reminder"),
-        content: const Text("Are you sure you want to delete this reminder?"),
+        title: Text(context.l10n.deleteReminder),
+        content: Text(context.l10n.deleteReminderConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel"),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Delete"),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -210,7 +211,8 @@ class LocalReminderCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
-    final title = showActive ? "Active reminders" : "Past reminders";
+    final title =
+        showActive ? context.l10n.activeReminders : context.l10n.pastReminders;
 
     showModalBottomSheet(
       context: context,
@@ -262,7 +264,7 @@ class LocalReminderCard extends StatelessWidget {
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 2.h),
                         child: Text(
-                          "No reminders found",
+                          context.l10n.noRemindersFound,
                           style: AppStyles.regularTextStyle(context).copyWith(
                             fontSize: 13.8.sp,
                             color: onSurface.withValues(alpha: .65),
@@ -296,7 +298,8 @@ class LocalReminderCard extends StatelessWidget {
                                     .read<ReminderProvider>()
                                     .deleteReminder(reminder.id);
                                 AppSnackBar.success(
-                                    message: "Reminder deleted");
+                                  message: context.l10n.reminderDeleted,
+                                );
                               },
                             );
                           },
@@ -334,8 +337,8 @@ class _DashboardReminderTile extends StatelessWidget {
     final dueTime = DateFormat('hh:mm a').format(reminder.dueAt);
     final description = reminder.description.trim();
     final repeatLabel = reminder.repeatType == "none"
-        ? "One-time"
-        : "Recurring • ${_prettyRepeat(reminder.repeatType)}";
+        ? context.l10n.repeatOneTime
+        : "${context.l10n.repeatRecurring} • ${_prettyRepeat(reminder.repeatType)}";
 
     return Container(
       width: double.infinity,
@@ -392,7 +395,7 @@ class _DashboardReminderTile extends StatelessWidget {
           ),
           verticalSpace(height: .35.h),
           Text(
-            description.isEmpty ? "No description" : description,
+            description.isEmpty ? context.l10n.noDescription : description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(

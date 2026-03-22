@@ -1,10 +1,35 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:trackerapp/l10n/app_localizations.dart';
 import 'package:trackerapp/data/repositories/alert_settings_repository.dart';
 import 'package:trackerapp/utils/alert_tts_service.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
+
+enum SettingsItemId {
+  support,
+  password,
+  drivers,
+  alertSetting,
+  playAlertsAnnouncement,
+  appearance,
+  language,
+}
+
+class SettingsItem {
+  final SettingsItemId id;
+  final IconData icon;
+  final String Function(AppLocalizations l10n) titleBuilder;
+  final bool hasSwitch;
+
+  const SettingsItem({
+    required this.id,
+    required this.icon,
+    required this.titleBuilder,
+    this.hasSwitch = false,
+  });
+}
 
 class SettingsProvider extends ChangeNotifier {
   final AlertSettingsRepository _alertSettingsRepository =
@@ -12,23 +37,50 @@ class SettingsProvider extends ChangeNotifier {
   bool _playAlertsAnnouncement =
       MySharedPreferences.getBool(playAlertsAnnouncementKey);
 
-  final List<Map<String, dynamic>> settingsItems = [
-    {'icon': Icons.person_outline, 'title': 'Support'},
-    {'icon': Icons.key_outlined, 'title': 'Password'},
-    {'icon': Icons.badge_outlined, 'title': 'Drivers'},
-    {'icon': Icons.notifications_none, 'title': 'Alert Setting'},
-    {'icon': Icons.speaker_outlined, 'title': 'Play Alerts Announcement'},
-    // {'icon': Icons.attach_money_outlined, 'title': 'Vehicle Expenses'},
-    // {'icon': Icons.build_outlined, 'title': 'Maintenance'},
-    {'icon': Icons.palette_outlined, 'title': 'Appearance'},
+  final List<SettingsItem> settingsItems = [
+    SettingsItem(
+      id: SettingsItemId.support,
+      icon: Icons.person_outline,
+      titleBuilder: (l10n) => l10n.support,
+    ),
+    SettingsItem(
+      id: SettingsItemId.password,
+      icon: Icons.key_outlined,
+      titleBuilder: (l10n) => l10n.password,
+    ),
+    SettingsItem(
+      id: SettingsItemId.drivers,
+      icon: Icons.badge_outlined,
+      titleBuilder: (l10n) => l10n.drivers,
+    ),
+    SettingsItem(
+      id: SettingsItemId.alertSetting,
+      icon: Icons.notifications_none,
+      titleBuilder: (l10n) => l10n.alertSetting,
+    ),
+    SettingsItem(
+      id: SettingsItemId.playAlertsAnnouncement,
+      icon: Icons.speaker_outlined,
+      titleBuilder: (l10n) => l10n.playAlertsAnnouncement,
+      hasSwitch: true,
+    ),
+    SettingsItem(
+      id: SettingsItemId.language,
+      icon: Icons.language_outlined,
+      titleBuilder: (l10n) => l10n.language,
+    ),
+    SettingsItem(
+      id: SettingsItemId.appearance,
+      icon: Icons.palette_outlined,
+      titleBuilder: (l10n) => l10n.appearance,
+    ),
   ];
 
-  // Keeps legacy in-memory state from showing deprecated logout row.
-  List<Map<String, dynamic>> get visibleSettingsItems =>
+  List<SettingsItem> get visibleSettingsItems =>
       settingsItems.where((item) {
-        final title = item['title'];
-        if (title == 'LogOut') return false;
-        if (title == 'Password' && !canChangePassword) return false;
+        if (item.id == SettingsItemId.password && !canChangePassword) {
+          return false;
+        }
         return true;
       }).toList();
 

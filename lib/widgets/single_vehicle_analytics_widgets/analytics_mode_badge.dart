@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 
 class AnalyticsModeBadge extends StatelessWidget {
@@ -11,6 +12,7 @@ class AnalyticsModeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isMultiDay ? AppColors.purple : AppColors.blueCyan;
 
@@ -31,7 +33,9 @@ class AnalyticsModeBadge extends StatelessWidget {
           ),
           horizontalSpace(width: 1.5.w),
           Text(
-            isMultiDay ? "Charts grouped by date" : "Charts grouped by hour",
+            isMultiDay
+                ? l10n.chartsGroupedByDate
+                : l10n.chartsGroupedByHour,
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 12.8.sp,
               color: color,

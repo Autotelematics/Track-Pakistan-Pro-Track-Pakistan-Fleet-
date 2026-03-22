@@ -10,10 +10,13 @@ class AdminUserListRepository {
     int page = 1,
   }) async {
     final search = (email ?? "").trim();
-    final url = Uri.parse(
-      "${AppUrl.baseURL}${AppUrl.getAdminUserListEp}$token"
-      "${search.isNotEmpty ? "&email=${Uri.encodeQueryComponent(search)}" : ""}"
-      "&page=$page",
+    final endpointPath = AppUrl.getAdminUserListEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+        if (search.isNotEmpty) 'email': search,
+        'page': '$page',
+      },
     );
     final response = await http.get(
       url,
@@ -31,8 +34,12 @@ class AdminUserListRepository {
     required int userId,
     required int status,
   }) async {
-    final url =
-        Uri.parse("${AppUrl.baseURL}${AppUrl.setAdminUserStatusEp}$token");
+    final endpointPath = AppUrl.setAdminUserStatusEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -80,7 +87,12 @@ class AdminUserListRepository {
     required String token,
     required int userId,
   }) async {
-    final url = Uri.parse("${AppUrl.baseURL}${AppUrl.adminLoginAsEp}$token");
+    final endpointPath = AppUrl.adminLoginAsEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},

@@ -5,6 +5,7 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -149,7 +150,7 @@ class AlertGrid extends StatelessWidget {
     return Row(
       children: [
         Text(
-          "Alerts Count",
+          context.l10n.alertsCount,
           style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
         ),
         const Spacer(),
@@ -159,7 +160,7 @@ class AlertGrid extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: .6.w, vertical: .2.h),
             child: Text(
-              "Total: ${data.alertsSummary.total}",
+              context.l10n.totalLabel(data.alertsSummary.total),
               style: AppStyles.semiboldTextStyle(context).copyWith(
                 fontSize: 13.2.sp,
               ),

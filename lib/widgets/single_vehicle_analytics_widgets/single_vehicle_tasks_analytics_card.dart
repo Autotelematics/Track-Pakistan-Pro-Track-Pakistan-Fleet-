@@ -4,6 +4,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/task_model.dart';
 import 'package:trackerapp/providers/task_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/tasks/all_tasks_screen.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -36,6 +37,7 @@ class _SingleVehicleTasksAnalyticsCardState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -77,7 +79,7 @@ class _SingleVehicleTasksAnalyticsCardState
                 children: [
                   Expanded(
                     child: Text(
-                      'Tasks Analytics',
+                      l10n.tasksAnalytics,
                       style: AppStyles.semiboldTextStyle(context)
                           .copyWith(fontSize: 15.sp),
                     ),
@@ -163,7 +165,7 @@ class _SingleVehicleTasksAnalyticsCardState
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    'See more',
+                    l10n.seeMore,
                     style: AppStyles.regularTextStyle(context).copyWith(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
@@ -185,6 +187,7 @@ class _SingleVehicleTasksAnalyticsCardState
     required List<TaskItem> vehicleTasks,
     required List<TaskItem> latest,
   }) {
+    final l10n = context.l10n;
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     if (provider.errorMessage != null && vehicleTasks.isEmpty) {
@@ -201,7 +204,7 @@ class _SingleVehicleTasksAnalyticsCardState
           verticalSpace(height: .8.h),
           TextButton(
             onPressed: () => provider.fetchTasks(force: true),
-            child: const Text('Retry'),
+            child: Text(l10n.retry),
           ),
         ],
       );
@@ -211,7 +214,7 @@ class _SingleVehicleTasksAnalyticsCardState
       return Padding(
         padding: EdgeInsets.symmetric(vertical: .8.h),
         child: Text(
-          'No tasks available for this vehicle',
+          l10n.noTasksAvailable,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 13.sp,
           ),
@@ -228,7 +231,7 @@ class _SingleVehicleTasksAnalyticsCardState
           color: onSurface.withValues(alpha: 0.12),
         ),
         Text(
-          'Latest Tasks',
+          l10n.latestTasks,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.4.sp,
             fontWeight: FontWeight.w800,
@@ -254,6 +257,7 @@ class _SingleVehicleTasksAnalyticsCardState
   }
 
   Widget _analyticsSection(BuildContext context, List<TaskItem> tasks) {
+    final l10n = context.l10n;
     int newCount = 0;
     int inProgressCount = 0;
     int completedCount = 0;
@@ -434,7 +438,7 @@ class _SingleVehicleTasksAnalyticsCardState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Task Funnel',
+          l10n.taskFunnel,
           style: AppStyles.regularTextStyle(context).copyWith(
             fontSize: 12.4.sp,
             fontWeight: FontWeight.w800,
@@ -479,20 +483,20 @@ class _SingleVehicleTasksAnalyticsCardState
           spacing: 3.w,
           runSpacing: .5.h,
           children: [
-            legend(color: newColor, label: 'New', count: newCount),
+            legend(color: newColor, label: l10n.taskNew, count: newCount),
             legend(
               color: progressColor,
-              label: 'In Progress',
+              label: l10n.taskInProgress,
               count: inProgressCount,
             ),
             legend(
               color: completedColor,
-              label: 'Completed',
+              label: l10n.taskCompleted,
               count: completedCount,
             ),
             legend(
               color: failedColor,
-              label: 'Failed',
+              label: l10n.taskFailed,
               count: failedCount,
             ),
           ],

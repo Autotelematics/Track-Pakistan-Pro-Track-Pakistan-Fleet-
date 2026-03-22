@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -115,7 +116,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  selectedFilter,
+                  _labelForFilter(context, selectedFilter),
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     fontSize: 11.9.sp,
                     color: ConstantColor.primaryColor,
@@ -151,7 +152,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                         if (e == selectedFilter)
                           horizontalSpace(width: 2.w),
                           Text(
-                          e,
+                          _labelForFilter(context, e),
                           style: TextStyle(
                             fontSize: 12.6.sp,
                             fontWeight: e == selectedFilter
@@ -189,6 +190,24 @@ class AnalyticsFilterBar extends StatelessWidget {
       ],
     );
   }
+
+  String _labelForFilter(BuildContext context, String value) {
+    final l10n = context.l10n;
+    switch (value) {
+      case "Today":
+        return l10n.today;
+      case "Yesterday":
+        return l10n.yesterday;
+      case "Last 3 Days":
+        return l10n.last3Days;
+      case "Last 7 Days":
+        return l10n.last7Days;
+      case "Custom":
+        return l10n.custom;
+      default:
+        return value;
+    }
+  }
 }
 
 class _AnalyticsCustomDatePicker extends StatelessWidget {
@@ -216,6 +235,7 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
@@ -259,7 +279,7 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
               horizontalSpace(width: 2.2.w),
               Expanded(
                 child: Text(
-                  "Date & Time Range",
+                  l10n.dateTimeRange,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     fontSize: 14.4.sp,
                     color: onSurface,
@@ -287,7 +307,7 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
             children: [
               Expanded(
                 child: _DateTimeSelector(
-                  label: "Start Date & Time",
+                  label: l10n.startDateTime,
                   date: customStartDate,
                   time: customStartTime,
                   onDateTap: onStartDateTap,
@@ -297,7 +317,7 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
               horizontalSpace(width: 3.w),
               Expanded(
                 child: _DateTimeSelector(
-                  label: "End Date & Time",
+                  label: l10n.endDateTime,
                   date: customEndDate,
                   time: customEndTime,
                   onDateTap: onEndDateTap,
@@ -329,6 +349,7 @@ class _DateTimeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +369,7 @@ class _DateTimeSelector extends StatelessWidget {
             icon: Icons.calendar_today,
             text: date != null
                 ? "${date!.day}/${date!.month}/${date!.year}"
-                : "Select Date",
+                : l10n.selectDate,
             hasValue: date != null,
           ),
         ),
@@ -357,7 +378,7 @@ class _DateTimeSelector extends StatelessWidget {
           onTap: onTimeTap,
           child: _PickerTile(
             icon: Icons.access_time,
-            text: time != null ? time!.format(context) : "Select Time",
+            text: time != null ? time!.format(context) : l10n.selectTime,
             hasValue: time != null,
           ),
         ),

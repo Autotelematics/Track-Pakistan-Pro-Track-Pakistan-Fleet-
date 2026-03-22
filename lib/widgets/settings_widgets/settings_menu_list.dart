@@ -32,13 +32,10 @@ class _SettingsMenuTileState extends State<SettingsMenuTile> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isDanger = widget.title == "LogOut";
-    final tileTextColor = isDanger ? AppColors.red : widget.onSurface;
-    final iconTint = isDanger
-        ? AppColors.red.withValues(alpha: 0.14)
-        : (isDark
-            ? Colors.white.withValues(alpha: 0.12)
-            : Colors.black.withValues(alpha: 0.06));
+    final tileTextColor = widget.onSurface;
+    final iconTint = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.06);
 
     return AnimatedContainer(
       width: MediaQuery.sizeOf(context).width,
@@ -78,7 +75,7 @@ class _SettingsMenuTileState extends State<SettingsMenuTile> {
                 color: tileTextColor,
                 fontWeight: FontWeight.w600,
                 fontSize: 14.6.sp)),
-        trailing: widget.title == "Play Alerts Announcement"
+        trailing: widget.switchValue != null && widget.onSwitchChanged != null
             ? Transform.scale(
                 scale: .9,
                 child: Switch(
@@ -101,7 +98,7 @@ class _SettingsMenuTileState extends State<SettingsMenuTile> {
                 child: Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: AppColors.grey,
+                  color: AppColors.black,
                 ),
               ),
         onTap: () {

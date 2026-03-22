@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class DistanceTravelledCard extends StatefulWidget {
@@ -89,7 +90,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Distance Travelled",
+            context.l10n.distanceTravelled,
             style:
                 AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
           ),
@@ -152,12 +153,12 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
         children: [
           _statColumn(
             context,
-            "Total Distance",
+            context.l10n.totalDistance,
             "${widget.historyData.summary.totalDistanceKm} km",
           ),
           _statColumn(
             context,
-            "Average Distance",
+            context.l10n.averageDistance,
             "${widget.historyData.summary.averageDistanceKm} km",
           ),
         ],
@@ -241,7 +242,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
           final index = group.x.toInt();
           final label = index >= 0 && index < _barLabels.length
               ? _barLabels[index]
-              : "Vehicle";
+              : context.l10n.vehicleFallback;
           return BarTooltipItem(
             '${_shortenLabel(label)}\n',
             AppStyles.semiboldTextStyle(context).copyWith(

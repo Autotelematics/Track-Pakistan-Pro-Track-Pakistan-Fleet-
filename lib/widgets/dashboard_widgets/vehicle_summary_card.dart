@@ -6,6 +6,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/providers/dashboard_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -141,18 +142,23 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
 
   Widget _buildLegend(BuildContext context) {
     final status = widget.data1.statusCounts;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // verticalSpace(height: .0.h),
-        _legendItem(AppColors.red, "Stopped", status.ack, 0, context),
+        _legendItem(
+            AppColors.red, l10n.vehicleStatusStopped, status.ack, 0, context),
         verticalSpace(height: 1.h),
-        _legendItem(AppColors.green, "Running", status.online, 1, context),
+        _legendItem(AppColors.green, l10n.vehicleStatusRunning, status.online,
+            1, context),
         verticalSpace(height: 1.h),
-        _legendItem(AppColors.yellow, "Idle", status.idle, 2, context),
+        _legendItem(
+            AppColors.yellow, l10n.vehicleStatusIdle, status.idle, 2, context),
         verticalSpace(height: 1.h),
-        _legendItem(AppColors.blueCyan, "Offline", status.offline, 3, context),
+        _legendItem(AppColors.blueCyan, l10n.vehicleStatusOffline,
+            status.offline, 3, context),
       ],
     );
   }
@@ -235,15 +241,16 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
           ),
           child: Consumer<DashboardProvider>(
             builder: (context, provider, child) {
+              final l10n = context.l10n;
               final selectedIndex = provider.selectedStatusIndex;
               final isIntroActive = !_introExplodeDone;
 
               final (centerLabel, centerCount) = switch (selectedIndex) {
-                0 => ('Stopped', status.ack),
-                1 => ('Running', status.online),
-                2 => ('Idle', status.idle),
-                3 => ('Offline', status.offline),
-                _ => ('Total', status.total),
+                0 => (l10n.vehicleStatusStopped, status.ack),
+                1 => (l10n.vehicleStatusRunning, status.online),
+                2 => (l10n.vehicleStatusIdle, status.idle),
+                3 => (l10n.vehicleStatusOffline, status.offline),
+                _ => (l10n.totalWord, status.total),
               };
 
               if (isIntroActive) {

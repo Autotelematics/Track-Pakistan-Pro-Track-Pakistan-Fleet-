@@ -10,10 +10,15 @@ class GetDeviceLiveTrackingRepository {
   Future<GetDeviceLiveTrackingModel?> getDeviceLiveTrackingApi({
     required int deviceId,
   }) async {
-    String? userApiHashKey =  MySharedPreferences.getString(authTokenKey);
+    final userApiHashKey = MySharedPreferences.getString(authTokenKey);
     final headers = {"Content-Type": "application/json"};
-    final url = Uri.parse(
-        "${AppUrl.baseURL}${AppUrl.getDeviceLiveTrackingEp}$userApiHashKey&id=$deviceId");
+    final endpointPath = AppUrl.getDeviceLiveTrackingEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+        'id': deviceId.toString(),
+      },
+    );
     http.Response response = await http.get(headers: headers, url);
     if (response.statusCode == 200) {
       return getDeviceLiveTrackingModelFromJson(response.body);

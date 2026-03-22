@@ -7,6 +7,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/single_vehicle_analytics_widgets/analytics_charts.dart';
@@ -49,6 +50,24 @@ class _SingleVehicleAnalyticsScreenState
   late final TooltipBehavior _engineTooltip;
   bool _didAutoRetryTodayFetch = false;
   bool _showDateRangePicker = false;
+
+  String _filterLabel(BuildContext context, String value) {
+    final l10n = context.l10n;
+    switch (value) {
+      case "Today":
+        return l10n.today;
+      case "Yesterday":
+        return l10n.yesterday;
+      case "Last 3 Days":
+        return l10n.last3Days;
+      case "Last 7 Days":
+        return l10n.last7Days;
+      case "Custom":
+        return l10n.custom;
+      default:
+        return value;
+    }
+  }
 
   @override
   void initState() {
@@ -162,6 +181,7 @@ class _SingleVehicleAnalyticsScreenState
       isScrollControlled: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 36.h,
@@ -186,11 +206,11 @@ class _SingleVehicleAnalyticsScreenState
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Date",
+                      l10n.selectDate,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -198,7 +218,7 @@ class _SingleVehicleAnalyticsScreenState
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempDate),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -239,6 +259,7 @@ class _SingleVehicleAnalyticsScreenState
       isScrollControlled: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 34.h,
@@ -263,11 +284,11 @@ class _SingleVehicleAnalyticsScreenState
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Time",
+                      l10n.selectTime,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -275,7 +296,7 @@ class _SingleVehicleAnalyticsScreenState
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempTime),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -303,6 +324,7 @@ class _SingleVehicleAnalyticsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final textScale = analyticsTextScale(context);
     final iconScale = analyticsIconScale(context);
     final theme = Theme.of(context);
@@ -433,9 +455,9 @@ class _SingleVehicleAnalyticsScreenState
                                   !_isCustomDateRangeValid(
                                       customStartDate, customEndDate)) {
                                 messenger.showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'From date cannot be later than To date',
+                                      l10n.fromDateCannotBeLaterThanToDate,
                                     ),
                                   ),
                                 );
@@ -448,6 +470,8 @@ class _SingleVehicleAnalyticsScreenState
                           fromDate: _fromDate,
                           toDate: _toDate,
                           selectedFilter: selectedFilter,
+                          selectedFilterLabel:
+                              _filterLabel(context, selectedFilter),
                           isMultiDay: isMultiDay,
                         ),
 
@@ -456,7 +480,7 @@ class _SingleVehicleAnalyticsScreenState
                         if (!provider.isLoading &&
                             provider.errorMessage == null) ...[
                           Text(
-                            "Overview",
+                            l10n.overview,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 15.4.sp,
@@ -553,7 +577,7 @@ class _SingleVehicleAnalyticsScreenState
                                   color: ConstantColor.primaryColor),
                               verticalSpace(height: 2.h),
                               Text(
-                                'Loading analytics...',
+                                l10n.loadingAnalytics,
                                 style: AppStyles.semiboldTextStyle(context)
                                     .copyWith(fontSize: 16.sp),
                               ),
@@ -595,17 +619,20 @@ class _AnalyticsHeroCard extends StatelessWidget {
   final String fromDate;
   final String toDate;
   final String selectedFilter;
+  final String selectedFilterLabel;
   final bool isMultiDay;
 
   const _AnalyticsHeroCard({
     required this.fromDate,
     required this.toDate,
     required this.selectedFilter,
+    required this.selectedFilterLabel,
     required this.isMultiDay,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final dateText = "$fromDate  to  $toDate";
@@ -651,7 +678,7 @@ class _AnalyticsHeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Vehicle Analytics",
+                  l10n.vehicleAnalytics,
                   style: AppStyles.boldTextStyle(context).copyWith(
                     color: Colors.white,
                     fontSize: 14.5.sp,
@@ -681,7 +708,7 @@ class _AnalyticsHeroCard extends StatelessWidget {
               border: Border.all(color: Colors.white.withValues(alpha: .28)),
             ),
             child: Text(
-              isMultiDay ? "Daily" : selectedFilter,
+              isMultiDay ? l10n.daily : selectedFilterLabel,
               style: AppStyles.semiboldTextStyle(context).copyWith(
                 color: Colors.white,
                 fontSize: 10.7.sp,

@@ -6,6 +6,7 @@ import 'package:trackerapp/data/models/get_device_group_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
+
 class GetDeviceGroupRepository {
   Future<GetDeviceGroupModel?> getDeviceGroupApi({
     required int page,
@@ -14,11 +15,15 @@ class GetDeviceGroupRepository {
     try {
       final token = MySharedPreferences.getString(authTokenKey);
 
-      final url =
-          Uri.parse('${AppUrl.baseURL}${AppUrl.getDeviceGroupEp}$token');
+      final endpointPath = AppUrl.getDeviceGroupEp.split('?').first;
+      final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': token,
+        },
+      );
       final response =
           await http.get(url, headers: {'Content-Type': 'application/json'});
-          log('API Response: ${response.statusCode} - ${response.body}');
+      log('API Response: ${response.statusCode} - ${response.body}');
       if (response.statusCode == 200) {
         return getDeviceGroupModelFromJson(response.body);
       } else {

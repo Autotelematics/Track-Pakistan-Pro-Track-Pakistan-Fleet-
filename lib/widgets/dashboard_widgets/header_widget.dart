@@ -7,6 +7,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
@@ -43,7 +44,8 @@ class HeaderWidget extends StatelessWidget {
     final emailFromApi = data1.userEmail.trim();
     final storedEmail = MySharedPreferences.getString(userEmailKey).trim();
     final userEmail = emailFromApi.isNotEmpty ? emailFromApi : storedEmail;
-    final hiText = userEmail.isNotEmpty ? "Hi, $userEmail" : "Hi";
+    final l10n = context.l10n;
+    final hiText = userEmail.isNotEmpty ? l10n.hiUser(userEmail) : l10n.hi;
 
     return SizedBox(
       height: headerHeight,
@@ -122,7 +124,7 @@ class HeaderWidget extends StatelessWidget {
                             onPressed: () => context
                                 .read<MotionBottomBarProvider>()
                                 .setIndex(4),
-                            tooltip: 'Settings',
+                            tooltip: l10n.settingsTooltip,
                             icon: Icon(
                               Icons.settings,
                               size: (3 * iconScale).h,
@@ -134,7 +136,7 @@ class HeaderWidget extends StatelessWidget {
                             onPressed: () => context
                                 .read<MotionBottomBarProvider>()
                                 .setIndex(3),
-                            tooltip: 'Notifications',
+                            tooltip: l10n.notificationsTooltip,
                             icon: Icon(
                               Icons.notifications,
                               size: (3 * iconScale).h,

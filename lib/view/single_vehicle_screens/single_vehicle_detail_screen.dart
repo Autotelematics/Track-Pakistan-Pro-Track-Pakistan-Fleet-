@@ -11,6 +11,7 @@ import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_info_scree
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_notifications_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_report_type_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_tracking_screen.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
@@ -91,6 +92,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
       context: context,
       barrierDismissible: false,
       builder: (_) {
+        final l10n = context.l10n;
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         final onSurface = theme.colorScheme.onSurface;
@@ -123,7 +125,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                       Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          "Vehicle Offline",
+                          l10n.vehicleOffline,
                           style: AppStyles.boldTextStyle(context).copyWith(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -136,7 +138,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                 ),
                 SizedBox(height: .45.h),
                 Text(
-                  "Vehicle is offline since $offlineSinceText.",
+                  l10n.vehicleOfflineSince(offlineSinceText),
                   style: AppStyles.regularTextStyle(context).copyWith(
                     fontSize: 13.4.sp,
                     color: onSurface.withValues(alpha: .82),
@@ -146,7 +148,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                 Align(
                   alignment: Alignment.centerRight,
                   child: CustomButton(
-                    text: "OK",
+                    text: l10n.ok,
                     height: 4.h,
                     width: 22.w,
                     onPressed: () => Navigator.pop(context),
@@ -165,11 +167,12 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
     int? fallbackTimestamp,
     String? fallbackTimeText,
   }) {
+    final l10n = context.l10n;
     final ts = _pickTimestamp(primaryTimestamp, fallbackTimestamp);
     final since = ts != null
         ? _dateTimeFromEpoch(ts)
         : _parseTimeTextToDateTime(fallbackTimeText);
-    if (since == null) return "unknown time";
+    if (since == null) return l10n.unknownTime;
     Duration diff = DateTime.now().difference(since);
     if (diff.isNegative) diff = Duration.zero;
 
@@ -265,6 +268,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -446,13 +450,21 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   color: isDark ? AppColors.white : AppColors.black,
                   fontWeight: FontWeight.w600,
                 ),
-                tabs: const [
-                  Tab(icon: Icon(Icons.location_on_outlined), text: "Live"),
-                  Tab(icon: Icon(Icons.bar_chart), text: "Analytics"),
-                  Tab(icon: Icon(Icons.description_outlined), text: "Report"),
-                  Tab(icon: Icon(Icons.access_time), text: "History"),
-                  Tab(icon: Icon(Icons.notifications_none), text: "Alerts"),
-                  Tab(icon: Icon(Icons.info_outline_rounded), text: "Info"),
+                tabs: [
+                  Tab(
+                      icon: const Icon(Icons.location_on_outlined),
+                      text: l10n.liveTab),
+                  Tab(icon: const Icon(Icons.bar_chart), text: l10n.analyticsTab),
+                  Tab(
+                      icon: const Icon(Icons.description_outlined),
+                      text: l10n.reportTab),
+                  Tab(icon: const Icon(Icons.access_time), text: l10n.historyTab),
+                  Tab(
+                      icon: const Icon(Icons.notifications_none),
+                      text: l10n.alertsTabLong),
+                  Tab(
+                      icon: const Icon(Icons.info_outline_rounded),
+                      text: l10n.infoTab),
                 ],
               ),
             ),
@@ -488,7 +500,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                         ),
                         SizedBox(height: 1.h),
                         Text(
-                          "Vehicle Plan Expired",
+                          l10n.vehiclePlanExpired,
                           textAlign: TextAlign.center,
                           style: AppStyles.boldTextStyle(context).copyWith(
                             fontSize: 16.sp,
@@ -497,7 +509,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                         ),
                         SizedBox(height: .8.h),
                         Text(
-                          "This vehicle is expired. Please renew your plan and contact your service provider.",
+                          l10n.vehiclePlanExpiredMessage,
                           textAlign: TextAlign.center,
                           style: AppStyles.regularTextStyle(context).copyWith(
                             fontSize: 13.2.sp,
@@ -519,7 +531,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                               ),
                             ),
                             child: Text(
-                              "Close",
+                              l10n.close,
                               style:
                                   AppStyles.semiboldTextStyle(context).copyWith(
                                 fontSize: 13.5.sp,

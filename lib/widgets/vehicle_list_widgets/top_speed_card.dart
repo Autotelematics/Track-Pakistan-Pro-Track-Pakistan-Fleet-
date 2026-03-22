@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class TopSpeedCard extends StatefulWidget {
@@ -65,7 +66,7 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Top Speeding Vehicles",
+            context.l10n.topSpeedingVehicles,
             style:
                 AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
           ),
@@ -141,7 +142,7 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
     percent = percent.clamp(0.08, 1.0);
 
     final rankText = '#${index + 1}';
-    final deviceName = item.deviceName ?? 'Vehicle';
+    final deviceName = item.deviceName ?? context.l10n.vehicleFallback;
 
     return Container(
       margin: EdgeInsets.only(bottom: 1.15.h),

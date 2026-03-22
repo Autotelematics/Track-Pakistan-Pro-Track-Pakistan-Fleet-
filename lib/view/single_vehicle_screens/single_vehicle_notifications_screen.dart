@@ -5,6 +5,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/responsive_scale.dart';
 import 'package:trackerapp/providers/alerts_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/alert_location_screen.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/custom_text_field.dart';
@@ -82,47 +83,57 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
     }
   }
 
-  List<Map<String, dynamic>> _getAlertCategories(Map<String, int> counts) {
+  List<Map<String, dynamic>> _getAlertCategories(
+    BuildContext context,
+    Map<String, int> counts,
+  ) {
+    final l10n = context.l10n;
     return [
       {
         'icon': Icons.speed,
-        'name': 'Over Speed',
-        'unit': 'Times',
+        'key': 'Over Speed',
+        'name': l10n.overSpeed,
+        'unit': l10n.times,
         'value': counts['Over Speed'] ?? 0,
         'bgColor': const Color(0xFFFFC107),
       },
       {
         'icon': Icons.timer_outlined,
-        'name': 'Idle Duration',
-        'unit': 'Times',
+        'key': 'Idle Duration',
+        'name': l10n.idleDuration,
+        'unit': l10n.times,
         'value': counts['Idle Duration'] ?? 0,
         'bgColor': const Color(0xFFFF9800),
       },
       {
         'icon': Icons.power_settings_new,
-        'name': 'Ignition duration',
-        'unit': 'Times',
+        'key': 'Ignition duration',
+        'name': l10n.ignitionDuration,
+        'unit': l10n.times,
         'value': counts['Ignition duration'] ?? 0,
         'bgColor': const Color(0xFFEF5350),
       },
       {
         'icon': Icons.directions_car,
-        'name': 'Move Start',
-        'unit': 'Times',
+        'key': 'Move Start',
+        'name': l10n.moveStart,
+        'unit': l10n.times,
         'value': counts['Move Start'] ?? 0,
         'bgColor': const Color(0xFF4CAF50),
       },
       {
         'icon': Icons.signal_wifi_off,
-        'name': 'Offline duration',
-        'unit': 'Times',
+        'key': 'Offline duration',
+        'name': l10n.offlineDuration,
+        'unit': l10n.times,
         'value': counts['Offline duration'] ?? 0,
         'bgColor': const Color(0xFF009688),
       },
       {
         'icon': Icons.local_parking,
-        'name': 'Over Parking',
-        'unit': 'Times',
+        'key': 'Over Parking',
+        'name': l10n.overParking,
+        'unit': l10n.times,
         'value': counts['Over Parking'] ?? 0,
         'bgColor': const Color(0xFF6A1B9A),
       },
@@ -130,6 +141,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
   }
 
   Widget _buildEmptyState() {
+    final l10n = context.l10n;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -141,7 +153,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
           ),
           verticalSpace(height: 2.h),
           Text(
-            'No Alerts Found',
+            l10n.singleVehicleNoAlertsFound,
             style: AppStyles.semiboldTextStyle(context).copyWith(
               fontSize: 18.sp,
               color: Colors.grey.shade600,
@@ -150,10 +162,10 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
           verticalSpace(height: 1.h),
           Text(
             selectedCategory != null
-                ? 'No alerts for selected category'
+                ? l10n.singleVehicleNoAlertsCategory
                 : searchController.text.isNotEmpty
-                    ? 'No alerts match your search'
-                    : 'No alerts available for this vehicle',
+                    ? l10n.singleVehicleNoAlertsSearch
+                    : l10n.singleVehicleNoAlertsVehicle,
             style: AppStyles.regularTextStyle(context).copyWith(
               fontSize: 14.sp,
               color: Colors.grey.shade500,
@@ -173,7 +185,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                 provider.fetchAlerts(isRefresh: true, context: context);
               },
               icon: const Icon(Icons.clear_all),
-              label: const Text('Show All Alerts'),
+              label: Text(l10n.showAllAlerts),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ConstantColor.primaryColor,
                 foregroundColor: Colors.white,
@@ -190,6 +202,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
   }
 
   Widget _buildErrorState(String error, AlertsProvider provider) {
+    final l10n = context.l10n;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -201,7 +214,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
           ),
           verticalSpace(height: 2.h),
           Text(
-            'Oops! Something went wrong',
+            l10n.oopsSomethingWrong,
             style: AppStyles.semiboldTextStyle(context).copyWith(
               fontSize: 18.sp,
               color: Colors.grey.shade700,
@@ -225,7 +238,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
               provider.fetchAlerts(isRefresh: true, context: context);
             },
             icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            label: Text(l10n.tryAgain),
             style: ElevatedButton.styleFrom(
               backgroundColor: ConstantColor.primaryColor,
               foregroundColor: AppColors.white,
@@ -242,6 +255,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final textScale = appTextScale(context, ScaleProfile.notifications);
     final iconScale = appIconScale(context, ScaleProfile.notifications);
     final theme = Theme.of(context);
@@ -261,7 +275,8 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
               padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 0),
               child: Consumer<AlertsProvider>(
                 builder: (context, provider, _) {
-                  final alerts = _getAlertCategories(provider.alertTypeCounts);
+                  final alerts =
+                      _getAlertCategories(context, provider.alertTypeCounts);
                   final filteredItems = provider.filteredItems;
 
                   // Show error state
@@ -273,7 +288,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                         verticalSpace(height: 4.0.h),
                         CustomTextField(
                           controller: searchController,
-                          labelText: "Search Notification",
+                          labelText: l10n.searchNotification,
                           borderRadius: 15.px,
                           suffixIcon: Icons.search_outlined,
                           onSuffixTap: () {
@@ -306,7 +321,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                       // verticalSpace(height: 0.0.h),
                       CustomTextField(
                         controller: searchController,
-                        labelText: "Search Notification",
+                        labelText: l10n.searchNotification,
                         borderRadius: 15.px,
                         suffixIcon: Icons.search_outlined,
                         onSuffixTap: () {
@@ -318,7 +333,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                       ),
                       verticalSpace(height: 1.h),
                       Text(
-                        "Alerts Category",
+                        l10n.alertsCategory,
                         style: AppStyles.semiboldTextStyle(context).copyWith(
                           fontSize: 14.2.sp,
                           color: isDark ? AppColors.white : AppColors.textBlack,
@@ -359,18 +374,18 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                 itemBuilder: (context, index) {
                                   final item = alerts[index];
                                   final isSelected =
-                                      selectedCategory == item['name'];
+                                      selectedCategory == item['key'];
                                   final tileColor = item['bgColor'] as Color;
 
                                   return GestureDetector(
                                     onTap: () {
                                       setState(() {
-                                        if (selectedCategory == item['name']) {
+                                        if (selectedCategory == item['key']) {
                                           selectedCategory = null;
                                           provider.setAlertTypeFilter(null);
                                         } else {
                                           selectedCategory =
-                                              item['name'] as String;
+                                              item['key'] as String;
                                           provider.setAlertTypeFilter(
                                               selectedCategory);
                                         }
@@ -495,7 +510,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                         const CircularProgressIndicator(),
                                         verticalSpace(height: 0.5.h),
                                         Text(
-                                          'Loading alerts...',
+                                          l10n.loadingAlerts,
                                           style: AppStyles.regularTextStyle(
                                                   context)
                                               .copyWith(
@@ -537,9 +552,9 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                           if (!hasValidLocation) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                  'Location is not available for this alert',
+                                                  l10n.locationUnavailableForAlert,
                                                 ),
                                               ),
                                             );
@@ -616,7 +631,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                               Text(
                                                 item.time != null
                                                     ? '${item.time!.day}/${item.time!.month}/${item.time!.year} ${item.time!.hour}:${item.time!.minute.toString().padLeft(2, '0')}'
-                                                    : 'N/A',
+                                                    : l10n.notAvailableShort,
                                                 style: AppStyles.lightTextStyle(
                                                         context)
                                                     .copyWith(
@@ -677,19 +692,23 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Delete Alerts'),
+                  title: Text(l10n.deleteAlerts),
                   content: Text(
-                    'Are you sure you want to delete ${provider.selectedAlertIds.length} alert(s)?',
+                    l10n.deleteAlertsConfirmCount(
+                      provider.selectedAlertIds.length,
+                    ),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
+                      child: Text(l10n.cancel),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Delete',
-                          style: TextStyle(color: Colors.red)),
+                      child: Text(
+                        l10n.delete,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
                   ],
                 ),
@@ -699,16 +718,16 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                 final success = await provider.deleteSelectedAlerts();
                 if (success && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Alerts deleted successfully'),
+                    SnackBar(
+                      content: Text(l10n.alertsDeletedSuccessfully),
                       backgroundColor: Colors.green,
                     ),
                   );
                   provider.fetchAlerts(isRefresh: true, context: context);
                 } else if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete alerts'),
+                    SnackBar(
+                      content: Text(l10n.failedDeleteAlerts),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -717,7 +736,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
             },
             backgroundColor: AppColors.red,
             icon: const Icon(Icons.delete),
-            label: Text('Delete (${provider.selectedAlertIds.length})'),
+            label: Text('${l10n.delete} (${provider.selectedAlertIds.length})'),
           );
         },
       ),

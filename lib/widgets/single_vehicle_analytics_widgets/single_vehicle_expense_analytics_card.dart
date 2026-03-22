@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_expense_analytics_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -45,6 +46,7 @@ class _SingleVehicleExpenseAnalyticsCardState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return ChangeNotifierProvider<SingleVehicleExpenseAnalyticsProvider>.value(
@@ -83,7 +85,7 @@ class _SingleVehicleExpenseAnalyticsCardState
                             children: [
                               Expanded(
                                 child: Text(
-                                  "Expense Analytics",
+                                  l10n.expenseAnalytics,
                                   style: AppStyles.boldTextStyle(context)
                                       .copyWith(fontSize: 14.6.sp),
                                 ),
@@ -93,7 +95,7 @@ class _SingleVehicleExpenseAnalyticsCardState
                                   vehicleName: widget.vehicleName,
                                 ),
                                 icon: const Icon(Icons.ios_share_rounded),
-                                tooltip: "Export",
+                                tooltip: l10n.export,
                               ),
                             ],
                           ),
@@ -101,15 +103,15 @@ class _SingleVehicleExpenseAnalyticsCardState
                           verticalSpace(height: .8.h),
                           _KpiRow(provider: provider),
                           verticalSpace(height: .9.h),
-                          _SectionTitle(title: "Expense Trend"),
+                          _SectionTitle(title: l10n.expenseTrend),
                           verticalSpace(height: .4.h),
                           _TrendChart(provider: provider),
                           verticalSpace(height: .9.h),
-                          _SectionTitle(title: "Top Expense Types"),
+                          _SectionTitle(title: l10n.topExpenseTypes),
                           verticalSpace(height: .4.h),
                           _TypeBar(provider: provider),
                           verticalSpace(height: .9.h),
-                          _SectionTitle(title: "Recent Activity"),
+                          _SectionTitle(title: l10n.recentExpenseActivity),
                           verticalSpace(height: .4.h),
                           _RecentList(provider: provider),
                         ],
@@ -127,14 +129,15 @@ class _PresetBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final now = DateTime.now();
     final maxSelectableDate = DateTime(now.year, now.month, now.day);
     final items = <(SingleExpenseRangePreset, String)>[
-      (SingleExpenseRangePreset.today, "Today"),
+      (SingleExpenseRangePreset.today, l10n.today),
       (SingleExpenseRangePreset.sevenDays, "7D"),
       (SingleExpenseRangePreset.thirtyDays, "30D"),
-      (SingleExpenseRangePreset.thisMonth, "Month"),
-      (SingleExpenseRangePreset.custom, "Custom"),
+      (SingleExpenseRangePreset.thisMonth, l10n.thisMonth),
+      (SingleExpenseRangePreset.custom, l10n.custom),
     ];
     return Column(
       children: [
@@ -174,7 +177,7 @@ class _PresetBar extends StatelessWidget {
           children: [
             Expanded(
               child: _DatePickButton(
-                label: "From",
+                label: l10n.fromDate,
                 value: provider.from,
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -195,7 +198,7 @@ class _PresetBar extends StatelessWidget {
             horizontalSpace(width: 2.w),
             Expanded(
               child: _DatePickButton(
-                label: "To",
+                label: l10n.toDate,
                 value: provider.to,
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -230,6 +233,7 @@ class _DatePickButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -244,7 +248,9 @@ class _DatePickButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "$label: ${DateFormat('dd/MM/yy').format(value)}",
+              label == l10n.fromDate
+                  ? l10n.fromValue(DateFormat('dd/MM/yy').format(value))
+                  : l10n.toValue(DateFormat('dd/MM/yy').format(value)),
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 12.8.sp,
               ),
@@ -263,25 +269,26 @@ class _KpiRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Row(
       children: [
         Expanded(
           child: _MiniKpi(
-            title: "Range Total",
+            title: l10n.totalRange,
             value: "Rs ${provider.selectedTotal.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Avg / Txn",
+            title: l10n.avgPerTxn,
             value: "Rs ${provider.avgPerTransaction.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Change",
+            title: l10n.changeLabel,
             value: "${provider.monthChangePercent.toStringAsFixed(1)}%",
           ),
         ),
@@ -350,7 +357,7 @@ class _TrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final points = provider.trend;
-    if (points.isEmpty) return _EmptyLine(text: "No trend data");
+    if (points.isEmpty) return _EmptyLine(text: context.l10n.noTrendData);
     final maxY =
         points.map((e) => e.amount).fold<double>(0, (p, c) => c > p ? c : p) *
             1.2;
@@ -423,7 +430,7 @@ class _TypeBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = provider.topTypes.take(5).toList();
-    if (items.isEmpty) return _EmptyLine(text: "No type data");
+    if (items.isEmpty) return _EmptyLine(text: context.l10n.noTypeData);
     final colors = <Color>[
       Colors.blue,
       Colors.green,
@@ -502,7 +509,7 @@ class _RecentList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = provider.recent;
-    if (items.isEmpty) return _EmptyLine(text: "No recent activity");
+    if (items.isEmpty) return _EmptyLine(text: context.l10n.noRecentActivity);
     return Column(
       children: items
           .map(
@@ -589,7 +596,7 @@ class _ErrorBlock extends StatelessWidget {
           verticalSpace(height: .8.h),
           OutlinedButton(
             onPressed: onRetry,
-            child: const Text("Retry"),
+            child: Text(context.l10n.retry),
           )
         ],
       ),

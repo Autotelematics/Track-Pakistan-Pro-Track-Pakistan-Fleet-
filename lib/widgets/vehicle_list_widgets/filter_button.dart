@@ -5,6 +5,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 
 class FilterButton extends StatelessWidget {
   final Color onSurface;
@@ -116,9 +117,9 @@ class FilterButton extends StatelessWidget {
       items: [
         PopupMenuItem<String>(
           value: '__all__',
-          child: _menuRow(
+            child: _menuRow(
             context,
-            label: 'All Groups',
+            label: context.l10n.allGroups,
             isSelected: provider.selectedGroupId == null,
             onSurface: onSurface,
             primary: primary,
@@ -142,7 +143,7 @@ class FilterButton extends StatelessWidget {
     if (!context.mounted || selected == null) return;
 
     if (selected == '__all__') {
-      provider.setGroupFilter(null, 'All');
+      provider.setGroupFilter(null, context.l10n.vehicleStatusAll);
     } else {
       var selectedTitle = 'Group';
       for (final group in groupProvider.groups) {

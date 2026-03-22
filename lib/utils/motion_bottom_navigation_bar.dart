@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:motion_tab_bar_v2/motion-tab-bar.dart';
-import 'package:motion_tab_bar_v2/motion-tab-controller.dart';
 import 'package:provider/provider.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_ui_tokens.dart';
 import 'package:trackerapp/data/repositories/fcm_token_repository.dart';
 import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/view/dashboard.dart';
@@ -34,7 +33,7 @@ class MotionBottomNavigationBar extends StatefulWidget {
 
 class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     with SingleTickerProviderStateMixin {
-  late MotionTabBarController _tabController;
+  late TabController _tabController;
   late MotionBottomBarProvider _bottomBarProvider;
   late List<_NavTabItem> _tabs;
 
@@ -80,50 +79,51 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     Navigator.of(context).pop();
   }
 
-  List<_NavTabItem> _tabsForUserType(String userType) {
+  List<_NavTabItem> _tabsForUserType(String userType, BuildContext context) {
+    final l10n = context.l10n;
     switch (userType) {
       case "admin":
-        return const [
+        return [
           _NavTabItem(
-            label: "Management",
+            label: l10n.managementTab,
             icon: Icons.admin_panel_settings_outlined,
-            screen: AdminManagementScreen(),
+            screen: const AdminManagementScreen(),
           ),
         ];
       case "manager":
-        return const [
+        return [
           _NavTabItem(
-            label: "Management",
+            label: l10n.managementTab,
             icon: Icons.manage_accounts_outlined,
-            screen: ManagerManagementScreen(),
+            screen: const ManagerManagementScreen(),
           ),
         ];
       default:
-        return const [
+        return [
           _NavTabItem(
-            label: "Status",
+            label: l10n.statusTab,
             icon: Icons.map_outlined,
-            screen: NewVehicleListDashBoard(),
+            screen: const NewVehicleListDashBoard(),
           ),
           _NavTabItem(
-            label: "Map",
+            label: l10n.mapTab,
             icon: Icons.location_on_outlined,
-            screen: MapForAllVehiclesScreen(),
+            screen: const MapForAllVehiclesScreen(),
           ),
           _NavTabItem(
-            label: "Dashboard",
+            label: l10n.dashboardTab,
             icon: Icons.dashboard,
-            screen: NewDashboard(),
+            screen: const NewDashboard(),
           ),
           _NavTabItem(
-            label: "Alerts",
+            label: l10n.alertsTab,
             icon: Icons.notifications_none_outlined,
-            screen: NewNotificationScreen(),
+            screen: const NewNotificationScreen(),
           ),
           _NavTabItem(
-            label: "Settings",
+            label: l10n.settingsTab,
             icon: Icons.settings_outlined,
-            screen: ModernSettingsScreen(),
+            screen: const ModernSettingsScreen(),
           ),
         ];
     }
@@ -139,16 +139,14 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
   @override
   void initState() {
     super.initState();
-    final userType =
-        MySharedPreferences.getString(userTypeKey).trim().toLowerCase();
-    _tabs = _tabsForUserType(_forceRegularUserTabs ? "user" : userType);
     final provider =
         Provider.of<MotionBottomBarProvider>(context, listen: false);
     _bottomBarProvider = provider;
-    final initialIndex = _safeTabIndex(provider.currentIndex, _tabs.length);
-    _tabController = MotionTabBarController(
+    _tabs = const [];
+    final initialIndex = _safeTabIndex(provider.currentIndex, 5);
+    _tabController = TabController(
       initialIndex: initialIndex,
-      length: _tabs.length,
+      length: 5,
       vsync: this,
     );
     _bottomBarProvider.addListener(_handleProviderIndexChange);
@@ -170,8 +168,8 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     if (_tabController.indexIsChanging) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        if (_tabController.index != _bottomBarProvider.currentIndex) {
-          _tabController.index = _bottomBarProvider.currentIndex;
+        if (_tabController.index != target) {
+          _tabController.index = target;
         }
       });
       return;
@@ -182,7 +180,26 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MotionBottomBarProvider>();
-    final selectedIndex = _safeTabIndex(provider.currentIndex, _tabs.length);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final userType =
+        MySharedPreferences.getString(userTypeKey).trim().toLowerCase();
+    final nextTabs =
+        _tabsForUserType(_forceRegularUserTabs ? "user" : userType, context);
+    if (_tabs.length != nextTabs.length || !_sameTabLabels(_tabs, nextTabs)) {
+      _tabs = nextTabs;
+      final safeIndex = _safeTabIndex(provider.currentIndex, _tabs.length);
+      if (_tabController.length != _tabs.length) {
+        _tabController.dispose();
+        _tabController = TabController(
+          initialIndex: safeIndex,
+          length: _tabs.length,
+          vsync: this,
+        );
+      } else if (_tabController.index != safeIndex) {
+        _tabController.index = safeIndex;
+      }
+    }
+    final displayedTabs = isRtl ? _tabs.reversed.toList() : List.of(_tabs);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final barHeight = AppUiTokens.adaptiveHeight(
@@ -190,12 +207,6 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
       ratio: 0.068,
       min: 52,
       max: 58,
-    );
-    final tabSize = AppUiTokens.adaptiveHeight(
-      context,
-      ratio: 0.055,
-      min: 42,
-      max: 48,
     );
     final iconSize = AppUiTokens.adaptiveHeight(
       context,
@@ -222,34 +233,87 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
           ? FloatingActionButton.extended(
               onPressed: _handleBackToAdmin,
               icon: const Icon(Icons.arrow_back, size: 16),
-              label: const Text(
-                "Back to Admin",
+              label: Text(
+                context.l10n.backToAdmin,
                 style: TextStyle(fontSize: 12),
               ),
             )
           : null,
       bottomNavigationBar: _tabs.length == 1
           ? null
-          : MotionTabBar(
-              controller: _tabController,
-              initialSelectedTab: _tabs[selectedIndex].label,
-              labelAlwaysVisible: true,
-              labels: _tabs.map((tab) => tab.label).toList(growable: false),
-              icons: _tabs.map((tab) => tab.icon).toList(growable: false),
-              textStyle: TextStyle(
-                color: AppColors.white,
-                fontSize: labelSize,
-                fontWeight: FontWeight.w500,
+          : SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                decoration: BoxDecoration(
+                  color: navBackground,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? .22 : .10),
+                      blurRadius: 8,
+                      offset: const Offset(0, -1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: displayedTabs.map((tab) {
+                    final logicalIndex = _tabs.indexOf(tab);
+                    final isSelected = provider.currentIndex == logicalIndex;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => provider.setIndex(logicalIndex),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOut,
+                            height: barHeight,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.white
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  tab.icon,
+                                  size:
+                                      isSelected ? selectedIconSize : iconSize,
+                                  color: isSelected
+                                      ? ConstantColor.primaryColor
+                                      : AppColors.white,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  tab.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? ConstantColor.primaryColor
+                                        : AppColors.white,
+                                    fontSize: labelSize,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(growable: false),
+                ),
               ),
-              tabIconSize: iconSize,
-              tabBarHeight: barHeight,
-              tabIconColor: AppColors.white,
-              tabIconSelectedSize: selectedIconSize,
-              tabSize: tabSize,
-              tabSelectedColor: AppColors.white,
-              tabIconSelectedColor: ConstantColor.primaryColor,
-              tabBarColor: navBackground,
-              onTabItemSelected: provider.setIndex,
             ),
       body: TabBarView(
         physics: const NeverScrollableScrollPhysics(),
@@ -257,6 +321,18 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
         children: _tabs.map((tab) => tab.screen).toList(growable: false),
       ),
     );
+  }
+
+  bool _sameTabLabels(List<_NavTabItem> current, List<_NavTabItem> next) {
+    if (current.length != next.length) {
+      return false;
+    }
+    for (var i = 0; i < current.length; i++) {
+      if (current[i].label != next[i].label) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

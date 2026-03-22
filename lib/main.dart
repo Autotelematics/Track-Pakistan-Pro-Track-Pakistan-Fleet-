@@ -5,8 +5,10 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:trackerapp/l10n/app_localizations.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/contact_us_provider.dart';
@@ -17,6 +19,7 @@ import 'package:trackerapp/providers/get_device_group_provider.dart';
 import 'package:trackerapp/providers/get_device_reports_provider.dart';
 import 'package:trackerapp/providers/get_devices_status_provider.dart';
 import 'package:trackerapp/providers/get_geofence_provider.dart';
+import 'package:trackerapp/providers/language_provider.dart';
 import 'package:trackerapp/providers/maintenance_provider.dart';
 import 'package:trackerapp/providers/performance_provider.dart';
 import 'package:trackerapp/providers/reminder_provider.dart';
@@ -26,6 +29,7 @@ import 'package:trackerapp/providers/update_device_data_provider.dart';
 import 'package:trackerapp/providers/vehicle_expense_provider.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
 import 'package:trackerapp/utils/alert_tts_service.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/local_notification_service.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
@@ -177,11 +181,14 @@ void main() async {
   await themeProvider.loadTheme();
   final reminderProvider = ReminderProvider();
   await reminderProvider.initialize();
+  final languageProvider = LanguageProvider();
+  await languageProvider.loadSavedLocale();
 
   runApp(
     MyApp(
       themeProvider: themeProvider,
       reminderProvider: reminderProvider,
+      languageProvider: languageProvider,
     ),
   );
 }
@@ -189,11 +196,13 @@ void main() async {
 class MyApp extends StatelessWidget {
   final ThemeProvider themeProvider;
   final ReminderProvider? reminderProvider;
+  final LanguageProvider languageProvider;
 
   const MyApp({
     super.key,
     required this.themeProvider,
     this.reminderProvider,
+    required this.languageProvider,
   });
 
   @override
@@ -201,6 +210,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: languageProvider),
         ChangeNotifierProvider(create: (_) => MotionBottomBarProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
@@ -237,12 +247,21 @@ class MyApp extends StatelessWidget {
       ],
       child: ResponsiveSizer(
         builder: (context, orientation, screenType) {
-          return Consumer<ThemeProvider>(
-            builder: (context, themeProvider, _) {
+          return Consumer2<ThemeProvider, LanguageProvider>(
+            builder: (context, themeProvider, languageProvider, _) {
               return MaterialApp(
                 navigatorKey: rootNavigatorKey,
                 scaffoldMessengerKey: rootScaffoldMessengerKey,
                 debugShowCheckedModeBanner: false,
+                onGenerateTitle: (context) => context.l10n.appTitle,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                supportedLocales: LanguageProvider.supportedLocales,
+                locale: languageProvider.locale,
                 theme: _buildLightTheme(),
                 darkTheme: _buildDarkTheme(),
                 themeMode: themeProvider.themeMode,

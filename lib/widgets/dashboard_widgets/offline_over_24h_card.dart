@@ -4,6 +4,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/dashboard_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/dashboard_widgets/dashboard_scale.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -48,7 +49,7 @@ class OfflineOver24hCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  "Offline Over 24 Hours",
+                  context.l10n.offlineOver24Hours,
                   style: AppStyles.semiboldTextStyle(context)
                       .copyWith(fontSize: 15.sp),
                 ),
@@ -56,7 +57,7 @@ class OfflineOver24hCard extends StatelessWidget {
               IconButton(
                 onPressed: () => _shareOfflineSummary(context),
                 icon: const Icon(Icons.ios_share_rounded),
-                tooltip: "Export",
+                tooltip: context.l10n.export,
                 iconSize: 19,
                 padding: EdgeInsets.zero,
                 visualDensity: const VisualDensity(
@@ -121,7 +122,7 @@ class OfflineOver24hCard extends StatelessWidget {
                         horizontalSpace(width: 2.2.w),
                         Expanded(
                           child: Text(
-                            "No vehicles offline for more than 24 hours",
+                            context.l10n.noVehiclesOffline24h,
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
@@ -255,17 +256,17 @@ class OfflineOver24hCard extends StatelessWidget {
   Future<void> _shareOfflineSummary(BuildContext context) async {
     final buffer = StringBuffer();
     final fmt = DateFormat('dd MMM yyyy, hh:mm a');
-    buffer.writeln("Offline Over 24 Hours Report");
-    buffer.writeln("Generated: ${fmt.format(DateTime.now())}");
-    buffer.writeln("Total Vehicles: ${vehicles.length}");
+    buffer.writeln(context.l10n.reportOffline24h);
+    buffer.writeln(context.l10n.generatedAt(fmt.format(DateTime.now())));
+    buffer.writeln(context.l10n.totalVehiclesReport(vehicles.length));
     buffer.writeln("");
 
     if (vehicles.isEmpty) {
-      buffer.writeln("No vehicles offline for more than 24 hours.");
+      buffer.writeln(context.l10n.noVehiclesOffline24h);
     } else {
       for (final vehicle in vehicles) {
         buffer.writeln(
-          "- ${vehicle.vehicleName} | Offline since ${fmt.format(vehicle.since)} | Duration: ${_formatDuration(vehicle.duration)}",
+          "- ${context.l10n.offlineSinceDuration(vehicle.vehicleName, fmt.format(vehicle.since), _formatDuration(vehicle.duration))}",
         );
       }
     }
@@ -304,7 +305,7 @@ class OfflineOver24hCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Offline Over 24 Hours (${vehicles.length})",
+                    context.l10n.offlineOver24HoursWithCount(vehicles.length),
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       fontSize: 15.sp,
                     ),

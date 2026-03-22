@@ -3,6 +3,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/single_vehicle_analytics_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class AnalyticsStatCards extends StatelessWidget {
@@ -12,40 +13,41 @@ class AnalyticsStatCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final items = [
       (
         icon: Icons.straighten,
-        title: "Total Distance",
+        title: l10n.totalDistance,
         value: provider.totalDistance,
         color: AppColors.blueCyan,
       ),
       (
         icon: Icons.speed,
-        title: "Maximum Speed",
+        title: l10n.maximumSpeed,
         value: provider.maxSpeed,
         color: Colors.red,
       ),
       (
         icon: Icons.access_time,
-        title: "Drive Time",
+        title: l10n.driveTime,
         value: provider.driveTime,
         color: AppColors.purple,
       ),
       (
         icon: Icons.pause_circle_outline,
-        title: "Stop Time",
+        title: l10n.stopTime,
         value: provider.stopTime,
         color: Colors.orange,
       ),
       (
         icon: Icons.local_gas_station_rounded,
-        title: "Fuel Used",
+        title: l10n.fuelUsed,
         value: provider.fuelUsed,
         color: AppColors.yellow,
       ),
       (
         icon: Icons.attach_money,
-        title: "Amount Spent",
+        title: l10n.amountSpent,
         value: provider.amountSpent,
         color: Colors.teal,
       ),

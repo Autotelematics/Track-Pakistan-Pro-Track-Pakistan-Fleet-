@@ -11,7 +11,12 @@ class ReportTypeRepository {
       throw Exception('API key is missing');
     }
 
-    final Uri url = Uri.parse('${AppUrl.baseURL}${AppUrl.getDeviceReportsEp}$userApiHashKey');
+    final endpointPath = AppUrl.getDeviceReportsEp.split('?').first;
+    final Uri url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+      },
+    );
 
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 30));
@@ -45,24 +50,29 @@ class ReportTypeRepository {
       throw Exception('API key is missing');
     }
 
-    // Build geofences query string
-    String geofencesQuery = geofenceIds.isEmpty
-        ? ''
-        : geofenceIds.map((id) => '&geofences[]=$id').join('');
-
-    // Build complete query string
-    final queryString = '&date_from=$dateFrom'
-        '&devices[]=$deviceId'
-        '&date_to=$dateTo'
-        '&from_time=$fromTime'
-        '&to_time=$toTime'
-        '&format=$format'
-        '&type=$reportType'
-        '&speed_limit=$speedLimit'
-        '$geofencesQuery'
-        '&ignition_off=$minutes';
-
-    final Uri url = Uri.parse('${AppUrl.baseURL}${AppUrl.generateReportsEp}$userApiHashKey$queryString');
+    final endpointPath = AppUrl.generateReportsEp.split('?').first;
+    final queryAll = <String, List<String>>{
+      'user_api_hash': [userApiHashKey],
+      'date_from': [dateFrom],
+      'devices[]': [deviceId.toString()],
+      'date_to': [dateTo],
+      'from_time': [fromTime],
+      'to_time': [toTime],
+      'format': [format],
+      'type': [reportType.toString()],
+      'speed_limit': [speedLimit.toString()],
+      'ignition_off': [minutes.toString()],
+    };
+    if (geofenceIds.isNotEmpty) {
+      queryAll['geofences[]'] = geofenceIds.map((id) => id.toString()).toList();
+    }
+    final queryString = queryAll.entries
+        .expand((entry) => entry.value.map(
+              (value) =>
+                  '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(value)}',
+            ))
+        .join('&');
+    final Uri url = Uri.parse('${AppUrl.baseURL}$endpointPath?$queryString');
 
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 30));

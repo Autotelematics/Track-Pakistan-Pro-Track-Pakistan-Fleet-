@@ -11,6 +11,7 @@ import 'package:trackerapp/data/models/get_device_list_model.dart'
     as DeviceModel;
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/top_curve_bezier.dart';
 import 'package:trackerapp/view/alert_location_screen.dart';
 import 'package:trackerapp/widgets/custom_text_field.dart';
@@ -258,6 +259,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final isDark = theme.brightness == Brightness.dark;
     final cardColor = theme.cardColor;
     final onSurface = theme.colorScheme.onSurface;
@@ -286,14 +288,15 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
 
                     final List<DeviceModel.Item> devices =
                         devicesProvider.model?.items ?? [];
+                    final allVehiclesLabel = l10n.allVehicles;
 
                     final vehicleItems = [
-                      'All Vehicles',
+                      allVehiclesLabel,
                       ...devices.map((d) => d.name ?? 'Device ${d.id}')
                     ];
                     String? selectedVehicleName;
                     if (_selectedDeviceId == null) {
-                      selectedVehicleName = 'All Vehicles';
+                      selectedVehicleName = allVehiclesLabel;
                     } else {
                       try {
                         final device = devices.firstWhere(
@@ -302,7 +305,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                         selectedVehicleName =
                             device.name ?? 'Device ${device.id}';
                       } catch (e) {
-                        selectedVehicleName = 'All Vehicles';
+                        selectedVehicleName = allVehiclesLabel;
                       }
                     }
 
@@ -321,17 +324,17 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                       selectedPreset: _selectedDatePreset,
                       onPresetSelected: _applyDatePreset,
                       fromDateLabel: _fromFilterDate == null
-                          ? "From Date"
+                          ? l10n.fromDate
                           : DateFormat('dd/MM/yyyy').format(_fromFilterDate!),
                       toDateLabel: _toFilterDate == null
-                          ? "To Date"
+                          ? l10n.toDate
                           : DateFormat('dd/MM/yyyy').format(_toFilterDate!),
                       onFromDateTap: _pickFromDateFilter,
                       onToDateTap: _pickToDateFilter,
                       searchController: _searchController,
                       onVehicleChanged: (val) {
                         setState(() {
-                          if (val == 'All Vehicles' || val == null) {
+                          if (val == allVehiclesLabel || val == null) {
                             _selectedDeviceId = null;
                           } else {
                             try {
@@ -403,7 +406,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Notifications",
+                              l10n.notificationsTitle,
                               style: AppStyles.boldTextStyle(context).copyWith(
                                 color: onSurface,
                                 fontSize: 16.sp,
@@ -420,21 +423,27 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                       final confirm = await showDialog<bool>(
                                         context: context,
                                         builder: (_) => AlertDialog(
-                                          title: const Text("Delete Alerts"),
+                                          title: Text(l10n.deleteAlerts),
                                           content: Text(
-                                              "Delete ${provider.selectedAlertIds.length} alert(s)?"),
+                                            l10n.deleteAlertsConfirmation(
+                                              provider.selectedAlertIds.length,
+                                            ),
+                                          ),
                                           actions: [
                                             TextButton(
                                                 onPressed: () => Navigator.pop(
                                                     context, false),
-                                                child: const Text("Cancel")),
+                                                child: Text(l10n.cancel)),
                                             TextButton(
                                               onPressed: () {
                                                 Navigator.pop(context, true);
                                               },
-                                              child: const Text("Delete",
-                                                  style: TextStyle(
-                                                      color: Colors.red)),
+                                              child: Text(
+                                                l10n.delete,
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -445,9 +454,11 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                         if (context.mounted && success) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
-                                            const SnackBar(
-                                                content: Text(
-                                                    "Alerts deleted successfully")),
+                                            SnackBar(
+                                              content: Text(
+                                                l10n.alertsDeletedSuccessfully,
+                                              ),
+                                            ),
                                           );
                                         }
                                       }
@@ -466,7 +477,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                           height: 5.7.h,
                           child: CustomTextField(
                             controller: _searchController,
-                            labelText: "Search Notification",
+                            labelText: l10n.searchNotification,
                             borderRadius: 12.px,
                             contentPaddingV: 1.15.h,
                             fillColor: cardColor,
@@ -501,8 +512,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                   return Center(
                                       child: Text(
                                     _searchController.text.isNotEmpty
-                                        ? "No alerts match your search"
-                                        : "No alerts found",
+                                        ? l10n.noAlertsMatchSearch
+                                        : l10n.noAlertsFound,
                                   ));
                                 }
 
@@ -551,9 +562,10 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                           if (!hasValidLocation) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                    'Location is not available for this alert'),
+                                                  l10n.locationUnavailableForAlert,
+                                                ),
                                               ),
                                             );
                                             return;
@@ -664,7 +676,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                               .toString()
                                                               .split('.')
                                                               .first ??
-                                                          "No time",
+                                                          l10n.noTime,
                                                       style: AppStyles
                                                               .lightTextStyle(
                                                                   context)

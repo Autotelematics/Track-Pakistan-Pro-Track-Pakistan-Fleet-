@@ -11,8 +11,11 @@ class GeofenceRepository {
     required String userApiHashKey,
   }) async {
     try {
-      final uri = Uri.parse(
-        '$_baseUrl${AppUrl.geofenceEp}$userApiHashKey',
+      final endpointPath = AppUrl.geofenceEp.split('?').first;
+      final uri = Uri.parse('$_baseUrl$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+        },
       );
       final response = await http.get(
         uri,
@@ -37,8 +40,13 @@ class GeofenceRepository {
   })
   async {
     try {
-      final uri = Uri.parse(
-        '$_baseUrl${AppUrl.changeActiveGeofenceEp}$userApiHashKey&id=$id&active=${active ? "true" : "false"}',
+      final endpointPath = AppUrl.changeActiveGeofenceEp.split('?').first;
+      final uri = Uri.parse('$_baseUrl$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+          'id': id.toString(),
+          'active': active ? 'true' : 'false',
+        },
       );
 
       log('CHANGE ACTIVE URL: $uri');

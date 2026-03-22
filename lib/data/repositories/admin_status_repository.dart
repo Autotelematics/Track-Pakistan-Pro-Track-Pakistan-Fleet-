@@ -7,7 +7,12 @@ class AdminStatusRepository {
   Future<AdminStatusModel?> getAdminStatus({
     required String token,
   }) async {
-    final url = Uri.parse("${AppUrl.baseURL}${AppUrl.getAdminStatusEp}$token");
+    final endpointPath = AppUrl.getAdminStatusEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final response = await http.get(
       url,
       headers: {"Content-Type": "application/json"},

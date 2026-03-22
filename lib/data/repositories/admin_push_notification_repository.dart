@@ -6,8 +6,12 @@ class AdminPushNotificationRepository {
   Future<List<AdminUserWithTokensItem>> getAdminUsersWithTokens({
     required String token,
   }) async {
-    final url =
-        Uri.parse("${AppUrl.baseURL}${AppUrl.getAdminUsersWithTokensEp}$token");
+    final endpointPath = AppUrl.getAdminUsersWithTokensEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
     final response = await http.get(
       url,
       headers: {"Content-Type": "application/json"},

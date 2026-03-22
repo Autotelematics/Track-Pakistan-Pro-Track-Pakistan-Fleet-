@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/single_vehicle_tracking_widget/right_side_buttons.dart';
 
 class TopBar extends StatelessWidget {
@@ -24,12 +25,15 @@ class TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<VehicleTrackingProvider>(
       builder: (context, provider, child) {
+        final l10n = context.l10n;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final panelBase = isDark ? const Color(0xFF1B1D24) : AppColors.white;
         final panelText = isDark ? AppColors.white : AppColors.textBlack;
         final panelSubText = isDark ? Colors.white70 : Colors.black54;
         final lastUpdateText =
-            provider.lastUpdate.trim().isEmpty ? "N/A" : provider.lastUpdate;
+            provider.lastUpdate.trim().isEmpty
+                ? l10n.notAvailableShort
+                : provider.lastUpdate;
         final String displayStatus = provider.vehicleStatusText;
         final statusColor = provider.ignitionColor;
         final isRunning = provider.status == 'online';
@@ -92,7 +96,7 @@ class TopBar extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Live Tracking",
+                              l10n.liveTracking,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -106,7 +110,7 @@ class TopBar extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  'Updated at : $lastUpdateText',
+                                  l10n.updatedAt(lastUpdateText),
                                   style: TextStyle(
                                     color: panelSubText,
                                     fontSize: 10.8.sp,
@@ -125,7 +129,7 @@ class TopBar extends StatelessWidget {
                                   ),
                                   SizedBox(width: .9.w),
                                   Text(
-                                    "Traffic",
+                                    l10n.traffic,
                                     style: TextStyle(
                                       color: panelSubText,
                                       fontSize: 10.8.sp,
@@ -226,7 +230,7 @@ class TopBar extends StatelessWidget {
                   final lng = provider.longitude;
                   final url =
                       'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
-                  Share.share('Vehicle Location: $url');
+                  Share.share(l10n.vehicleLocationShare(url));
                 },
               ),
             ],

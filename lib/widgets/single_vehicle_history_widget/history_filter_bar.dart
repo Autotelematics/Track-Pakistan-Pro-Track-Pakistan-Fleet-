@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 
@@ -93,7 +94,7 @@ class HistoryFilterBar extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          filter,
+                          _labelForFilter(context, filter),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
@@ -161,5 +162,23 @@ class HistoryFilterBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _labelForFilter(BuildContext context, String filter) {
+    final l10n = context.l10n;
+    switch (filter) {
+      case "Today":
+        return l10n.today;
+      case "Yesterday":
+        return l10n.yesterday;
+      case "Last 3 Days":
+        return l10n.last3Days;
+      case "Last 7 Days":
+        return l10n.last7Days;
+      case "Custom":
+        return l10n.custom;
+      default:
+        return filter;
+    }
   }
 }

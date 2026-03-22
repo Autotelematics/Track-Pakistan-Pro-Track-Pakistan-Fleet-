@@ -6,6 +6,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/vehicle_list_widgets/vehicle_list_scale.dart';
@@ -69,43 +70,43 @@ class VehicleCard extends StatelessWidget {
   }
 
   Color _getStatusColor() {
-    final statusLabel = _getStatusLabel();
-    switch (statusLabel) {
-      case 'Running':
+    final statusKey = _getStatusKey();
+    switch (statusKey) {
+      case 'running':
         return AppColors.green;
-      case 'Stopped':
+      case 'stopped':
         return AppColors.red;
-      case 'Idle':
+      case 'idle':
         return AppColors.yellow;
-      case 'Offline':
+      case 'offline':
         return AppColors.blueCyan;
-      case 'No Data':
+      case 'nodata':
         return AppColors.grey;
-      case 'Expired':
+      case 'expired':
         return AppColors.brown;
-      case 'Parked':
+      case 'parked':
         return AppColors.brown;
       default:
         return AppColors.grey;
     }
   }
 
-  String _getStatusLabel() {
+  String _getStatusKey() {
     switch (vehicle.online) {
       case 'online':
-        return 'Running';
+        return 'running';
       case 'ack':
-        return 'Stopped';
+        return 'stopped';
       case 'engine':
-        return 'Idle';
+        return 'idle';
       case 'black':
-        return 'Parked';
+        return 'parked';
       case 'offline':
-        if (vehicle.time?.toLowerCase() == 'not connected') return 'No Data';
-        if (vehicle.time?.toLowerCase() == 'expired') return 'Expired';
-        return 'Offline';
+        if (vehicle.time?.toLowerCase() == 'not connected') return 'nodata';
+        if (vehicle.time?.toLowerCase() == 'expired') return 'expired';
+        return 'offline';
       default:
-        return 'Unknown';
+        return 'unknown';
     }
   }
 
@@ -163,8 +164,9 @@ class VehicleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor();
-    final statusLabel = _getStatusLabel();
-    final isRunning = statusLabel == 'Running';
+    final statusKey = _getStatusKey();
+    final statusLabel = _localizedStatus(context, statusKey);
+    final isRunning = statusKey == 'running';
     final isBlocked = vehicle.param?.blocked?.toLowerCase() == 'true';
     final String? localAsset = _getLocalAssetPath();
     final textScale = vehicleListTextScale(context);
@@ -278,7 +280,7 @@ class VehicleCard extends StatelessWidget {
                           _infoTile(
                             context,
                             icon: Icons.speed_rounded,
-                            label: 'Speed',
+                            label: context.l10n.speed,
                             value: '${vehicle.speed ?? 0} km/h',
                             valueChild: Shimmer.fromColors(
                               enabled: isRunning,
@@ -318,8 +320,8 @@ class VehicleCard extends StatelessWidget {
                           _infoTile(
                             context,
                             icon: Icons.access_time_rounded,
-                            label: 'Update',
-                            value: vehicle.time ?? 'N/A',
+                            label: context.l10n.update,
+                            value: vehicle.time ?? context.l10n.notAvailableShort,
                           ),
                           verticalSpace(height: .75.h),
                           SizedBox(
@@ -387,7 +389,7 @@ class VehicleCard extends StatelessWidget {
                                     ),
                                     SizedBox(height: .25.h),
                                     Text(
-                                      'Engine Killed',
+                                      context.l10n.engineKilled,
                                       style:
                                           AppStyles.semiboldTextStyle(context)
                                               .copyWith(
@@ -429,7 +431,7 @@ class VehicleCard extends StatelessWidget {
                     horizontalSpace(width: 1.3.w),
                     Expanded(
                       child: Text(
-                        vehicle.addr ?? 'No Address Found',
+                        vehicle.addr ?? context.l10n.noAddressFound,
                         style: AppStyles.address(context),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -443,5 +445,27 @@ class VehicleCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _localizedStatus(BuildContext context, String statusKey) {
+    final l10n = context.l10n;
+    switch (statusKey) {
+      case 'running':
+        return l10n.vehicleStatusRunning;
+      case 'stopped':
+        return l10n.vehicleStatusStopped;
+      case 'idle':
+        return l10n.vehicleStatusIdle;
+      case 'offline':
+        return l10n.vehicleStatusOffline;
+      case 'nodata':
+        return l10n.vehicleStatusNoData;
+      case 'expired':
+        return l10n.vehicleStatusExpired;
+      case 'parked':
+        return l10n.vehicleStatusParked;
+      default:
+        return l10n.vehicleStatusUnknown;
+    }
   }
 }

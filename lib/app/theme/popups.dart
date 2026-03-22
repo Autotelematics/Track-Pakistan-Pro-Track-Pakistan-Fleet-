@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:trackerapp/data/models/get_device_commands_model.dart';
 import 'package:trackerapp/data/models/get_driver_model.dart';
 import 'package:trackerapp/data/models/local_reminder_model.dart';
@@ -21,6 +22,7 @@ import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:trackerapp/widgets/maintenance_widgets/maintenance_field.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'app_colors.dart';
 
@@ -1192,7 +1194,7 @@ Future<void> showDeviceCommandsPopup(
   final commandsProvider =
       Provider.of<GetDeviceCommandsProvider>(context, listen: false);
 
-  await commandsProvider.getDeviceCommandMethod(deviceId: deviceId);
+  unawaited(commandsProvider.getDeviceCommandMethod(deviceId: deviceId));
 
   GetDeviceCommandsModel? selectedCommand;
   final TextEditingController messageController = TextEditingController();
@@ -1211,8 +1213,24 @@ Future<void> showDeviceCommandsPopup(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
                   return SizedBox(
-                    height: 22.h,
-                    child: Center(child: AppLoadings.circleLoading()),
+                    height: 14.h,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.5.w),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AppLoadings.circleLoading(),
+                          verticalSpace(height: 1.0.h),
+                          Text(
+                            "Loading commands...",
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.8.sp,
+                              color: onSurface.withValues(alpha: .68),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
 
@@ -3152,7 +3170,7 @@ Future<void> showDriverDetailPopup(
   final onSurface = theme.colorScheme.onSurface;
 
   final driverProvider = Provider.of<DriverProvider>(context, listen: false);
-  await driverProvider.getVehicleDriver(deviceId: deviceId);
+  unawaited(driverProvider.getVehicleDriver(deviceId: deviceId));
 
   await showDialog(
     context: context,
@@ -3161,10 +3179,41 @@ Future<void> showDriverDetailPopup(
       return Consumer<DriverProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return const Dialog(
+            return Dialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 7.w),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              backgroundColor:
+                  isDark ? theme.scaffoldBackgroundColor : Colors.white,
               child: Padding(
-                padding: EdgeInsets.all(30),
-                child: Center(child: CircularProgressIndicator()),
+                padding: EdgeInsets.fromLTRB(4.5.w, 2.0.h, 4.5.w, 2.0.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        "Call to Driver",
+                        style: AppStyles.boldTextStyle(context).copyWith(
+                          fontSize: 17.2.sp,
+                          fontWeight: FontWeight.w700,
+                          color: onSurface,
+                        ),
+                      ),
+                    ),
+                    verticalSpace(height: 1.2.h),
+                    AppLoadings.circleLoading(),
+                    verticalSpace(height: 1.1.h),
+                    Text(
+                      "Loading driver details...",
+                      style: AppStyles.regularTextStyle(context).copyWith(
+                        fontSize: 12.8.sp,
+                        color: onSurface.withValues(alpha: .68),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -3486,9 +3535,10 @@ Widget _driverActionChip({
   required Color color,
   VoidCallback? onTap,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
   final onSurface = Theme.of(context).colorScheme.onSurface;
   final disabled = onTap == null;
+  final activeForeground = onSurface.withValues(alpha: .94);
+  final disabledForeground = onSurface.withValues(alpha: .45);
 
   return Material(
     color: Colors.transparent,
@@ -3510,16 +3560,14 @@ Widget _driverActionChip({
             Icon(
               icon,
               size: 14.2.sp,
-              color: disabled ? color.withValues(alpha: .45) : color,
+              color: disabled ? disabledForeground : activeForeground,
             ),
             horizontalSpace(width: 1.2.w),
             Text(
               label,
               style: AppStyles.semiboldTextStyle(context).copyWith(
                 fontSize: 12.4.sp,
-                color: disabled
-                    ? color.withValues(alpha: .45)
-                    : (isDark ? onSurface : color.withValues(alpha: .9)),
+                color: disabled ? disabledForeground : activeForeground,
               ),
             ),
           ],

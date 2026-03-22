@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/vehicle_list_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 
 class SearchFiled extends StatefulWidget {
   final Color primary;
@@ -34,7 +35,7 @@ class _SearchFiledState extends State<SearchFiled> {
             ),
             onChanged: provider.updateSearchQuery,
             decoration: InputDecoration(
-              hintText: "Search vehicle",
+              hintText: context.l10n.searchVehicle,
               hintStyle: TextStyle(
                 color: widget.onSurface.withOpacity(0.52),
                 fontSize: 14.4.sp,

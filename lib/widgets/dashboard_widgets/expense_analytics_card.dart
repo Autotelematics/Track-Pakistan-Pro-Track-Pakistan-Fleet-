@@ -6,6 +6,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/dashboard_expense_analytics_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -73,7 +74,7 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  "Expense Analytics",
+                                  context.l10n.expenseAnalytics,
                                   style: AppStyles.semiboldTextStyle(context)
                                       .copyWith(fontSize: 15.2.sp),
                                 ),
@@ -81,7 +82,7 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
                               IconButton(
                                 onPressed: provider.exportSummary,
                                 icon: const Icon(Icons.ios_share_rounded),
-                                tooltip: "Export",
+                                tooltip: context.l10n.export,
                                 iconSize: 19,
                                 padding: EdgeInsets.zero,
                                 visualDensity: const VisualDensity(
@@ -102,22 +103,22 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
                           _AvgRow(provider: provider),
                           verticalSpace(height: 1.3.h),
                           _SectionBlock(
-                            title: "Expense Trend",
+                            title: context.l10n.expenseTrend,
                             child: _TrendChart(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
-                            title: "Top Expense Types",
+                            title: context.l10n.topExpenseTypes,
                             child: _TypeBarChart(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
-                            title: "Top Vehicles by Expense",
+                            title: context.l10n.topVehiclesByExpense,
                             child: _TopVehicles(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
-                            title: "Recent Expense Activity",
+                            title: context.l10n.recentExpenseActivity,
                             child: _RecentList(provider: provider),
                           ),
                         ],
@@ -174,7 +175,7 @@ class _DatePresetBar extends StatelessWidget {
           children: [
             Expanded(
               child: _DatePickButton(
-                label: "From",
+                label: context.l10n.fromDate,
                 value: provider.from,
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -195,7 +196,7 @@ class _DatePresetBar extends StatelessWidget {
             horizontalSpace(width: 2.w),
             Expanded(
               child: _DatePickButton(
-                label: "To",
+                label: context.l10n.toDate,
                 value: provider.to,
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -354,21 +355,21 @@ class _KpiRow extends StatelessWidget {
       children: [
         Expanded(
           child: _MiniKpi(
-            title: "This Month",
+            title: context.l10n.thisMonth,
             value: "Rs ${provider.thisMonthTotal.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Last Month",
+            title: context.l10n.lastMonth,
             value: "Rs ${provider.lastMonthTotal.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Change",
+            title: context.l10n.changeLabel,
             value: "${provider.monthChangePercent.toStringAsFixed(1)}%",
           ),
         ),
@@ -387,21 +388,21 @@ class _AvgRow extends StatelessWidget {
       children: [
         Expanded(
           child: _MiniKpi(
-            title: "Total (Range)",
+            title: context.l10n.totalRange,
             value: "Rs ${provider.selectedTotal.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Avg / Txn",
+            title: context.l10n.avgPerTxn,
             value: "Rs ${provider.avgPerTransaction.toStringAsFixed(0)}",
           ),
         ),
         horizontalSpace(width: 2.w),
         Expanded(
           child: _MiniKpi(
-            title: "Avg / Day",
+            title: context.l10n.avgPerDay,
             value: "Rs ${provider.avgDailySpend.toStringAsFixed(0)}",
           ),
         ),
@@ -498,7 +499,7 @@ class _TrendChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final points = provider.trend;
     if (points.isEmpty) {
-      return _EmptyLine(text: "No trend data");
+      return _EmptyLine(text: context.l10n.noTrendData);
     }
     final maxY =
         points.map((e) => e.amount).fold<double>(0, (p, c) => c > p ? c : p) *
@@ -721,7 +722,7 @@ class _RecentList extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onSurface = Theme.of(context).colorScheme.onSurface;
     final items = provider.recent;
-    if (items.isEmpty) return _EmptyLine(text: "No recent activity");
+    if (items.isEmpty) return _EmptyLine(text: context.l10n.noRecentActivity);
     return Column(
       children: items.asMap().entries.map((entry) {
         final idx = entry.key;
@@ -811,7 +812,7 @@ class _ErrorBlock extends StatelessWidget {
           verticalSpace(height: .8.h),
           OutlinedButton(
             onPressed: onRetry,
-            child: const Text("Retry"),
+            child: Text(context.l10n.retry),
           )
         ],
       ),

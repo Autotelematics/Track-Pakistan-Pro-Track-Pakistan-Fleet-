@@ -142,9 +142,12 @@ class AlertsRepository {
   }) async {
     try {
       final ids = alertIds.join(',');
-
-      final uri = Uri.parse(
-        '$_baseUrl${AppUrl.deleteEp}$userApiHashKey&id=$ids',
+      final endpointPath = AppUrl.deleteEp.split('?').first;
+      final uri = Uri.parse('$_baseUrl$endpointPath').replace(
+        queryParameters: {
+          'user_api_hash': userApiHashKey,
+          'id': ids,
+        },
       );
 
       log('DELETE ALERTS URL: $uri');
