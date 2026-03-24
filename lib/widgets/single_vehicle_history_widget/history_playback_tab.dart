@@ -7,6 +7,7 @@ import 'package:trackerapp/providers/get_device_history_provider.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+
 import 'common_widgets.dart';
 
 class HistoryPlaybackTab extends StatelessWidget {
@@ -25,8 +26,7 @@ class HistoryPlaybackTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
-    final hasPosition =
-        provider.currentSliderValue < provider.routeList.length;
+    final hasPosition = provider.currentSliderValue < provider.routeList.length;
     final pos =
         hasPosition ? provider.routeList[provider.currentSliderValue] : null;
 
@@ -39,8 +39,12 @@ class HistoryPlaybackTab extends StatelessWidget {
             spacing: 2.w,
             runSpacing: .8.h,
             children: [
-              InfoChip(icon: Icons.speed, label: '${pos.speed} km/h', wide: true),
-              InfoChip(icon: Icons.access_alarm, label: pos.rawTime ?? '—', wide: true),
+              InfoChip(
+                  icon: Icons.speed, label: '${pos.speed} km/h', wide: true),
+              InfoChip(
+                  icon: Icons.access_alarm,
+                  label: pos.rawTime ?? '—',
+                  wide: true),
               InfoChip(
                   icon: Icons.directions_car,
                   label: '${pos.distance.toStringAsFixed(2)} km',
@@ -79,7 +83,7 @@ class HistoryPlaybackTab extends StatelessWidget {
                     ? 'Playing — route highlighted green'
                     : 'Paused',
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.6.sp,
+                  fontSize: 14.0.sp,
                   color: provider.isPlaying ? Colors.green : Colors.orange,
                   fontWeight: FontWeight.w600,
                 ),
@@ -125,7 +129,8 @@ class HistoryPlaybackTab extends StatelessWidget {
                   thumbColor: provider.isPlaying
                       ? Colors.green
                       : ConstantColor.primaryColor,
-                  overlayColor: ConstantColor.primaryColor.withValues(alpha: .15),
+                  overlayColor:
+                      ConstantColor.primaryColor.withValues(alpha: .15),
                   thumbShape:
                       const RoundSliderThumbShape(enabledThumbRadius: 8),
                   overlayShape:
@@ -137,7 +142,7 @@ class HistoryPlaybackTab extends StatelessWidget {
                   min: 0,
                   max: provider.sliderValueMax.toDouble(),
                   divisions:
-                  provider.sliderValueMax > 0 ? provider.sliderValueMax : 1,
+                      provider.sliderValueMax > 0 ? provider.sliderValueMax : 1,
                   onChanged: (v) {
                     provider.seekTo(v.toInt());
                     if (mapController != null &&
@@ -158,7 +163,8 @@ class HistoryPlaybackTab extends StatelessWidget {
             GestureDetector(
               onTap: provider.changePlaybackSpeed,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 0.7.h),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 0.7.h),
                 decoration: BoxDecoration(
                   color: ConstantColor.primaryColor.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(6.sp),
@@ -168,7 +174,7 @@ class HistoryPlaybackTab extends StatelessWidget {
                 child: Text(
                   provider.playbackSpeedLabel,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 13.sp,
+                    fontSize: 14.sp,
                     color: ConstantColor.primaryColor,
                   ),
                 ),
@@ -191,7 +197,8 @@ class HistoryPlaybackTab extends StatelessWidget {
             StatCard("Move Time", provider.moveDuration, AppColors.purple,
                 width: 44.w),
             StatCard("Fuel (LTR)", provider.totalFuelSpent.toStringAsFixed(2),
-                AppColors.yellow, width: 44.w),
+                AppColors.yellow,
+                width: 44.w),
             StatCard("Stop Time", provider.stopDuration, Colors.orange,
                 width: 44.w),
             StatCard(
@@ -200,7 +207,8 @@ class HistoryPlaybackTab extends StatelessWidget {
               AppColors.green,
               width: 44.w,
             ),
-            StatCard("Top Speed", provider.topSpeed, AppColors.red, width: 44.w),
+            StatCard("Top Speed", provider.topSpeed, AppColors.red,
+                width: 44.w),
           ],
         ),
         verticalSpace(height: 1.2.h),

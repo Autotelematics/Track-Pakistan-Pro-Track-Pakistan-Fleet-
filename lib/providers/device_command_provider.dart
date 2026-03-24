@@ -22,7 +22,7 @@ class GetDeviceCommandsProvider with ChangeNotifier {
       if (response != null) {
         getDeviceCommands = response;
         if (kDebugMode) {
-          print("Response is that :$getDeviceCommands");
+          debugPrint("Response is that :$getDeviceCommands");
         }
       } else {
         getDeviceCommands = null;

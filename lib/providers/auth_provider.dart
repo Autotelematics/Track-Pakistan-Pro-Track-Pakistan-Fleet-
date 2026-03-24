@@ -23,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       bool success = await _repo.loginApi(email: email, password: password);
+      if (!context.mounted) return;
       if (success) {
         AppSnackBar.success(message: "Login Successfully");
         Navigator.pushReplacement(

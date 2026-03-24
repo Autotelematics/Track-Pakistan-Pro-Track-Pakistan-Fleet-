@@ -38,8 +38,8 @@ class CustomButton extends StatelessWidget {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        ConstantColor.primaryColor.withOpacity(0.95),
-        ConstantColor.primaryColor.withOpacity(0.75),
+        ConstantColor.primaryColor.withValues(alpha: 0.95),
+        ConstantColor.primaryColor.withValues(alpha: 0.75),
       ],
     );
 

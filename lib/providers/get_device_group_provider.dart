@@ -30,7 +30,7 @@ class GetDeviceGroupProvider with ChangeNotifier {
   }
 
   Future<void> fetchDeviceGroups({bool isRefresh = false, required BuildContext context}) async {
-    print("fetchDeviceGroups() called | isRefresh: $isRefresh | page: $_currentPage");
+    debugPrint("fetchDeviceGroups() called | isRefresh: $isRefresh | page: $_currentPage");
 
     if (isRefresh) {
       resetPagination();

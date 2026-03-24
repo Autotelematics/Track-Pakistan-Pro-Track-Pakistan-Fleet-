@@ -223,8 +223,8 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     final labelSize = AppUiTokens.adaptiveHeight(
       context,
       ratio: 0.013,
-      min: 10.5,
-      max: 12,
+      min: 12,
+      max: 14,
     );
     final navBackground =
         isDark ? theme.cardColor : ConstantColor.secondaryColor;
@@ -241,22 +241,25 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
           : null,
       bottomNavigationBar: _tabs.length == 1
           ? null
-          : SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                decoration: BoxDecoration(
-                  color: navBackground,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? .22 : .10),
-                      blurRadius: 8,
-                      offset: const Offset(0, -1),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: displayedTabs.map((tab) {
+          : Container(
+              padding: EdgeInsets.fromLTRB(
+                10,
+                8,
+                10,
+                10,
+              ),
+              decoration: BoxDecoration(
+                color: navBackground,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? .22 : .10),
+                    blurRadius: 8,
+                    offset: const Offset(0, -1),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: displayedTabs.map((tab) {
                     final logicalIndex = _tabs.indexOf(tab);
                     final isSelected = provider.currentIndex == logicalIndex;
                     return Expanded(
@@ -311,8 +314,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                         ),
                       ),
                     );
-                  }).toList(growable: false),
-                ),
+                }).toList(growable: false),
               ),
             ),
       body: TabBarView(

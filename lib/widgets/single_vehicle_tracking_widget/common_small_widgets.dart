@@ -31,7 +31,7 @@ class MovingChip extends StatelessWidget {
     final isMoving = text.toLowerCase() == "moving" ||
         text == context.l10n.moving;
     final statusColor = color ?? (isMoving ? AppColors.green : AppColors.red);
-    final bg = isDark ? Colors.grey.shade900.withOpacity(.85) : AppColors.white;
+    final bg = isDark ? Colors.grey.shade900.withValues(alpha: .85) : AppColors.white;
     final textColor = isDark ? AppColors.white : AppColors.textBlack;
 
     return Container(
@@ -41,7 +41,7 @@ class MovingChip extends StatelessWidget {
           colors: [
             bg,
             isDark
-                ? Colors.grey.shade800.withOpacity(.75)
+                ? Colors.grey.shade800.withValues(alpha: .75)
                 : Colors.grey.shade50,
           ],
           begin: Alignment.topLeft,
@@ -54,7 +54,7 @@ class MovingChip extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? .22 : .08),
+            color: Colors.black.withValues(alpha: isDark ? .22 : .08),
             blurRadius: 10,
             offset: const Offset(0, 3),
           )
@@ -66,7 +66,7 @@ class MovingChip extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(.55.h),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(.14),
+              color: statusColor.withValues(alpha: .14),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.arrow_upward_rounded,
@@ -730,8 +730,8 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
           ),
           axisLineStyle: AxisLineStyle(
             color: isDark
-                ? Colors.white.withOpacity(.12)
-                : Colors.black.withOpacity(.08),
+                ? Colors.white.withValues(alpha: .12)
+                : Colors.black.withValues(alpha: .08),
             thickness: 0.12,
             thicknessUnit: GaugeSizeUnit.factor,
             cornerStyle: CornerStyle.bothCurve,
@@ -740,7 +740,7 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
             GaugeRange(
               startValue: 0,
               endValue: 60,
-              color: Colors.green.withOpacity(.92),
+              color: Colors.green.withValues(alpha: .92),
               startWidth: 0.12,
               endWidth: 0.12,
               sizeUnit: GaugeSizeUnit.factor,
@@ -748,7 +748,7 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
             GaugeRange(
               startValue: 60,
               endValue: 110,
-              color: Colors.orange.withOpacity(.92),
+              color: Colors.orange.withValues(alpha: .92),
               startWidth: 0.12,
               endWidth: 0.12,
               sizeUnit: GaugeSizeUnit.factor,
@@ -756,7 +756,7 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
             GaugeRange(
               startValue: 110,
               endValue: 180,
-              color: Colors.red.withOpacity(.92),
+              color: Colors.red.withValues(alpha: .92),
               startWidth: 0.12,
               endWidth: 0.12,
               sizeUnit: GaugeSizeUnit.factor,
@@ -772,7 +772,7 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
               knobStyle: KnobStyle(
                 knobRadius: 0.07,
                 color: isDark ? Colors.white : Colors.black87,
-                borderColor: speedColor.withOpacity(.9),
+                borderColor: speedColor.withValues(alpha: .9),
                 borderWidth: 0.025,
               ),
               tailStyle: TailStyle(
@@ -854,11 +854,11 @@ class _BottomActionsState extends State<BottomActions> {
                   border: Border.all(
                     color: isDark
                         ? Colors.white24
-                        : AppColors.grey.withOpacity(.55),
+                        : AppColors.grey.withValues(alpha: .55),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? .18 : .08),
+                      color: Colors.black.withValues(alpha: isDark ? .18 : .08),
                       blurRadius: _isCallPressed ? 5 : 10,
                       offset: Offset(0, _isCallPressed ? 1 : 4),
                     ),
@@ -916,7 +916,7 @@ class _BottomActionsState extends State<BottomActions> {
                         colors: canSendCommand
                             ? [
                                 ConstantColor.primaryColor,
-                                ConstantColor.primaryColor.withOpacity(.86),
+                                ConstantColor.primaryColor.withValues(alpha: .86),
                               ]
                             : [
                                 Colors.grey.shade500,
@@ -931,7 +931,7 @@ class _BottomActionsState extends State<BottomActions> {
                           color: (canSendCommand
                                   ? ConstantColor.primaryColor
                                   : Colors.black54)
-                              .withOpacity(.25),
+                              .withValues(alpha: .25),
                           blurRadius: _isImmobilizerPressed ? 6 : 12,
                           offset: Offset(0, _isImmobilizerPressed ? 1 : 4),
                         ),

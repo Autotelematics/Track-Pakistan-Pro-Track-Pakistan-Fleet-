@@ -79,7 +79,7 @@ class DriverProvider with ChangeNotifier {
           await driverRepository.getDriverMethod(deviceId: deviceId);
       if (response != null) {
         getDriverModel = response;
-        print("Response is that :${getDriverModel?.items}");
+        debugPrint("Response is that :${getDriverModel?.items}");
       } else {
         getDriverModel = null;
         AppSnackBar.error(message: "No Data");

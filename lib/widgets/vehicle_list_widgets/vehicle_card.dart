@@ -321,7 +321,8 @@ class VehicleCard extends StatelessWidget {
                             context,
                             icon: Icons.access_time_rounded,
                             label: context.l10n.update,
-                            value: vehicle.time ?? context.l10n.notAvailableShort,
+                            value:
+                                vehicle.time ?? context.l10n.notAvailableShort,
                           ),
                           verticalSpace(height: .75.h),
                           SizedBox(

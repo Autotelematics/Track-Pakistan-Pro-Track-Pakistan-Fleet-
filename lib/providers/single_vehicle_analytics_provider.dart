@@ -45,7 +45,6 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
 
   // ── Internals ──────────────────────────────────────────────────
   final _repo = GetDeviceHistoryRepository();
-  final _apiDateFmt = DateFormat("yyyy-MM-dd");
   final _apiDateTimeFmt = DateFormat("yyyy-MM-dd HH:mm:ss");
 
   // ══════════════════════════════════════════════════════════════
@@ -347,7 +346,7 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
               : hour;
       return "$displayHour$suffix";
     } catch (_) {
-      return rawTime ?? "00";
+      return rawTime;
     }
   }
 
@@ -370,7 +369,7 @@ class SingleVehicleAnalyticsProvider extends ChangeNotifier {
       final dt = _parseTime(rawTime);
       return DateFormat("dd MMM").format(dt);
     } catch (_) {
-      return rawTime ?? "??";
+      return rawTime;
     }
   }
 

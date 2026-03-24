@@ -41,8 +41,8 @@ class MaintenanceField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
-    final borderColor = theme.dividerColor.withOpacity(.4);
-    final primaryOpacity = theme.colorScheme.primary.withOpacity(.8);
+    final borderColor = theme.dividerColor.withValues(alpha: .4);
+    final primaryOpacity = theme.colorScheme.primary.withValues(alpha: .8);
     final effectiveTitleFontSize = titleFontSize ?? 16.sp;
     final effectiveFieldFontSize = fieldFontSize ?? 16.sp;
     final effectiveHintFontSize = hintFontSize ?? 16.sp;
@@ -66,7 +66,7 @@ class MaintenanceField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-            color: onSurface.withOpacity(.5),
+            color: onSurface.withValues(alpha: .5),
             fontSize: effectiveHintFontSize,
           ),
           filled: true,
@@ -101,7 +101,7 @@ class MaintenanceField extends StatelessWidget {
               hint,
               style: TextStyle(
                 fontSize: effectiveHintFontSize,
-                color: onSurface.withOpacity(.6),
+                color: onSurface.withValues(alpha: .6),
               ),
             ),
           ),

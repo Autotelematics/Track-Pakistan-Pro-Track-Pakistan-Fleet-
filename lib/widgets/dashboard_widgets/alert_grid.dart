@@ -107,8 +107,8 @@ class AlertGrid extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.black.withOpacity(0.12),
+                ? Colors.black.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isDark ? 14 : 10,
             offset: const Offset(0, 4),
           ),
@@ -250,8 +250,8 @@ class _AlertTileState extends State<_AlertTile> {
             borderRadius: BorderRadius.circular(16.px),
             child: InkWell(
               borderRadius: BorderRadius.circular(16.px),
-              splashColor: bgColor.withOpacity(0.20),
-              highlightColor: bgColor.withOpacity(0.10),
+              splashColor: bgColor.withValues(alpha: 0.20),
+              highlightColor: bgColor.withValues(alpha: 0.10),
               onHighlightChanged: (v) => setState(() => _pressed = v),
               onTap: () async {
                 if (_isNavigating) return;
@@ -271,12 +271,12 @@ class _AlertTileState extends State<_AlertTile> {
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.px),
-                  border: Border.all(color: widget.onSurface.withOpacity(0.08)),
+                  border: Border.all(color: widget.onSurface.withValues(alpha: 0.08)),
                   boxShadow: [
                     BoxShadow(
                       color: widget.isDark
-                          ? Colors.black.withOpacity(_pressed ? 0.18 : 0.30)
-                          : Colors.black.withOpacity(_pressed ? 0.025 : 0.05),
+                          ? Colors.black.withValues(alpha: _pressed ? 0.18 : 0.30)
+                          : Colors.black.withValues(alpha: _pressed ? 0.025 : 0.05),
                       blurRadius: _pressed ? 2 : 6,
                       offset: Offset(0, _pressed ? 1 : 2),
                     ),
@@ -290,7 +290,7 @@ class _AlertTileState extends State<_AlertTile> {
                       child: Icon(
                         widget.item['icon'] as IconData,
                         size: 5.2.h,
-                        color: bgColor.withOpacity(0.20),
+                        color: bgColor.withValues(alpha: 0.20),
                       ),
                     ),
                     Column(
@@ -321,7 +321,7 @@ class _AlertTileState extends State<_AlertTile> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFFDC2626)
-                                          .withOpacity(0.35),
+                                          .withValues(alpha: 0.35),
                                       blurRadius: 6,
                                     ),
                                   ],

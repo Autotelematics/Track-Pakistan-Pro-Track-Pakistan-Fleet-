@@ -56,8 +56,8 @@ class _RightSideButtonsState extends State<RightSideButtons> {
     final iconScale = trackingIconScale(context);
     final bg = bgColorOverride ??
         (isDark
-            ? theme.cardColor.withOpacity(.9)
-            : AppColors.white.withOpacity(.94));
+            ? theme.cardColor.withValues(alpha: .9)
+            : AppColors.white.withValues(alpha: .94));
     final iconColor =
         iconColorOverride ?? (isDark ? AppColors.white : AppColors.textBlack);
 
@@ -67,7 +67,7 @@ class _RightSideButtonsState extends State<RightSideButtons> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? .28 : .14),
+            color: Colors.black.withValues(alpha: isDark ? .28 : .14),
             blurRadius: 14,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -107,15 +107,15 @@ class _RightSideButtonsState extends State<RightSideButtons> {
     final isDark = theme.brightness == Brightness.dark;
     final iconScale = trackingIconScale(context);
     final bg = isDark
-        ? theme.cardColor.withOpacity(.92)
-        : AppColors.white.withOpacity(.95);
+        ? theme.cardColor.withValues(alpha: .92)
+        : AppColors.white.withValues(alpha: .95);
     final iconColor = isDark ? AppColors.white : AppColors.textBlack;
 
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? .26 : .13),
+            color: Colors.black.withValues(alpha: isDark ? .26 : .13),
             blurRadius: 12,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -253,6 +253,6 @@ class _RightSideButtonsState extends State<RightSideButtons> {
 
   void _shareLocation(double lat, double lng) {
     final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
-    Share.share('Vehicle Location: $url');
+    SharePlus.instance.share(ShareParams(text: 'Vehicle Location: $url'));
   }
 }

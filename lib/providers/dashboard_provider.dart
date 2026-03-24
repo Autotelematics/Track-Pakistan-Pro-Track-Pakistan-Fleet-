@@ -189,11 +189,11 @@ class DashboardProvider with ChangeNotifier {
 
   String _onlineToString(status_model.Online value) {
     switch (value) {
-      case status_model.Online.ACK:
+      case status_model.Online.ack:
         return 'ack';
-      case status_model.Online.ONLINE:
+      case status_model.Online.online:
         return 'online';
-      case status_model.Online.OFFLINE:
+      case status_model.Online.offline:
         return 'offline';
     }
   }

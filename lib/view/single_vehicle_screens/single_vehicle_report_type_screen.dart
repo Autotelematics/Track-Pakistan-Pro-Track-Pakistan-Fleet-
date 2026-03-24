@@ -6,14 +6,16 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/responsive_scale.dart';
+import 'package:trackerapp/data/models/get_device_reports_model.dart';
 import 'package:trackerapp/data/models/initial_reports.dart';
 import 'package:trackerapp/providers/get_device_reports_provider.dart';
+import 'package:trackerapp/providers/get_geofence_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
+import 'package:trackerapp/utils/app_validation_dialog.dart';
 import 'package:trackerapp/view/view_report_screen.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
-import 'package:trackerapp/utils/app_localizations_x.dart';
-import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
-import 'package:trackerapp/utils/app_validation_dialog.dart';
+import 'package:trackerapp/widgets/single_vehicle_common/single_vehicle_date_filter_widgets.dart';
 
 class SingleReportTypesScreen extends StatefulWidget {
   final int deviceId;
@@ -311,8 +313,17 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     }
   }
 
-  void _generateReport(int type, String name,
-      {int speed = 0, int minutes = 0}) {
+  void _generateReport({
+    required int type,
+    required String name,
+    required String reportFormat,
+    int speed = 0,
+    int minutes = 0,
+    List<int> geofences = const [],
+    int stops = 0,
+    bool showAddresses = false,
+    bool zonesInstead = false,
+  }) {
     if (fromDate.isEmpty || toDate.isEmpty) {
       showValidationErrorDialog(
         context,
@@ -335,10 +346,14 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
       toTime: toTime,
       deviceId: widget.deviceId,
       reportType: type,
-      reportFormat: type == 43 ? 'html' : 'pdf',
+      reportFormat: reportFormat,
       reportName: name,
       speedLimit: speed,
       ignitionOff: minutes,
+      geofences: geofences,
+      stops: stops,
+      showAddresses: showAddresses,
+      zonesInstead: zonesInstead,
     );
 
     Navigator.push(
@@ -349,129 +364,377 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     );
   }
 
-  void _showInputDialog({
-    required String title,
-    required IconData icon,
-    required String label,
-    required Function(int) onConfirm,
-  }) {
-    final controller = TextEditingController();
+  List<String> _normalizedFormats(ReportTypeItem item) {
+    return (item.formats ?? const <dynamic>[])
+        .map((e) => e.toString().trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  List<String> _normalizedFields(ReportTypeItem item) {
+    return (item.fields ?? const <dynamic>[])
+        .map((e) => e.toString().trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  String _defaultFormatForReport(int type, List<String> formats) {
+    if (formats.isEmpty) {
+      return type == 43 ? 'html' : 'pdf';
+    }
+    if (type == 43 && formats.contains('html')) return 'html';
+    if (formats.contains('pdf')) return 'pdf';
+    if (formats.contains('pdf_land')) return 'pdf_land';
+    if (formats.contains('html')) return 'html';
+    return formats.first;
+  }
+
+  String _fieldLabel(String key) {
+    switch (key) {
+      case 'speed_limit':
+        return 'Speed Limit (km/h)';
+      case 'ignition_off':
+        return 'Ignition Off Duration (min)';
+      case 'stops':
+        return 'Stops (minutes)';
+      case 'geofences':
+        return 'Geofence IDs (comma separated)';
+      case 'show_addresses':
+        return 'Show Addresses';
+      case 'zones_instead':
+        return 'Zones Instead';
+      default:
+        return key.replaceAll('_', ' ');
+    }
+  }
+
+  Future<void> _showDynamicReportOptionsDialog(ReportTypeItem item) async {
+    final type = item.type ?? 0;
+    final name = item.name ?? '';
+    final formats = _normalizedFormats(item);
+    final fields = _normalizedFields(item);
+
+    final needsSpeed = fields.contains('speed_limit') || type == 5;
+    final needsIgnitionOff = fields.contains('ignition_off') || type == 30;
+    final needsStops = fields.contains('stops');
+    final needsGeofences = fields.contains('geofences') || type == 7;
+    final needsShowAddresses = fields.contains('show_addresses');
+    final needsZonesInstead = fields.contains('zones_instead');
+
+    final hasOptions = formats.length > 1 ||
+        needsSpeed ||
+        needsIgnitionOff ||
+        needsStops ||
+        needsGeofences ||
+        needsShowAddresses ||
+        needsZonesInstead;
+
+    if (!hasOptions) {
+      _generateReport(
+        type: type,
+        name: name,
+        reportFormat: _defaultFormatForReport(type, formats),
+      );
+      return;
+    }
+
+    final speedCtrl = TextEditingController();
+    final ignitionOffCtrl = TextEditingController();
+    final stopsCtrl = TextEditingController();
+    var selectedFormat = _defaultFormatForReport(type, formats);
+    var showAddresses = false;
+    var zonesInstead = false;
+    final selectedGeofenceIds = <int>{};
+
+    if (needsGeofences) {
+      final geofenceProvider = context.read<GeofenceProvider>();
+      if (!geofenceProvider.isLoading && geofenceProvider.model == null) {
+        await geofenceProvider.fetchGeofence(
+          isRefresh: false,
+          context: context,
+        );
+        if (!mounted) return;
+      }
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
+    await showDialog<void>(
       context: context,
       builder: (ctx) {
-        return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          backgroundColor: isDark ? const Color(0xFF1A2433) : Colors.white,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(4.2.w, 1.8.h, 4.2.w, 1.6.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 9.w,
-                      height: 4.4.h,
-                      decoration: BoxDecoration(
-                        color:
-                            ConstantColor.primaryColor.withValues(alpha: .16),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(icon,
-                          color: ConstantColor.primaryColor, size: 17.sp),
-                    ),
-                    horizontalSpace(width: 2.2.w),
-                    Expanded(
-                      child: Text(
-                        title,
+        return StatefulBuilder(
+          builder: (ctx, setLocalState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              backgroundColor: isDark ? const Color(0xFF1A2433) : Colors.white,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.w, 1.8.h, 4.w, 1.6.h),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
                         style: AppStyles.semiboldTextStyle(ctx)
                             .copyWith(fontSize: 15.sp),
                       ),
-                    ),
-                  ],
-                ),
-                verticalSpace(height: 1.1.h),
-                TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: label,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                      verticalSpace(height: 1.h),
+                      if (formats.length > 1) ...[
+                        DropdownButtonFormField<String>(
+                          initialValue: selectedFormat,
+                          decoration: const InputDecoration(
+                            labelText: 'Format',
+                            isDense: true,
+                            border: OutlineInputBorder(),
+                          ),
+                          items: formats
+                              .map(
+                                (f) => DropdownMenuItem<String>(
+                                  value: f,
+                                  child: Text(f.toUpperCase()),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (v) {
+                            if (v == null) return;
+                            setLocalState(() => selectedFormat = v);
+                          },
+                        ),
+                        verticalSpace(height: 1.h),
+                      ],
+                      if (needsSpeed) ...[
+                        TextField(
+                          controller: speedCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: _fieldLabel('speed_limit'),
+                            isDense: true,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        verticalSpace(height: 1.h),
+                      ],
+                      if (needsIgnitionOff) ...[
+                        TextField(
+                          controller: ignitionOffCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: _fieldLabel('ignition_off'),
+                            isDense: true,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        verticalSpace(height: 1.h),
+                      ],
+                      if (needsStops) ...[
+                        TextField(
+                          controller: stopsCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: _fieldLabel('stops'),
+                            isDense: true,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        verticalSpace(height: 1.h),
+                      ],
+                      if (needsGeofences) ...[
+                        Text(
+                          _fieldLabel('geofences'),
+                          style: AppStyles.semiboldTextStyle(ctx)
+                              .copyWith(fontSize: 12.8.sp),
+                        ),
+                        verticalSpace(height: .4.h),
+                        Consumer<GeofenceProvider>(
+                          builder: (_, geofenceProvider, __) {
+                            if (geofenceProvider.isLoading) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+
+                            final geofences =
+                                geofenceProvider.model?.geofences ?? const [];
+                            if (geofences.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(2.4.w),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: isDark ? Colors.white24 : Colors.black26,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      geofenceProvider.errorMessage ??
+                                          'No geofences found',
+                                      style: TextStyle(
+                                        fontSize: 11.8.sp,
+                                        color:
+                                            isDark ? Colors.white70 : Colors.black54,
+                                      ),
+                                    ),
+                                    verticalSpace(height: .8.h),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () {
+                                          geofenceProvider.fetchGeofence(
+                                            isRefresh: true,
+                                            context: context,
+                                          );
+                                        },
+                                        icon: const Icon(Icons.refresh_rounded),
+                                        label: const Text('Reload Geofences'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return Container(
+                              constraints: BoxConstraints(maxHeight: 24.h),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isDark ? Colors.white24 : Colors.black26,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: geofences.length,
+                                itemBuilder: (_, index) {
+                                  final geofence = geofences[index];
+                                  final checked =
+                                      selectedGeofenceIds.contains(geofence.id);
+                                  return CheckboxListTile(
+                                    dense: true,
+                                    value: checked,
+                                    controlAffinity:
+                                        ListTileControlAffinity.leading,
+                                    onChanged: (v) {
+                                      setLocalState(() {
+                                        if (v == true) {
+                                          selectedGeofenceIds.add(geofence.id);
+                                        } else {
+                                          selectedGeofenceIds.remove(geofence.id);
+                                        }
+                                      });
+                                    },
+                                    title: Text(
+                                      geofence.name,
+                                      style: TextStyle(fontSize: 12.2.sp),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        if (selectedGeofenceIds.isNotEmpty)
+                          Padding(
+                            padding: EdgeInsets.only(top: .6.h),
+                            child: Text(
+                              '${selectedGeofenceIds.length} geofence(s) selected',
+                              style: TextStyle(
+                                fontSize: 11.5.sp,
+                                color: ConstantColor.primaryColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        verticalSpace(height: 1.h),
+                      ],
+                      if (needsShowAddresses)
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(_fieldLabel('show_addresses')),
+                          value: showAddresses,
+                          onChanged: (v) =>
+                              setLocalState(() => showAddresses = v),
+                        ),
+                      if (needsZonesInstead)
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(_fieldLabel('zones_instead')),
+                          value: zonesInstead,
+                          onChanged: (v) =>
+                              setLocalState(() => zonesInstead = v),
+                        ),
+                      if (fields.isNotEmpty)
+                        Text(
+                          'Fields: ${fields.where((f) => f != 'metas' && f != 'devices').map(_fieldLabel).join(', ')}',
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                      verticalSpace(height: 1.2.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancel'),
+                            ),
+                          ),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ConstantColor.primaryColor,
+                              ),
+                              onPressed: () {
+                                final speed = int.tryParse(speedCtrl.text.trim()) ?? 0;
+                                final ignitionOff =
+                                    int.tryParse(ignitionOffCtrl.text.trim()) ?? 0;
+                                final stops = int.tryParse(stopsCtrl.text.trim()) ?? 0;
+                                final geofences =
+                                    selectedGeofenceIds.toList(growable: false);
+
+                                Navigator.pop(ctx);
+                                _generateReport(
+                                  type: type,
+                                  name: name,
+                                  reportFormat: selectedFormat,
+                                  speed: speed,
+                                  minutes: ignitionOff,
+                                  geofences: geofences,
+                                  stops: stops,
+                                  showAddresses: showAddresses,
+                                  zonesInstead: zonesInstead,
+                                );
+                              },
+                              child: const Text('Generate'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                verticalSpace(height: 1.2.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ConstantColor.primaryColor,
-                        ),
-                        onPressed: () {
-                          final val = int.tryParse(controller.text);
-                          if (val != null && val > 0) {
-                            Navigator.pop(ctx);
-                            onConfirm(val);
-                          }
-                        },
-                        child: const Text('Generate'),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  void _onReportTap(dynamic item) {
-    final type = item.type ?? 0;
-    final name = item.name ?? '';
-
-    if (type == 5) {
-      _showInputDialog(
-        title: 'Speed Limit',
-        icon: Icons.speed_rounded,
-        label: 'Speed Limit (km/h)',
-        onConfirm: (speed) => _generateReport(type, name, speed: speed),
-      );
-      return;
-    }
-
-    if (type == 30) {
-      _showInputDialog(
-        title: 'Duration',
-        icon: Icons.timer_rounded,
-        label: 'Minimum Duration (minutes)',
-        onConfirm: (mins) => _generateReport(type, name, minutes: mins),
-      );
-      return;
-    }
-
-    if (type == 7) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Geofence selection coming soon')),
-      );
-      return;
-    }
-
-    _generateReport(type, name);
+  void _onReportTap(ReportTypeItem item) {
+    _showDynamicReportOptionsDialog(item);
   }
 
   @override
@@ -481,7 +744,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     final provider = context.watch<ReportTypeProvider>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    const reportAccent = Color(0xFFE0A800);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0E1624) : AppColors.white,
@@ -496,122 +759,38 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 verticalSpace(height: .6.h),
-                Row(
-                  children: List.generate(filters.length, (i) {
-                    final selected = _selectedFilterIndex == i;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            right: i == filters.length - 1 ? 0 : 1.2.w),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(9),
-                          onTap: () => _applyFilter(i),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            alignment: Alignment.center,
-                            padding: EdgeInsets.symmetric(vertical: .9.h),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? reportAccent.withValues(alpha: .22)
-                                  : (isDark
-                                      ? Colors.white.withValues(alpha: .06)
-                                      : Colors.white),
-                              borderRadius: BorderRadius.circular(9),
-                              border: Border.all(
-                                color: selected
-                                    ? reportAccent.withValues(alpha: .62)
-                                    : (isDark
-                                        ? Colors.white12
-                                        : Colors.black12),
-                              ),
-                            ),
-                            child: Text(
-                              _filterLabel(context, i),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style:
-                                  AppStyles.semiboldTextStyle(context).copyWith(
-                                fontSize: 10.9.sp,
-                                color: selected
-                                    ? reportAccent
-                                    : (isDark
-                                        ? Colors.white70
-                                        : Colors.black87),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                verticalSpace(height: 1.h),
-                InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: () {
+                SingleVehicleDateFilterBar(
+                  filterLabels: List.generate(
+                      filters.length, (i) => _filterLabel(context, i)),
+                  selectedFilterIndex: _selectedFilterIndex,
+                  showDateRangePicker: _showDateRangePicker,
+                  rangeText:
+                      "${_formatDateDisplay(fromDate)} ${_formatTimeDisplay(fromTime)}  ->  ${_formatDateDisplay(toDate)} ${_formatTimeDisplay(toTime)}",
+                  onFilterTap: _applyFilter,
+                  onDateRangeTap: () {
                     setState(() {
                       _selectedFilterIndex = 4;
                       _showDateRangePicker = !_showDateRangePicker;
                     });
                   },
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.15.h),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: .06)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: isDark ? Colors.white12 : Colors.black12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: isDark ? .16 : .06),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.calendar_month_rounded,
-                            size: 17.sp, color: ConstantColor.primaryColor),
-                        horizontalSpace(width: 1.8.w),
-                        Expanded(
-                          child: Text(
-                            "${_formatDateDisplay(fromDate)} ${_formatTimeDisplay(fromTime)}  ->  ${_formatDateDisplay(toDate)} ${_formatTimeDisplay(toTime)}",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style:
-                                AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.2.sp,
-                              color: isDark
-                                  ? AppColors.white
-                                  : AppColors.textBlack,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          _showDateRangePicker
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
                 if (_showDateRangePicker) ...[
                   verticalSpace(height: 1.h),
-                  _ReportDateRangeCard(
-                    fromDate: fromDate,
-                    toDate: toDate,
-                    fromTime: fromTime,
-                    toTime: toTime,
+                  SingleVehicleDateRangePickerCard(
+                    fromDateTitle: l10n.fromDate,
+                    toDateTitle: l10n.toDate,
+                    fromTimeTitle: l10n.fromTime,
+                    toTimeTitle: l10n.toTime,
+                    selectDateLabel: l10n.selectDate,
+                    selectTimeLabel: l10n.selectTime,
+                    applyLabel: l10n.applyRange,
+                    fromDateValue: _formatDateDisplay(fromDate),
+                    toDateValue: _formatDateDisplay(toDate),
+                    fromTimeValue: _formatTimeDisplay(fromTime),
+                    toTimeValue: _formatTimeDisplay(toTime),
                     onFromDateTap: () async {
-                      final currentTo = _tryParseApiDate(toDate) ?? DateTime.now();
+                      final currentTo =
+                          _tryParseApiDate(toDate) ?? DateTime.now();
                       final picked = await _pickDate(
                         fromDate.isEmpty
                             ? DateTime.now()
@@ -669,7 +848,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                       if (!_isValidDateRangeStrings(fromDate, toDate)) {
                         showValidationErrorDialog(
                           context,
-                          message: 'From date cannot be later than To date',
+                          message: l10n.fromDateCannotBeLaterThanToDate,
                         );
                         return;
                       }
@@ -809,195 +988,6 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     } catch (_) {
       return null;
     }
-  }
-}
-
-class _ReportDateRangeCard extends StatelessWidget {
-  final String fromDate;
-  final String toDate;
-  final String fromTime;
-  final String toTime;
-  final VoidCallback onFromDateTap;
-  final VoidCallback onToDateTap;
-  final VoidCallback onFromTimeTap;
-  final VoidCallback onToTimeTap;
-  final VoidCallback onApply;
-
-  const _ReportDateRangeCard({
-    required this.fromDate,
-    required this.toDate,
-    required this.fromTime,
-    required this.toTime,
-    required this.onFromDateTap,
-    required this.onToDateTap,
-    required this.onFromTimeTap,
-    required this.onToTimeTap,
-    required this.onApply,
-  });
-
-  String _formatDate(String value) {
-    if (value.isEmpty) return '';
-    try {
-      final dt = DateFormat('yyyy-MM-dd').parse(value);
-      return DateFormat('dd/MM/yyyy').format(dt);
-    } catch (_) {
-      return value;
-    }
-  }
-
-  String _formatTime(String value) {
-    if (value.isEmpty) return '';
-    try {
-      final dt = DateFormat('hh:mm:ss a').parse(value);
-      return DateFormat('hh:mm a').format(dt);
-    } catch (_) {
-      return value;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.2.h),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _RangePickerTile(
-                  title: l10n.fromDate,
-                  value: _formatDate(fromDate),
-                  emptyValue: l10n.selectDate,
-                  icon: Icons.event,
-                  onTap: onFromDateTap,
-                ),
-              ),
-              horizontalSpace(width: 2.w),
-              Expanded(
-                child: _RangePickerTile(
-                  title: l10n.toDate,
-                  value: _formatDate(toDate),
-                  emptyValue: l10n.selectDate,
-                  icon: Icons.event_available,
-                  onTap: onToDateTap,
-                ),
-              ),
-            ],
-          ),
-          verticalSpace(height: .8.h),
-          Row(
-            children: [
-              Expanded(
-                child: _RangePickerTile(
-                  title: l10n.fromTime,
-                  value: _formatTime(fromTime),
-                  emptyValue: l10n.selectTime,
-                  icon: Icons.access_time,
-                  onTap: onFromTimeTap,
-                ),
-              ),
-              horizontalSpace(width: 2.w),
-              Expanded(
-                child: _RangePickerTile(
-                  title: l10n.toTime,
-                  value: _formatTime(toTime),
-                  emptyValue: l10n.selectTime,
-                  icon: Icons.timelapse_rounded,
-                  onTap: onToTimeTap,
-                ),
-              ),
-            ],
-          ),
-          verticalSpace(height: .8.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ConstantColor.primaryColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: onApply,
-              child: Text(l10n.applyRange),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _RangePickerTile extends StatelessWidget {
-  final String title;
-  final String value;
-  final String emptyValue;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _RangePickerTile({
-    required this.title,
-    required this.value,
-    required this.emptyValue,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .75.h),
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: .05)
-              : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: ConstantColor.primaryColor.withValues(alpha: .25)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 10.8.sp,
-                color: isDark ? Colors.white70 : Colors.black54,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            verticalSpace(height: .2.h),
-            Row(
-              children: [
-                Icon(icon, size: 14.sp, color: ConstantColor.primaryColor),
-                horizontalSpace(width: 1.2.w),
-                Expanded(
-                  child: Text(
-                    value.isEmpty ? emptyValue : value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(fontSize: 11.5.sp),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
   }
 }
 

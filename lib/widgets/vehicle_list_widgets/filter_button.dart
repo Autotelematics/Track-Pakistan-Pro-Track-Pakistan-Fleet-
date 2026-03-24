@@ -32,13 +32,13 @@ class FilterButton extends StatelessWidget {
             width: 13.w,
             decoration: BoxDecoration(
               color: hasActiveFilter
-                  ? primary.withOpacity(0.14)
-                  : primary.withOpacity(0.08),
+                  ? primary.withValues(alpha: 0.14)
+                  : primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: hasActiveFilter
-                    ? primary.withOpacity(0.6)
-                    : onSurface.withOpacity(0.15),
+                    ? primary.withValues(alpha: 0.6)
+                    : onSurface.withValues(alpha: 0.15),
               ),
             ),
             child: Stack(
@@ -78,13 +78,12 @@ class FilterButton extends StatelessWidget {
         Provider.of<GetDevicesListProvider>(context, listen: false);
     final groupProvider =
         Provider.of<GetDeviceGroupProvider>(context, listen: false);
-    await groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
-
-    if (!context.mounted) return;
-
     final button = context.findRenderObject() as RenderBox?;
     final overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox?;
+    await groupProvider.fetchDeviceGroups(isRefresh: true, context: context);
+
+    if (!context.mounted) return;
     if (button == null || overlay == null) return;
 
     final buttonTopLeft = button.localToGlobal(Offset.zero, ancestor: overlay);
@@ -106,7 +105,7 @@ class FilterButton extends StatelessWidget {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: onSurface.withOpacity(.14)),
+        side: BorderSide(color: onSurface.withValues(alpha: .14)),
       ),
       position: RelativeRect.fromLTRB(
         buttonRect.left,
@@ -117,7 +116,7 @@ class FilterButton extends StatelessWidget {
       items: [
         PopupMenuItem<String>(
           value: '__all__',
-            child: _menuRow(
+          child: _menuRow(
             context,
             label: context.l10n.allGroups,
             isSelected: provider.selectedGroupId == null,
@@ -169,7 +168,7 @@ class FilterButton extends StatelessWidget {
         Icon(
           isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
           size: 17.sp,
-          color: isSelected ? primary : onSurface.withOpacity(.42),
+          color: isSelected ? primary : onSurface.withValues(alpha: .42),
         ),
         SizedBox(width: 2.2.w),
         Expanded(
@@ -177,7 +176,7 @@ class FilterButton extends StatelessWidget {
             label,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              color: isSelected ? primary : onSurface.withOpacity(.82),
+              color: isSelected ? primary : onSurface.withValues(alpha: .82),
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               fontSize: 14.sp,
             ),

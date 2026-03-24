@@ -30,10 +30,9 @@ class TopBar extends StatelessWidget {
         final panelBase = isDark ? const Color(0xFF1B1D24) : AppColors.white;
         final panelText = isDark ? AppColors.white : AppColors.textBlack;
         final panelSubText = isDark ? Colors.white70 : Colors.black54;
-        final lastUpdateText =
-            provider.lastUpdate.trim().isEmpty
-                ? l10n.notAvailableShort
-                : provider.lastUpdate;
+        final lastUpdateText = provider.lastUpdate.trim().isEmpty
+            ? l10n.notAvailableShort
+            : provider.lastUpdate;
         final String displayStatus = provider.vehicleStatusText;
         final statusColor = provider.ignitionColor;
         final isRunning = provider.status == 'online';
@@ -53,10 +52,10 @@ class TopBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        panelBase.withOpacity(.98),
+                        panelBase.withValues(alpha: .98),
                         isDark
-                            ? const Color(0xFF252933).withOpacity(.98)
-                            : const Color(0xFFF7F9FC).withOpacity(.98),
+                            ? const Color(0xFF252933).withValues(alpha: .98)
+                            : const Color(0xFFF7F9FC).withValues(alpha: .98),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -68,7 +67,8 @@ class TopBar extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? .28 : .12),
+                        color:
+                            Colors.black.withValues(alpha: isDark ? .28 : .12),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -80,7 +80,7 @@ class TopBar extends StatelessWidget {
                         width: 2.7.h,
                         height: 2.7.h,
                         decoration: BoxDecoration(
-                          color: AppColors.green.withOpacity(.12),
+                          color: AppColors.green.withValues(alpha: .12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -113,7 +113,7 @@ class TopBar extends StatelessWidget {
                                   l10n.updatedAt(lastUpdateText),
                                   style: TextStyle(
                                     color: panelSubText,
-                                    fontSize: 10.8.sp,
+                                    fontSize: 11.5.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -132,7 +132,7 @@ class TopBar extends StatelessWidget {
                                     l10n.traffic,
                                     style: TextStyle(
                                       color: panelSubText,
-                                      fontSize: 10.8.sp,
+                                      fontSize: 11.5.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -146,7 +146,8 @@ class TopBar extends StatelessWidget {
                         SizedBox(width: 1.2.w),
                         Shimmer.fromColors(
                           baseColor: AppColors.green,
-                          highlightColor: AppColors.green.withOpacity(.42),
+                          highlightColor:
+                              AppColors.green.withValues(alpha: .42),
                           period: const Duration(milliseconds: 1200),
                           child: RichText(
                             text: TextSpan(
@@ -167,7 +168,7 @@ class TopBar extends StatelessWidget {
                                   text: ' km/h',
                                   style: TextStyle(
                                     color: AppColors.green,
-                                    fontSize: 10.3.sp,
+                                    fontSize: 11.3.sp,
                                     fontWeight: FontWeight.w700,
                                     fontFamily: 'monospace',
                                     fontFeatures: const [
@@ -186,10 +187,10 @@ class TopBar extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: 1.9.w, vertical: .30.h),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(.14),
+                          color: statusColor.withValues(alpha: .14),
                           borderRadius: BorderRadius.circular(999),
-                          border:
-                              Border.all(color: statusColor.withOpacity(.35)),
+                          border: Border.all(
+                              color: statusColor.withValues(alpha: .35)),
                         ),
                         child: Text(
                           displayStatus,
@@ -197,7 +198,7 @@ class TopBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 9.8.sp,
+                            fontSize: 10.2.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -230,7 +231,9 @@ class TopBar extends StatelessWidget {
                   final lng = provider.longitude;
                   final url =
                       'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
-                  Share.share(l10n.vehicleLocationShare(url));
+                  SharePlus.instance.share(
+                    ShareParams(text: l10n.vehicleLocationShare(url)),
+                  );
                 },
               ),
             ],

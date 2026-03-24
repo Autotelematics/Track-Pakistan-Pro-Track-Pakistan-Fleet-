@@ -636,7 +636,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                 .copyWith(
                                               color: onSurface,
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 14.sp,
+                                              fontSize: 15.sp,
                                             ),
                                           ),
                                           subtitle: Column(
@@ -653,7 +653,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                       : Colors.redAccent
                                                           .withValues(
                                                               alpha: .9),
-                                                  fontSize: 13.4.sp,
+                                                  fontSize: 14.4.sp,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                                 maxLines: 2,
@@ -684,7 +684,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                         color: onSurface
                                                             .withValues(
                                                                 alpha: 0.62),
-                                                        fontSize: 12.sp,
+                                                        fontSize: 13.sp,
                                                       ),
                                                       overflow:
                                                           TextOverflow.ellipsis,

@@ -388,7 +388,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
           duration: const Duration(milliseconds: 240),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 6.w),
-            color: Colors.black.withOpacity(0.50),
+            color: Colors.black.withValues(alpha: 0.50),
             child: Center(
               child: TweenAnimationBuilder(
                 tween: Tween<double>(begin: 0.85, end: 1),
@@ -407,7 +407,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
                               6,
                               (_) => groupItemShimmer(
                                 primary,
-                                primary.withOpacity(0.4),
+                                primary.withValues(alpha: 0.4),
                               ),
                             ),
                           )
@@ -454,9 +454,9 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
       margin: EdgeInsets.symmetric(vertical: 0.45.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: baseColor.withOpacity(0.10),
+        color: baseColor.withValues(alpha: 0.10),
         border: Border.all(
-          color: baseColor.withOpacity(0.40),
+          color: baseColor.withValues(alpha: 0.40),
           width: 1,
         ),
       ),
@@ -466,7 +466,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             child: Container(
               height: 12.4.sp,
               decoration: BoxDecoration(
-                color: baseColor.withOpacity(0.25),
+                color: baseColor.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -476,7 +476,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             height: 20,
             width: 20,
             decoration: BoxDecoration(
-              color: baseColor.withOpacity(0.25),
+              color: baseColor.withValues(alpha: 0.25),
               shape: BoxShape.circle,
             ),
           )

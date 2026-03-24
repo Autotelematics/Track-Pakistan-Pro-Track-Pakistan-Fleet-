@@ -37,17 +37,17 @@ class _SearchFiledState extends State<SearchFiled> {
             decoration: InputDecoration(
               hintText: context.l10n.searchVehicle,
               hintStyle: TextStyle(
-                color: widget.onSurface.withOpacity(0.52),
+                color: widget.onSurface.withValues(alpha: 0.52),
                 fontSize: 14.4.sp,
               ),
               filled: true,
-              fillColor: widget.primary.withOpacity(0.06),
+              fillColor: widget.primary.withValues(alpha: 0.06),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: widget.outline.withOpacity(0.2)),
+                borderSide: BorderSide(color: widget.outline.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(14),
               ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: widget.outline.withOpacity(0.2)),
+                borderSide: BorderSide(color: widget.outline.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(14),
               ),
               focusedBorder: OutlineInputBorder(
@@ -59,7 +59,7 @@ class _SearchFiledState extends State<SearchFiled> {
               prefixIcon: Icon(
                 Icons.search_rounded,
                 size: 18.5.sp,
-                color: widget.onSurface.withOpacity(0.72),
+                color: widget.onSurface.withValues(alpha: 0.72),
               ),
               prefixIconConstraints: BoxConstraints(
                 minHeight: 5.h,

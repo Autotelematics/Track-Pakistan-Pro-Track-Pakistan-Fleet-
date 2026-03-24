@@ -11,6 +11,14 @@ class ReportTypeProvider extends ChangeNotifier {
   final ReportTypeRepository _repository = ReportTypeRepository();
   bool _isDisposed = false;
 
+  String _cleanErrorText(Object e) {
+    final text = e.toString().trim();
+    if (text.startsWith('Exception: ')) {
+      return text.substring('Exception: '.length).trim();
+    }
+    return text;
+  }
+
   /// Report types state
   bool isLoading = false;
   String? errorMessage;
@@ -84,7 +92,7 @@ class ReportTypeProvider extends ChangeNotifier {
       isLoading = false;
       _notifySafely();
     } catch (e) {
-      errorMessage = "Failed to load report types: $e";
+      errorMessage = "Failed to load report types: ${_cleanErrorText(e)}";
       isLoading = false;
       _notifySafely();
     }
@@ -118,13 +126,24 @@ class ReportTypeProvider extends ChangeNotifier {
         speedLimit: data.speedLimit,
         geofenceIds: data.geofences,
         minutes: data.ignitionOff,
+        stops: data.stops,
+        showAddresses: data.showAddresses,
+        zonesInstead: data.zonesInstead,
       );
+
+      if (generatedReport == null || !generatedReport!.isSuccess) {
+        generateReportError = generatedReport?.bestErrorMessage ??
+            "Failed to generate report";
+        isGeneratingReport = false;
+        _notifySafely();
+        return null;
+      }
 
       isGeneratingReport = false;
       _notifySafely();
       return generatedReport;
     } catch (e) {
-      generateReportError = "Failed to generate report: $e";
+      generateReportError = _cleanErrorText(e);
       isGeneratingReport = false;
       _notifySafely();
       return null;

@@ -53,10 +53,10 @@ class SheetTab extends StatelessWidget {
             Text(
               label,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 13.9.sp,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 14.5.sp,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected
-                    ? ConstantColor.primaryColor
+                    ? ConstantColor.secondaryColor
                     : onSurface.withValues(alpha: .72),
               ),
             ),
@@ -152,7 +152,7 @@ class TripCard extends StatelessWidget {
                         child: Text(
                           trip.startTime,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               fontWeight: FontWeight.w600,
                               color: onSurface),
                           overflow: TextOverflow.ellipsis,
@@ -178,7 +178,7 @@ class TripCard extends StatelessWidget {
                         child: Text(
                           trip.endTime,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               fontWeight: FontWeight.w600,
                               color: onSurface),
                           overflow: TextOverflow.ellipsis,
@@ -312,7 +312,7 @@ class ParkedCard extends StatelessWidget {
                         child: Text(
                           parked.stoppedAt,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               fontWeight: FontWeight.w600,
                               color: onSurface),
                           overflow: TextOverflow.ellipsis,
@@ -339,7 +339,7 @@ class ParkedCard extends StatelessWidget {
                         child: Text(
                           parked.nextMoveAt,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               fontWeight: FontWeight.w600,
                               color: onSurface),
                           overflow: TextOverflow.ellipsis,
@@ -478,7 +478,7 @@ class MiniChip extends StatelessWidget {
           SizedBox(width: 1.w),
           Text(label,
               style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.8.sp,
+                  fontSize: 13.8.sp,
                   color: onSurface.withValues(alpha: .78),
                   fontWeight: FontWeight.w600)),
         ],
@@ -524,7 +524,7 @@ class DateTimeTile extends StatelessWidget {
               child: Text(
                 text,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.6.sp,
+                  fontSize: 13.6.sp,
                   color: isPlaceholder
                       ? onSurface.withValues(alpha: .56)
                       : onSurface.withValues(alpha: .92),
@@ -578,7 +578,7 @@ class InfoChip extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 12.7.sp,
+                fontSize: 14.0.sp,
                 color: onSurface.withValues(alpha: .86),
               ),
             ),
@@ -620,7 +620,7 @@ class StatCard extends StatelessWidget {
         children: [
           Text(label,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.6.sp,
+                fontSize: 14.0.sp,
                 color: onSurface.withValues(alpha: .64),
                 fontWeight: FontWeight.w600,
               ),
@@ -628,7 +628,7 @@ class StatCard extends StatelessWidget {
           verticalSpace(height: .25.h),
           Text(value,
               style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 12.8.sp, color: color),
+                  .copyWith(fontSize: 14.0.sp, color: color),
               textAlign: TextAlign.start),
         ],
       ),

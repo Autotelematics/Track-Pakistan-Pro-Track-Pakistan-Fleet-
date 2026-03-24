@@ -52,7 +52,7 @@ class GetDeviceStatusModel {
             return Item(
               id: 0,
               name: '',
-              online: Online.OFFLINE,
+              online: Online.offline,
               time: '',
               lat: null,
               lng: null,
@@ -111,7 +111,7 @@ class Item {
     return Item(
       id: json["id"] as int? ?? 0,
       name: json["name"] as String? ?? '',
-      online: onlineValues.map[json["online"] as String?] ?? Online.OFFLINE,
+      online: onlineValues.map[json["online"] as String?] ?? Online.offline,
       time: json["time"] as String? ?? '',
       lat: parseDouble(json["lat"]),
       lng: parseDouble(json["lng"]),
@@ -135,15 +135,15 @@ class Item {
 }
 
 enum Online {
-  ACK,
-  OFFLINE,
-  ONLINE,
+  ack,
+  offline,
+  online,
 }
 
 final onlineValues = EnumValues({
-  "ack": Online.ACK,
-  "offline": Online.OFFLINE,
-  "online": Online.ONLINE,
+  "ack": Online.ack,
+  "offline": Online.offline,
+  "online": Online.online,
 });
 
 class EnumValues<T> {

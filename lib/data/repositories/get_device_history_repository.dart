@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:trackerapp/data/models/get_device_history_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
@@ -17,10 +18,10 @@ class GetDeviceHistoryRepository {
   }) async {
 
     try {
-      print("========== DEVICE HISTORY API START ==========");
+      log("========== DEVICE HISTORY API START ==========");
 
       final token = MySharedPreferences.getString(authTokenKey);
-      print("TOKEN: $token");
+      log("TOKEN: $token");
 
       final endpointPath = AppUrl.getDeviceHistoryEp.split('?').first;
       final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
@@ -35,16 +36,16 @@ class GetDeviceHistoryRepository {
         },
       );
 
-      print("REQUEST URL:");
-      print(url.toString());
+      log("REQUEST URL:");
+      log(url.toString());
 
-      print("PARAMS:");
-      print("device_id: $deviceId");
-      print("from_date: $fromDate");
-      print("from_time: $fromTime");
-      print("to_date: $toDate");
-      print("to_time: $toTime");
-      print("snap_to_road: $snapToRoad");
+      log("PARAMS:");
+      log("device_id: $deviceId");
+      log("from_date: $fromDate");
+      log("from_time: $fromTime");
+      log("to_date: $toDate");
+      log("to_time: $toTime");
+      log("snap_to_road: $snapToRoad");
 
       final response = await http.get(
         url,
@@ -53,30 +54,30 @@ class GetDeviceHistoryRepository {
         },
       );
 
-      print("STATUS CODE: ${response.statusCode}");
+      log("STATUS CODE: ${response.statusCode}");
 
-      print("RAW RESPONSE:");
-      print(response.body);
+      log("RAW RESPONSE:");
+      log(response.body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        print("DECODED JSON:");
-        print(data);
+        log("DECODED JSON:");
+        log(data.toString());
 
-        print("========== DEVICE HISTORY API SUCCESS ==========");
+        log("========== DEVICE HISTORY API SUCCESS ==========");
 
         return GetDeviceHistoryModel.fromJson(data);
       } else {
-        print("========== API FAILED ==========");
+        log("========== API FAILED ==========");
         throw Exception(
             "Failed to load device history: ${response.statusCode}");
       }
 
     } catch (e, stack) {
-      print("========== API ERROR ==========");
-      print("ERROR: $e");
-      print("STACKTRACE: $stack");
+      log("========== API ERROR ==========");
+      log("ERROR: $e");
+      log("STACKTRACE: $stack");
       throw Exception("API Error: $e");
     }
   }

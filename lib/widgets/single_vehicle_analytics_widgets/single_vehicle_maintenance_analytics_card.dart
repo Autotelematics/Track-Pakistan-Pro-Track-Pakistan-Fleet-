@@ -478,7 +478,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.4.sp,
+              fontSize: 12.4.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -493,7 +493,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 10.5.sp,
+              fontSize: 11.5.sp,
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
@@ -530,7 +530,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 10.8.sp,
+                fontSize: 11.8.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -582,7 +582,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 10.8.sp),
+                  .copyWith(fontSize: 11.8.sp),
             ),
             verticalSpace(height: .15.h),
             Text(

@@ -40,10 +40,10 @@ class _VehicleBottomCardState extends State<VehicleBottomCard> {
 
     final cardBg = isDark ? theme.cardColor : AppColors.white;
     final shadowColor = isDark
-        ? Colors.black.withOpacity(0.6)
-        : AppColors.grey.withOpacity(0.4);
+        ? Colors.black.withValues(alpha: 0.6)
+        : AppColors.grey.withValues(alpha: 0.4);
     final borderColor =
-        isDark ? AppColors.grey.withOpacity(0.3) : AppColors.grey;
+        isDark ? AppColors.grey.withValues(alpha: 0.3) : AppColors.grey;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -55,7 +55,7 @@ class _VehicleBottomCardState extends State<VehicleBottomCard> {
             colors: [
               cardBg,
               isDark
-                  ? Colors.grey.shade900.withOpacity(.96)
+                  ? Colors.grey.shade900.withValues(alpha: .96)
                   : Colors.grey.shade50,
             ],
             begin: Alignment.topCenter,

@@ -40,6 +40,7 @@ class HistoryFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    const reportAccent = Color(0xFFE0A800);
     final filters = const [
       "Today",
       "Yesterday",
@@ -77,19 +78,17 @@ class HistoryFilterBar extends StatelessWidget {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         alignment: Alignment.center,
-                        constraints: BoxConstraints(minHeight: 4.4.h),
-                        padding: EdgeInsets.symmetric(vertical: .7.h),
+                        padding: EdgeInsets.symmetric(vertical: .9.h),
                         decoration: BoxDecoration(
                           color: selected
-                              ? const Color(0xFF223B63)
+                              ? reportAccent.withValues(alpha: .22)
                               : (isDark
-                                  ? const Color(0xFF1A2433)
+                                  ? Colors.white.withValues(alpha: .06)
                                   : Colors.white),
                           borderRadius: BorderRadius.circular(9),
                           border: Border.all(
                             color: selected
-                                ? ConstantColor.primaryColor
-                                    .withValues(alpha: .52)
+                                ? reportAccent.withValues(alpha: .62)
                                 : (isDark ? Colors.white12 : Colors.black12),
                           ),
                         ),
@@ -99,9 +98,9 @@ class HistoryFilterBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                            fontSize: 12.3.sp,
+                            fontSize: 10.9.sp,
                             color: selected
-                                ? const Color(0xFF7FB3FF)
+                                ? reportAccent
                                 : (isDark ? Colors.white70 : Colors.black87),
                           ),
                         ),
@@ -111,7 +110,7 @@ class HistoryFilterBar extends StatelessWidget {
                 );
               }),
             ),
-            SizedBox(height: 0.3.h),
+            SizedBox(height: 1.h),
             InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: onDateRangeTap,
@@ -119,7 +118,9 @@ class HistoryFilterBar extends StatelessWidget {
                 padding:
                     EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.15.h),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1A2433) : Colors.white,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: .06)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: isDark ? Colors.white12 : Colors.black12,

@@ -98,7 +98,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
           val.toString() == '-' ||
           val.toString() == 'null') {
         if (kDebugMode) {
-          print('Invalid double value: $val, returning $defaultValue');
+          debugPrint('Invalid double value: $val, returning $defaultValue');
         }
         return defaultValue;
       }
@@ -107,7 +107,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
       return double.parse(val.toString());
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing double: $val, error: $e, returning $defaultValue');
+        debugPrint('Error parsing double: $val, error: $e, returning $defaultValue');
       }
       return defaultValue;
     }
@@ -120,7 +120,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
           val.toString() == '-' ||
           val.toString() == 'null') {
         if (kDebugMode) {
-          print('Invalid int value: $val, returning $defaultValue');
+          debugPrint('Invalid int value: $val, returning $defaultValue');
         }
         return defaultValue;
       }
@@ -128,7 +128,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
       return int.parse(val.toString());
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing int: $val, error: $e, returning $defaultValue');
+        debugPrint('Error parsing int: $val, error: $e, returning $defaultValue');
       }
       return defaultValue;
     }
@@ -169,7 +169,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
     if (diff > _minCourseChange) {
       _smoothedCourse = normalizedNew;
-      if (kDebugMode) print("Significant course change: $_smoothedCourse");
+      if (kDebugMode) debugPrint("Significant course change: $_smoothedCourse");
     } else {
       final aRad = _smoothedCourse * pi / 180;
       final bRad = normalizedNew * pi / 180;
@@ -179,7 +179,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
       final avg = atan2(y, x) * 180 / pi;
       _smoothedCourse = _normalizeAngle(avg);
-      if (kDebugMode) print("Smoothed course to: $_smoothedCourse");
+      if (kDebugMode) debugPrint("Smoothed course to: $_smoothedCourse");
     }
   }
 
@@ -281,7 +281,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   Future<void> _handleInitialAnimation() async {
     if (_isDisposed) return;
     if (deviceData?.item == null) {
-      if (kDebugMode) print('No device data for initial animation');
+      if (kDebugMode) debugPrint('No device data for initial animation');
       return;
     }
 
@@ -342,14 +342,14 @@ class VehicleTrackingProvider extends ChangeNotifier {
         }
       } else {
         if (kDebugMode) {
-          print(
+          debugPrint(
               'Invalid tail coordinates: lat1=$lat1, lng1=$lng1, lat2=$lat2, lng2=$lng2');
         }
         await _updateDeviceData(isRefresh: false);
       }
     } else {
       if (kDebugMode) {
-        print(
+        debugPrint(
             'Invalid data for animation: tailList=$tailList, liveLat=$liveLat, liveLng=$liveLng, course=$course, speed=$speed');
       }
       await _updateDeviceData(isRefresh: false);
@@ -359,7 +359,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   Future<void> _updateDeviceData({required bool isRefresh}) async {
     if (_isDisposed) return;
     if (deviceData?.item == null) {
-      if (kDebugMode) print('No device data for update');
+      if (kDebugMode) debugPrint('No device data for update');
       return;
     }
 
@@ -375,7 +375,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
           : null;
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing device time: $deviceTimeStr, error: $e');
+        debugPrint('Error parsing device time: $deviceTimeStr, error: $e');
       }
       deviceTime = null;
     }
@@ -383,7 +383,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
     deviceTime ??= now;
 
     if (lat == 0.0 || lng == 0.0) {
-      if (kDebugMode) print('Invalid coordinates: lat=$lat, lng=$lng');
+      if (kDebugMode) debugPrint('Invalid coordinates: lat=$lat, lng=$lng');
       return;
     }
 
@@ -401,7 +401,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
         calculatedSpeedKmh = (distanceKm / timeDiffSeconds) * 3600; // km/h
       }
       if (kDebugMode) {
-        print('Distance between packets: ${distanceKm.toStringAsFixed(2)} km, '
+        debugPrint('Distance between packets: ${distanceKm.toStringAsFixed(2)} km, '
             'Time difference: $timeDiffSeconds seconds, '
             'Calculated speed: ${calculatedSpeedKmh.toStringAsFixed(2)} km/h');
       }
@@ -466,7 +466,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
       deviceData = response;
 
       if (deviceData?.item == null) {
-        if (kDebugMode) print('No device data found');
+        if (kDebugMode) debugPrint('No device data found');
         hasNoData = true;
         noDataMessage = 'No live data available for this vehicle.';
         isLoading = false;
@@ -511,7 +511,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
             : null;
       } catch (e) {
         if (kDebugMode) {
-          print('Error parsing device time: $deviceTimeStr, error: $e');
+          debugPrint('Error parsing device time: $deviceTimeStr, error: $e');
         }
         deviceTime = null;
       }
@@ -536,17 +536,17 @@ class VehicleTrackingProvider extends ChangeNotifier {
       if (deviceSpeed > 0) {
         _updateSmoothedCourse(rawCourse);
         _lastMovingCourse = _smoothedCourse;
-        if (kDebugMode) print("Updated moving course to: $_lastMovingCourse");
+        if (kDebugMode) debugPrint("Updated moving course to: $_lastMovingCourse");
       } else {
         if (kDebugMode) {
-          print("Vehicle stopped, keeping course: $_lastMovingCourse");
+          debugPrint("Vehicle stopped, keeping course: $_lastMovingCourse");
         }
       }
 
       isLoading = false;
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print("Live Tracking Error: $e");
+      if (kDebugMode) debugPrint("Live Tracking Error: $e");
       if (deviceData?.item == null) {
         errorMessage = _friendlyErrorMessage(e);
       }
@@ -625,7 +625,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
     currentMapType =
         currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
     if (kDebugMode) {
-      print('Toggled map type to: $currentMapType');
+      debugPrint('Toggled map type to: $currentMapType');
     }
     notifyListeners();
   }
@@ -633,7 +633,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   void toggleTraffic() {
     enableTraffic = !enableTraffic;
     if (kDebugMode) {
-      print('Toggled traffic to: $enableTraffic');
+      debugPrint('Toggled traffic to: $enableTraffic');
     }
     notifyListeners();
   }

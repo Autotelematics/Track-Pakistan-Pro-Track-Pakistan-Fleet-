@@ -15,10 +15,10 @@ class GetDeviceStatusRepository {
   }) async {
     try {
       final userApiHashKey = MySharedPreferences.getString(authTokenKey);
-      print("User API Hash Key: $userApiHashKey");
+      log("User API Hash Key: $userApiHashKey");
 
       if (userApiHashKey.isEmpty) {
-        print("No auth token found!");
+        log("No auth token found!");
         return null;
       }
 
@@ -28,26 +28,26 @@ class GetDeviceStatusRepository {
           'user_api_hash': userApiHashKey,
         },
       );
-      print("Calling API: $url");
+      log("Calling API: $url");
 
       final response = await http.get(
         url,
         headers: {"Content-Type": "application/json"},
       );
 
-      print("Response Status Code: ${response.statusCode}");
-      print("Response Body: ${response.body}");
+      log("Response Status Code: ${response.statusCode}");
+      log("Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
-        print("API Success - Parsing model...");
+        log("API Success - Parsing model...");
         return getDeviceStatusModelFromJson(response.body);
       } else {
         Map<String, dynamic> decodedBody = jsonDecode(response.body);
-        print("API Error: ${decodedBody['message'] ?? 'Unknown error'}");
+        log("API Error: ${decodedBody['message'] ?? 'Unknown error'}");
         return null;
       }
     } catch (e) {
-      print("Exception in getDeviceStatusApi: $e");
+      log("Exception in getDeviceStatusApi: $e");
       log("Exception: $e");
       return null;
     }

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/data/models/get_device_history_model.dart';
 import 'package:trackerapp/data/repositories/get_device_history_repository.dart';
@@ -96,6 +96,9 @@ class _TimeInfo {
 
 class DeviceHistoryProvider extends ChangeNotifier {
   final GetDeviceHistoryRepository _repository = GetDeviceHistoryRepository();
+  static const double _vehicleMarkerLogicalHeight = 30.0;
+  static const double _statusMarkerLogicalSize = 34.0;
+  static const double _markerRenderScale = 3.0;
 
   // ── State ──────────────────────────────────────────────────────────────────
   GetDeviceHistoryModel? _deviceHistoryModel;
@@ -650,9 +653,27 @@ class DeviceHistoryProvider extends ChangeNotifier {
       letterColor: Colors.white,
     );
     // Always use car_green.png for history playback car
-    _carIcon = await BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(20, 38)),
-      'assets/images/car_green.png',
+    _carIcon = await _buildVehicleIconFromAsset('assets/images/car_green.png');
+  }
+
+  Future<BitmapDescriptor> _buildVehicleIconFromAsset(String assetPath) async {
+    final ByteData data = await rootBundle.load(assetPath);
+    final ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetHeight:
+          (_vehicleMarkerLogicalHeight * _markerRenderScale).round(),
+    );
+    final ui.FrameInfo frame = await codec.getNextFrame();
+    final ByteData? bytes =
+        await frame.image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) {
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    }
+    return BitmapDescriptor.bytes(
+      bytes.buffer.asUint8List(),
+      width: frame.image.width.toDouble() / _markerRenderScale,
+      height: frame.image.height.toDouble() / _markerRenderScale,
+      imagePixelRatio: _markerRenderScale,
     );
   }
 
@@ -687,14 +708,14 @@ class DeviceHistoryProvider extends ChangeNotifier {
       position: startPos,
       icon: _startIcon!,
       anchor: const Offset(0.5, 0.5),
-      zIndex: 7,
+      zIndexInt: 7,
     ));
     _mapMarkers.add(Marker(
       markerId: const MarkerId('end'),
       position: endPos,
       icon: _endIcon!,
       anchor: const Offset(0.5, 0.5),
-      zIndex: 8,
+      zIndexInt: 8,
     ));
   }
 
@@ -707,7 +728,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
         position: position,
         icon: _parkingIcon!,
         anchor: const Offset(0.5, 0.5),
-        zIndex: 5,
+        zIndexInt: 5,
       ));
       index++;
     }
@@ -722,7 +743,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
         position: event.position,
         icon: _eventsIcon!,
         anchor: const Offset(0.5, 0.5),
-        zIndex: 5,
+        zIndexInt: 5,
         infoWindow: InfoWindow(
           title: event.message,
           snippet: event.time,
@@ -774,7 +795,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
         anchor: const Offset(0.5, 0.5),
         rotation: _carRotation,
         flat: true,
-        zIndex: 10,
+        zIndexInt: 10,
         infoWindow: InfoWindow(
           title: 'Speed: $speed km/h',
           snippet: snippet,
@@ -796,14 +817,22 @@ class DeviceHistoryProvider extends ChangeNotifier {
     IconData? icon,
     Color letterColor = Colors.white,
   }) async {
-    const double size = 110;
+    const double size = _statusMarkerLogicalSize;
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(
+        0,
+        0,
+        size * _markerRenderScale,
+        size * _markerRenderScale,
+      ),
+    )..scale(_markerRenderScale);
     final center = Offset(size / 2, size / 2);
-    const radius = 36.0;
+    final radius = size * 0.34;
 
     final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.22);
-    canvas.drawCircle(center.translate(0, 4), radius, shadowPaint);
+    canvas.drawCircle(center.translate(0, size * 0.04), radius, shadowPaint);
 
     final circlePaint = Paint()..color = bgColor;
     canvas.drawCircle(center, radius, circlePaint);
@@ -811,14 +840,14 @@ class DeviceHistoryProvider extends ChangeNotifier {
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+      ..strokeWidth = size * 0.05;
     canvas.drawCircle(center, radius, borderPaint);
 
     final glyph =
         icon != null ? String.fromCharCode(icon.codePoint) : (letter ?? '');
     final textStyle = TextStyle(
       color: letterColor,
-      fontSize: icon != null ? 42 : 36,
+      fontSize: icon != null ? size * 0.48 : size * 0.40,
       fontWeight: FontWeight.w800,
       fontFamily: icon?.fontFamily,
       package: icon?.fontPackage,
@@ -835,13 +864,20 @@ class DeviceHistoryProvider extends ChangeNotifier {
       ),
     );
 
-    final image =
-        await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final image = await recorder.endRecording().toImage(
+          (size * _markerRenderScale).round(),
+          (size * _markerRenderScale).round(),
+        );
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     if (data == null) {
       return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
     }
-    return BitmapDescriptor.fromBytes(Uint8List.view(data.buffer));
+    return BitmapDescriptor.bytes(
+      Uint8List.view(data.buffer),
+      width: size,
+      height: size,
+      imagePixelRatio: _markerRenderScale,
+    );
   }
 
   // ── Playback controls ──────────────────────────────────────────────────────

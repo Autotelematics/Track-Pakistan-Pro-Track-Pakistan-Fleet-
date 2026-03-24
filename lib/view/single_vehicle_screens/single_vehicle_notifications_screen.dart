@@ -608,7 +608,9 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                                     color: AppColors.red),
                                           ),
                                           title: Text(
-                                            item.type,
+                                            item.message,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                             style: AppStyles.semiboldTextStyle(
                                                     context)
                                                 .copyWith(fontSize: 13.5.sp),
@@ -618,14 +620,16 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                item.message,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
+                                                item.type,
                                                 style:
                                                     AppStyles.regularTextStyle(
                                                             context)
                                                         .copyWith(
-                                                            fontSize: 11.9.sp),
+                                                  fontSize: 11.9.sp,
+                                                  color: isDark
+                                                      ? Colors.white70
+                                                      : Colors.black54,
+                                                ),
                                               ),
                                               verticalSpace(height: 0.35.h),
                                               Text(

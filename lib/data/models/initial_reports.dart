@@ -10,6 +10,9 @@ class ViewReportInitialData {
   final String reportName;
   final String fromTime;
   final String toTime;
+  final int stops;
+  final bool showAddresses;
+  final bool zonesInstead;
 
   ViewReportInitialData({
     required this.fromDate,
@@ -23,5 +26,8 @@ class ViewReportInitialData {
     this.reportName = "",
     this.fromTime = "",
     this.toTime = "",
+    this.stops = 0,
+    this.showAddresses = false,
+    this.zonesInstead = false,
   });
 }

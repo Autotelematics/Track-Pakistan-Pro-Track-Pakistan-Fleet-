@@ -18,7 +18,7 @@ class AppStyles {
   );
 
   static TextStyle regularTextStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
     fontFamily: 'Almarena',
     fontSize: 15.sp,
     fontWeight: FontWeight.w600,
@@ -56,7 +56,7 @@ class AppStyles {
   static TextStyle statusDuration(BuildContext context) =>
       lightTextStyle(context).copyWith(
         fontSize: 13.sp,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       );
 
   static TextStyle status(String s, BuildContext context) =>

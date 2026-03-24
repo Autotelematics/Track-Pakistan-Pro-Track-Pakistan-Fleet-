@@ -293,10 +293,12 @@ class LocalReminderCard extends StatelessWidget {
                               onDelete: () async {
                                 final confirmed =
                                     await _confirmDeleteReminder(context);
+                                if (!context.mounted) return;
                                 if (!confirmed) return;
                                 await context
                                     .read<ReminderProvider>()
                                     .deleteReminder(reminder.id);
+                                if (!context.mounted) return;
                                 AppSnackBar.success(
                                   message: context.l10n.reminderDeleted,
                                 );

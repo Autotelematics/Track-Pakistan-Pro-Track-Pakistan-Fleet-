@@ -24,8 +24,7 @@ class GroupFilterItem extends StatelessWidget {
     final String? selectedId = provider.selectedGroupId;
     final String? currentId = groupId?.toString();
 
-    final bool isSelected =
-        (title == 'All' && selectedId == null) ||
+    final bool isSelected = (title == 'All' && selectedId == null) ||
         (currentId != null && selectedId == currentId);
 
     return InkWell(
@@ -41,11 +40,11 @@ class GroupFilterItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isSelected
-              ? ConstantColor.primaryColor.withOpacity(.09)
+              ? ConstantColor.primaryColor.withValues(alpha: .09)
               : Colors.transparent,
           border: Border.all(
             color: isSelected
-                ? ConstantColor.primaryColor.withOpacity(.45)
+                ? ConstantColor.primaryColor.withValues(alpha: .45)
                 : Colors.grey.shade300,
           ),
         ),
@@ -72,7 +71,7 @@ class GroupFilterItem extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected
                       ? ConstantColor.primaryColor
-                      : AppColors.textBlack.withOpacity(0.78),
+                      : AppColors.textBlack.withValues(alpha: 0.78),
                   fontSize: 14.8.sp,
                 ),
               ),

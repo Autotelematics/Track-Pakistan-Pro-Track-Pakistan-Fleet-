@@ -48,105 +48,194 @@ class SingleVehicleInfoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final pressedOverlay = ConstantColor.primaryColor.withValues(alpha: .14);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 1.h),
-          children: [
-            // Text(
-            //   "Vehicle Info",
-            //   style: AppStyles.boldTextStyle(context).copyWith(
-            //     fontSize: 16.4.sp,
-            //     color: isDark ? AppColors.white : AppColors.textBlack,
-            //   ),
-            // ),
-            verticalSpace(height: 0.0.h),
-            _SensorsCard(sensors: sensors),
-            verticalSpace(height: 1.h),
-            _UpdateVehicleInfoCard(
-              deviceId: deviceId,
-              initialKmPerLiter: initialKmPerLiter,
-              initialEngineType: initialEngineType,
-              initialVehicleType: initialVehicleType,
+    return Theme(
+      data: theme.copyWith(
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 90),
+            elevation: WidgetStateProperty.resolveWith<double>(
+              (states) => states.contains(WidgetState.pressed) ? 0 : 2,
             ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 0,
-              icon: Icons.person_outline,
-              iconBg: const Color(0xFFEAF1FF),
-              iconColor: const Color(0xFF3B82F6),
-              title: l10n.driverAssignment,
-              actionText: l10n.assign,
-              bodyText: l10n.seeDriver,
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 1,
-              icon: Icons.assignment_turned_in,
-              iconBg: const Color(0xFFEAF1FF),
-              iconColor: const Color(0xFF3B82F6),
-              title: l10n.alertAssign,
-              actionText: l10n.assign,
-              bodyText: l10n.noAlertAssigned,
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 2,
-              icon: Icons.build_outlined,
-              iconBg: const Color(0xFFFFF3E8),
-              iconColor: const Color(0xFFF97316),
-              title: l10n.maintenance,
-              actionText: l10n.add,
-              bodyText: l10n.noUpcomingMaintenance,
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 3,
-              icon: Icons.attach_money,
-              iconBg: const Color(0xFFE9F9F1),
-              iconColor: const Color(0xFF10B981),
-              title: l10n.expenses,
-              subtitle: l10n.trackManageExpenses,
-              actionText: l10n.add,
-              bodyText: l10n.viewAllExpenses,
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 5,
-              icon: Icons.notifications_none_outlined,
-              iconBg: const Color(0xFFFFF1F2),
-              iconColor: const Color(0xFFE4395E),
-              title: l10n.reminders,
-              actionText: l10n.add,
-              bodyText: l10n.noActiveReminders,
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-            verticalSpace(height: 1.h),
-            _InfoCard(
-              index: 6,
-              icon: Icons.report_problem_outlined,
-              iconBg: const Color(0xFFFFF4E5),
-              iconColor: const Color(0xFFD97706),
-              title: l10n.complainVehicle,
-              subtitle: l10n.supportChatVehicle,
-              actionText: l10n.complain,
-              bodyText: l10n.talkToSupportVehicle(vehicleName),
-              deviceId: deviceId,
-              vehicleName: vehicleName,
-            ),
-          ],
+            overlayColor: WidgetStatePropertyAll<Color>(pressedOverlay),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 90),
+            overlayColor: WidgetStatePropertyAll<Color>(pressedOverlay),
+            side: WidgetStateProperty.resolveWith<BorderSide?>((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return BorderSide(
+                  color: ConstantColor.primaryColor.withValues(alpha: .35),
+                );
+              }
+              return null;
+            }),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 90),
+            overlayColor: WidgetStatePropertyAll<Color>(pressedOverlay),
+          ),
+        ),
+        iconButtonTheme: IconButtonThemeData(
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 90),
+            overlayColor: WidgetStatePropertyAll<Color>(pressedOverlay),
+          ),
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: SafeArea(
+          top: false,
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 1.h),
+            children: [
+              // Text(
+              //   "Vehicle Info",
+              //   style: AppStyles.boldTextStyle(context).copyWith(
+              //     fontSize: 16.4.sp,
+              //     color: isDark ? AppColors.white : AppColors.textBlack,
+              //   ),
+              // ),
+              verticalSpace(height: 0.0.h),
+              _SensorsCard(sensors: sensors),
+              verticalSpace(height: 1.h),
+              _UpdateVehicleInfoCard(
+                deviceId: deviceId,
+                initialKmPerLiter: initialKmPerLiter,
+                initialEngineType: initialEngineType,
+                initialVehicleType: initialVehicleType,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 0,
+                icon: Icons.person_outline,
+                iconBg: const Color(0xFFEAF1FF),
+                iconColor: const Color(0xFF3B82F6),
+                title: l10n.driverAssignment,
+                actionText: l10n.assign,
+                bodyText: l10n.seeDriver,
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 1,
+                icon: Icons.assignment_turned_in,
+                iconBg: const Color(0xFFEAF1FF),
+                iconColor: const Color(0xFF3B82F6),
+                title: l10n.alertAssign,
+                actionText: l10n.assign,
+                bodyText: l10n.noAlertAssigned,
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 2,
+                icon: Icons.build_outlined,
+                iconBg: const Color(0xFFFFF3E8),
+                iconColor: const Color(0xFFF97316),
+                title: l10n.maintenance,
+                actionText: l10n.add,
+                bodyText: l10n.noUpcomingMaintenance,
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 3,
+                icon: Icons.attach_money,
+                iconBg: const Color(0xFFE9F9F1),
+                iconColor: const Color(0xFF10B981),
+                title: l10n.expenses,
+                subtitle: l10n.trackManageExpenses,
+                actionText: l10n.add,
+                bodyText: l10n.viewAllExpenses,
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 5,
+                icon: Icons.notifications_none_outlined,
+                iconBg: const Color(0xFFFFF1F2),
+                iconColor: const Color(0xFFE4395E),
+                title: l10n.reminders,
+                actionText: l10n.add,
+                bodyText: l10n.noActiveReminders,
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+              verticalSpace(height: 1.h),
+              _InfoCard(
+                index: 6,
+                icon: Icons.report_problem_outlined,
+                iconBg: const Color(0xFFFFF4E5),
+                iconColor: const Color(0xFFD97706),
+                title: l10n.complainVehicle,
+                subtitle: l10n.supportChatVehicle,
+                actionText: l10n.complain,
+                bodyText: l10n.talkToSupportVehicle(vehicleName),
+                deviceId: deviceId,
+                vehicleName: vehicleName,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PushInkWell extends StatefulWidget {
+  final VoidCallback? onTap;
+  final BorderRadius? borderRadius;
+  final Widget child;
+  final double pressedScale;
+  final double pressedYOffset;
+
+  const _PushInkWell({
+    required this.onTap,
+    required this.child,
+    this.borderRadius,
+    this.pressedScale = 0.97,
+    this.pressedYOffset = 0.0,
+  });
+
+  @override
+  State<_PushInkWell> createState() => _PushInkWellState();
+}
+
+class _PushInkWellState extends State<_PushInkWell> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedPadding(
+      padding: EdgeInsets.only(top: _isPressed ? widget.pressedYOffset : 0),
+      duration: const Duration(milliseconds: 90),
+      curve: Curves.easeOutCubic,
+      child: AnimatedScale(
+        scale: _isPressed ? widget.pressedScale : 1.0,
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: widget.borderRadius,
+            onHighlightChanged: (pressed) {
+              if (_isPressed == pressed) return;
+              setState(() => _isPressed = pressed);
+            },
+            child: widget.child,
+          ),
         ),
       ),
     );
@@ -233,7 +322,7 @@ class _SensorsCard extends StatelessWidget {
                   Text(
                     l10n.sensorItemsCount(sensors.length),
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 11.2.sp,
+                      fontSize: 13.2.sp,
                       color: isDark ? Colors.white60 : Colors.black54,
                     ),
                   ),
@@ -292,7 +381,7 @@ class _SensorsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 12.1.sp,
+                          fontSize: 13.1.sp,
                           color: isDark ? AppColors.white : AppColors.textBlack,
                           fontWeight: FontWeight.w600,
                         ),
@@ -323,7 +412,7 @@ class _SensorsCard extends StatelessWidget {
                               textAlign: TextAlign.right,
                               style:
                                   AppStyles.semiboldTextStyle(context).copyWith(
-                                fontSize: 11.3.sp,
+                                fontSize: 12.3.sp,
                                 color: _getValueColor(value, isDark),
                               ),
                             ),
@@ -481,10 +570,12 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
               ),
               Consumer<UpdateDeviceDataProvider>(
                 builder: (context, provider, _) {
-                  return InkWell(
+                  return _PushInkWell(
                     onTap:
                         provider.isLoading ? null : () => _showUpdateDialog(),
                     borderRadius: BorderRadius.circular(16),
+                    pressedScale: 0.93,
+                    pressedYOffset: 1.4,
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: 3.0.w, vertical: .78.h),
@@ -523,7 +614,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                             l10n.update,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 11.4.sp,
+                              fontSize: 12.4.sp,
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -567,7 +658,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
             child: Text(
               title,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 11.7.sp,
+                fontSize: 13.5.sp,
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
             ),
@@ -575,7 +666,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           Text(
             value,
             style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 11.8.sp,
+              fontSize: 13.5.sp,
               color: isDark ? AppColors.white : AppColors.textBlack,
             ),
           ),
@@ -703,8 +794,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                                   value == null ||
                                   value <= 0) {
                                 AppSnackBar.error(
-                                  message:
-                                      l10n.pleaseEnterValidAveragePerLiter,
+                                  message: l10n.pleaseEnterValidAveragePerLiter,
                                 );
                                 return;
                               }
@@ -772,7 +862,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
     return Text(
       text,
       style: AppStyles.semiboldTextStyle(context).copyWith(
-        fontSize: 11.8.sp,
+        fontSize: 14.2.sp,
         color: isDark ? Colors.white70 : Colors.black87,
       ),
     );
@@ -795,7 +885,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textAlignVertical: TextAlignVertical.center,
         style: AppStyles.regularTextStyle(context).copyWith(
-          fontSize: 13.2.sp,
+          fontSize: 14.2.sp,
           color: isDark ? AppColors.white : AppColors.textBlack,
           fontWeight: FontWeight.w500,
         ),
@@ -805,7 +895,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           border: InputBorder.none,
           hintText: hintText,
           hintStyle: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.sp,
+            fontSize: 14.sp,
             color: isDark ? Colors.white54 : Colors.black45,
           ),
         ),
@@ -836,7 +926,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           hint: Text(
             hintText,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.sp,
+              fontSize: 14.sp,
               color: isDark ? Colors.white54 : Colors.black45,
             ),
           ),
@@ -908,7 +998,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
   }
 }
 
-class _InfoCard extends StatelessWidget {
+class _InfoCard extends StatefulWidget {
   final int index;
   final IconData icon;
   final Color iconBg;
@@ -933,12 +1023,36 @@ class _InfoCard extends StatelessWidget {
     required this.vehicleName,
   });
 
+  @override
+  State<_InfoCard> createState() => _InfoCardState();
+}
+
+class _InfoCardState extends State<_InfoCard> {
+  bool _isAlertAssignLoading = false;
+
+  int get index => widget.index;
+  IconData get icon => widget.icon;
+  Color get iconBg => widget.iconBg;
+  Color get iconColor => widget.iconColor;
+  String get title => widget.title;
+  String? get subtitle => widget.subtitle;
+  String get actionText => widget.actionText;
+  String get bodyText => widget.bodyText;
+  int get deviceId => widget.deviceId;
+  String get vehicleName => widget.vehicleName;
+
   Future<void> _onPrimaryTap(BuildContext context) async {
     final l10n = context.l10n;
     if (index == 0) {
       showAssignDriverPopup(context, deviceId.toString());
     } else if (index == 1) {
-      showAlertSettingsPopup(context, deviceId: deviceId);
+      if (_isAlertAssignLoading) return;
+      setState(() => _isAlertAssignLoading = true);
+      try {
+        await showAlertSettingsPopup(context, deviceId: deviceId);
+      } finally {
+        if (mounted) setState(() => _isAlertAssignLoading = false);
+      }
     } else if (index == 2) {
       final formData = await showServiceFormDialog(context);
       if (formData == null) return;
@@ -1139,7 +1253,7 @@ class _InfoCard extends StatelessWidget {
                               subtitle!,
                               style:
                                   AppStyles.regularTextStyle(context).copyWith(
-                                fontSize: 11.4.sp,
+                                fontSize: 13.0.sp,
                                 color: isDark ? Colors.white70 : Colors.black54,
                               ),
                             ),
@@ -1147,9 +1261,13 @@ class _InfoCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  InkWell(
-                    onTap: () => _onPrimaryTap(context),
+                  _PushInkWell(
+                    onTap: index == 1 && _isAlertAssignLoading
+                        ? null
+                        : () => _onPrimaryTap(context),
                     borderRadius: BorderRadius.circular(16),
+                    pressedScale: 0.93,
+                    pressedYOffset: 1.4,
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: 3.0.w, vertical: .78.h),
@@ -1169,21 +1287,31 @@ class _InfoCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            index == 0
-                                ? Icons.person_outline
-                                : index == 6
-                                    ? Icons.chat_rounded
-                                : Icons.add_rounded,
-                            size: 1.75.h,
-                            color: Colors.white,
-                          ),
+                          if (index == 1 && _isAlertAssignLoading)
+                            SizedBox(
+                              height: 1.75.h,
+                              width: 1.75.h,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          else
+                            Icon(
+                              index == 0
+                                  ? Icons.person_outline
+                                  : index == 6
+                                      ? Icons.chat_rounded
+                                      : Icons.add_rounded,
+                              size: 1.75.h,
+                              color: Colors.white,
+                            ),
                           horizontalSpace(width: .8.w),
                           Text(
                             actionText,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 11.4.sp,
+                              fontSize: 13.0.sp,
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1222,7 +1350,7 @@ class _InfoCard extends StatelessWidget {
                               color: isDark ? Colors.white12 : Colors.black12,
                             ),
                           ),
-                          child: InkWell(
+                          child: _PushInkWell(
                             onTap: () {
                               _showReminderListBottomSheet(
                                 context,
@@ -1241,7 +1369,7 @@ class _InfoCard extends StatelessWidget {
                                       activeReminderText,
                                       style: AppStyles.regularTextStyle(context)
                                           .copyWith(
-                                        fontSize: 12.1.sp,
+                                        fontSize: 14.0.sp,
                                         color: isDark
                                             ? AppColors.white
                                             : AppColors.textBlack,
@@ -1272,7 +1400,7 @@ class _InfoCard extends StatelessWidget {
                               color: isDark ? Colors.white12 : Colors.black12,
                             ),
                           ),
-                          child: InkWell(
+                          child: _PushInkWell(
                             onTap: () {
                               _showOldReminderHistoryBottomSheet(
                                 context,
@@ -1291,7 +1419,7 @@ class _InfoCard extends StatelessWidget {
                                       pastReminderText,
                                       style: AppStyles.regularTextStyle(context)
                                           .copyWith(
-                                        fontSize: 12.1.sp,
+                                        fontSize: 14.0.sp,
                                         color: isDark
                                             ? AppColors.white
                                             : AppColors.textBlack,
@@ -1315,7 +1443,7 @@ class _InfoCard extends StatelessWidget {
                     ),
                   )
                 else
-                  InkWell(
+                  _PushInkWell(
                     onTap: () => _onBodyTap(context),
                     child: Container(
                       width: double.infinity,
@@ -1338,7 +1466,7 @@ class _InfoCard extends StatelessWidget {
                           Text(
                             bodyText,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.2.sp,
+                              fontSize: 13.5.sp,
                               color: index == 0
                                   ? AppColors.white
                                   : (isDark
@@ -1427,7 +1555,7 @@ void _showReminderListBottomSheet(
                           Text(
                             vehicleName,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.sp,
+                              fontSize: 13.sp,
                               color: onSurface.withValues(alpha: .62),
                             ),
                           ),
@@ -1435,7 +1563,7 @@ void _showReminderListBottomSheet(
                           Text(
                             l10n.noActiveReminders,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               color: onSurface.withValues(alpha: .65),
                             ),
                           ),
@@ -1482,7 +1610,7 @@ void _showReminderListBottomSheet(
                         Text(
                           vehicleName,
                           style: AppStyles.regularTextStyle(context).copyWith(
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                             color: onSurface.withValues(alpha: .62),
                           ),
                         ),
@@ -1605,7 +1733,7 @@ void _showOldReminderHistoryBottomSheet(
                         Text(
                           vehicleName,
                           style: AppStyles.regularTextStyle(context).copyWith(
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                             color: onSurface.withValues(alpha: .62),
                           ),
                         ),
@@ -1613,7 +1741,7 @@ void _showOldReminderHistoryBottomSheet(
                         Text(
                           l10n.noOldReminders,
                           style: AppStyles.regularTextStyle(context).copyWith(
-                            fontSize: 12.8.sp,
+                            fontSize: 13.8.sp,
                             color: onSurface.withValues(alpha: .65),
                           ),
                         ),
@@ -1642,7 +1770,7 @@ void _showOldReminderHistoryBottomSheet(
                         Text(
                           vehicleName,
                           style: AppStyles.regularTextStyle(context).copyWith(
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                             color: onSurface.withValues(alpha: .62),
                           ),
                         ),
@@ -1758,7 +1886,7 @@ void _showExpenseListBottomSheet(
                     Text(
                       vehicleName,
                       style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 12.sp,
+                        fontSize: 13.sp,
                         color: onSurface.withValues(alpha: .62),
                       ),
                     ),
@@ -1789,14 +1917,15 @@ void _showExpenseListBottomSheet(
                       child: Row(
                         children: [
                           Expanded(
-                            child: InkWell(
+                            child: _PushInkWell(
                               onTap: () async {
                                 final now = DateTime.now();
                                 final today =
                                     DateTime(now.year, now.month, now.day);
                                 final toBound = provider.toDate == null
                                     ? today
-                                    : DateTime(provider.toDate!.year,
+                                    : DateTime(
+                                        provider.toDate!.year,
                                         provider.toDate!.month,
                                         provider.toDate!.day);
                                 final picked = await showDatePicker(
@@ -1838,14 +1967,15 @@ void _showExpenseListBottomSheet(
                           ),
                           horizontalSpace(width: 2.w),
                           Expanded(
-                            child: InkWell(
+                            child: _PushInkWell(
                               onTap: () async {
                                 final now = DateTime.now();
                                 final today =
                                     DateTime(now.year, now.month, now.day);
                                 final fromBound = provider.fromDate == null
                                     ? DateTime(2020)
-                                    : DateTime(provider.fromDate!.year,
+                                    : DateTime(
+                                        provider.fromDate!.year,
                                         provider.fromDate!.month,
                                         provider.fromDate!.day);
                                 final picked = await showDatePicker(
@@ -1915,7 +2045,7 @@ void _showExpenseListBottomSheet(
                           child: Text(
                             l10n.noExpensesRecorded,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               color: onSurface.withValues(alpha: .65),
                             ),
                           ),
@@ -2048,7 +2178,7 @@ void _showServiceListBottomSheet(
                     Text(
                       vehicleName,
                       style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 12.sp,
+                        fontSize: 13.sp,
                         color: onSurface.withValues(alpha: .62),
                       ),
                     ),
@@ -2071,7 +2201,7 @@ void _showServiceListBottomSheet(
                           child: Text(
                             l10n.noServicesRecorded,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.8.sp,
                               color: onSurface.withValues(alpha: .65),
                             ),
                           ),
@@ -2319,7 +2449,7 @@ class _ExpenseListTile extends StatelessWidget {
                   ),
                 ),
               ),
-              InkWell(
+              _PushInkWell(
                 onTap: onEdit,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2332,7 +2462,7 @@ class _ExpenseListTile extends StatelessWidget {
                 ),
               ),
               horizontalSpace(width: .8.w),
-              InkWell(
+              _PushInkWell(
                 onTap: onDelete,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2366,7 +2496,7 @@ class _ExpenseListTile extends StatelessWidget {
               expense.unitCost.toStringAsFixed(2),
             ),
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.8.sp,
+              fontSize: 13.8.sp,
               color: onSurface.withValues(alpha: .72),
             ),
           ),
@@ -2375,7 +2505,7 @@ class _ExpenseListTile extends StatelessWidget {
             Text(
               l10n.supplierValue(expense.supplier),
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.8.sp,
+                fontSize: 13.8.sp,
                 color: onSurface.withValues(alpha: .72),
               ),
             ),
@@ -2416,10 +2546,9 @@ class _ServiceListTile extends StatelessWidget {
     final remindDate = service.remindDate == null
         ? "-"
         : DateFormat('dd/MM/yyyy').format(service.remindDate!);
-    final title =
-        service.name.isEmpty
-            ? context.l10n.serviceNumber(service.id)
-            : service.name;
+    final title = service.name.isEmpty
+        ? context.l10n.serviceNumber(service.id)
+        : service.name;
     final l10n = context.l10n;
 
     return Container(
@@ -2448,7 +2577,7 @@ class _ServiceListTile extends StatelessWidget {
                   ),
                 ),
               ),
-              InkWell(
+              _PushInkWell(
                 onTap: onEdit,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2461,7 +2590,7 @@ class _ServiceListTile extends StatelessWidget {
                 ),
               ),
               horizontalSpace(width: .8.w),
-              InkWell(
+              _PushInkWell(
                 onTap: onDelete,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2494,7 +2623,7 @@ class _ServiceListTile extends StatelessWidget {
               service.lastService.isEmpty ? '-' : service.lastService,
             ),
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.8.sp,
+              fontSize: 13.8.sp,
               color: onSurface.withValues(alpha: .72),
             ),
           ),
@@ -2502,7 +2631,7 @@ class _ServiceListTile extends StatelessWidget {
           Text(
             l10n.expiresRemindRow(expiresDate, remindDate),
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.8.sp,
+              fontSize: 13.8.sp,
               color: onSurface.withValues(alpha: .72),
             ),
           ),
@@ -2513,7 +2642,7 @@ class _ServiceListTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.8.sp,
+                fontSize: 13.8.sp,
                 color: onSurface.withValues(alpha: .72),
               ),
             ),
@@ -2587,7 +2716,7 @@ class _ReminderTile extends StatelessWidget {
                   ),
                 ),
               ),
-              InkWell(
+              _PushInkWell(
                 onTap: onEdit,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2600,7 +2729,7 @@ class _ReminderTile extends StatelessWidget {
                 ),
               ),
               horizontalSpace(width: .8.w),
-              InkWell(
+              _PushInkWell(
                 onTap: onDelete,
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
@@ -2630,7 +2759,7 @@ class _ReminderTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.6.sp,
+              fontSize: 13.6.sp,
               fontWeight: FontWeight.w600,
               color: reminder.repeatType == "none"
                   ? onSurface.withValues(alpha: .62)
@@ -2646,7 +2775,7 @@ class _ReminderTile extends StatelessWidget {
               Text(
                 dueDate,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.7.sp,
+                  fontSize: 13.7.sp,
                   color: onSurface.withValues(alpha: .8),
                 ),
               ),
@@ -2657,7 +2786,7 @@ class _ReminderTile extends StatelessWidget {
               Text(
                 dueTime,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.7.sp,
+                  fontSize: 13.7.sp,
                   color: onSurface.withValues(alpha: .8),
                 ),
               ),

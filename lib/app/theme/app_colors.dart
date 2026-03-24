@@ -7,7 +7,7 @@ class AppColors {
   static Color green = Color(0xff1fbd4c);
   static Color red = Color(0xFFE83F25);
   static Color blueCyan =  Colors.blue;
-  static Color blueCyanWithOpacity = Color(0xFF0066FF).withOpacity(0.6);
+  static Color blueCyanWithOpacity = Color(0xFF0066FF).withValues(alpha: 0.6);
   static Color grey = Color(0xffD1D3D4);
   static Color black = Color(0xff000000);
   static Color textBlack = Color(0xff1c1c1c);

@@ -49,8 +49,8 @@ class MaintenanceCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.black.withOpacity(0.12),
+                ? Colors.black.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isDark ? 14 : 10,
             offset: const Offset(0, 4),
           ),
@@ -69,25 +69,25 @@ class MaintenanceCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.h),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: onSurface.withOpacity(0.08)),
+              border: Border.all(color: onSurface.withValues(alpha: 0.08)),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.02),
-                        Colors.white.withOpacity(0.01),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.white.withValues(alpha: 0.01),
                       ]
                     : [
-                        Colors.white.withOpacity(0.95),
+                        Colors.white.withValues(alpha: 0.95),
                         Colors.grey.shade50,
                       ],
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withOpacity(0.25)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -106,7 +106,7 @@ class MaintenanceCard extends StatelessWidget {
                     items: valid,
                   ),
                 ),
-                Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
+                Divider(height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
                 _maintenanceRow(
                   context,
                   title: context.l10n.dueSoon,
@@ -118,7 +118,7 @@ class MaintenanceCard extends StatelessWidget {
                     items: due,
                   ),
                 ),
-                Divider(height: 1.7.h, color: onSurface.withOpacity(0.12)),
+                Divider(height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
                 _maintenanceRow(
                   context,
                   title: context.l10n.overdue,
@@ -160,7 +160,7 @@ class MaintenanceCard extends StatelessWidget {
               height: 3.3.h,
               width: 3.3.h,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.14),
+                color: iconColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -185,9 +185,9 @@ class MaintenanceCard extends StatelessWidget {
               padding:
                   EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0.45.h),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(isCritical ? 0.18 : 0.12),
+                color: iconColor.withValues(alpha: isCritical ? 0.18 : 0.12),
                 borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: iconColor.withOpacity(0.28)),
+                border: Border.all(color: iconColor.withValues(alpha: 0.28)),
               ),
               child: Text(
                 context.l10n.itemsCount(count),
@@ -200,8 +200,8 @@ class MaintenanceCard extends StatelessWidget {
               Icons.arrow_forward_ios_rounded,
               size: (15 * iconScale).sp,
               color: isCritical
-                  ? iconColor.withOpacity(0.85)
-                  : onSurface.withOpacity(0.45),
+                  ? iconColor.withValues(alpha: 0.85)
+                  : onSurface.withValues(alpha: 0.45),
             ),
           ],
         ),

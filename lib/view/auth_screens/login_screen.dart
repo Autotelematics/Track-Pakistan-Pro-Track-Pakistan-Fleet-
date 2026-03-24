@@ -11,7 +11,6 @@ import 'package:trackerapp/utils/app_validators.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/custom_text_field.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,11 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
     }
-  }
-
-  Future<void> _launchExternal(String url) async {
-    final uri = Uri.parse(url);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -480,46 +474,6 @@ class _GlowOrb extends StatelessWidget {
               color.withValues(alpha: 0.0),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.child,
-    required this.onTap,
-    required this.tooltip,
-  });
-
-  final Widget child;
-  final VoidCallback onTap;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(100),
-        onTap: onTap,
-        child: Container(
-          width: 11.w,
-          height: 11.w,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: theme.cardColor.withValues(alpha: isDark ? .5 : .9),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: .22)
-                  : Colors.black.withValues(alpha: .08),
-            ),
-          ),
-          child: child,
         ),
       ),
     );

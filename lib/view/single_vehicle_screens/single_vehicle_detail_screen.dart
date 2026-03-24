@@ -5,13 +5,13 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_analytics_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_history_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_info_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_notifications_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_report_type_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_tracking_screen.dart';
-import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
@@ -100,7 +100,8 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
           insetPadding: EdgeInsets.symmetric(horizontal: 9.w),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.white,
+          backgroundColor:
+              isDark ? theme.scaffoldBackgroundColor : Colors.white,
           child: Padding(
             padding: EdgeInsets.fromLTRB(4.2.w, 1.8.h, 4.2.w, 1.3.h),
             child: Column(
@@ -341,8 +342,8 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   colors: [
                     ConstantColor.secondaryColor,
                     ConstantColor.secondaryColor,
-                    ConstantColor.secondaryColor.withOpacity(0.5),
-                    ConstantColor.secondaryColor.withOpacity(0.5),
+                    ConstantColor.secondaryColor.withValues(alpha: 0.5),
+                    ConstantColor.secondaryColor.withValues(alpha: 0.5),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -351,7 +352,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black.withValues(alpha: 0.12),
                     offset: const Offset(0, 4),
                     blurRadius: 20,
                   ),
@@ -441,12 +442,12 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   ],
                 ),
                 labelStyle: AppStyles.statusTitle(context).copyWith(
-                  fontSize: 13.sp,
+                  fontSize: 14.sp,
                   color: AppColors.white,
                   fontWeight: FontWeight.w700,
                 ),
                 unselectedLabelStyle: AppStyles.statusTitle(context).copyWith(
-                  fontSize: 13.sp,
+                  fontSize: 14.sp,
                   color: isDark ? AppColors.white : AppColors.black,
                   fontWeight: FontWeight.w600,
                 ),
@@ -454,11 +455,15 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   Tab(
                       icon: const Icon(Icons.location_on_outlined),
                       text: l10n.liveTab),
-                  Tab(icon: const Icon(Icons.bar_chart), text: l10n.analyticsTab),
+                  Tab(
+                      icon: const Icon(Icons.bar_chart),
+                      text: l10n.analyticsTab),
                   Tab(
                       icon: const Icon(Icons.description_outlined),
                       text: l10n.reportTab),
-                  Tab(icon: const Icon(Icons.access_time), text: l10n.historyTab),
+                  Tab(
+                      icon: const Icon(Icons.access_time),
+                      text: l10n.historyTab),
                   Tab(
                       icon: const Icon(Icons.notifications_none),
                       text: l10n.alertsTabLong),

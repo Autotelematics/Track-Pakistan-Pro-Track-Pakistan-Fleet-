@@ -55,8 +55,8 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.black.withOpacity(0.12),
+                ? Colors.black.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isDark ? 14 : 10,
             offset: const Offset(0, 4),
           )
@@ -75,25 +75,25 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
             padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.1.h),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: onSurface.withOpacity(0.08)),
+              border: Border.all(color: onSurface.withValues(alpha: 0.08)),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.02),
-                        Colors.white.withOpacity(0.01),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.white.withValues(alpha: 0.01),
                       ]
                     : [
-                        Colors.white.withOpacity(0.95),
+                        Colors.white.withValues(alpha: 0.95),
                         Colors.grey.shade50,
                       ],
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withOpacity(0.25)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -156,8 +156,8 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: gradient.first.withOpacity(0.14),
-                  border: Border.all(color: gradient.first.withOpacity(0.45)),
+                  color: gradient.first.withValues(alpha: 0.14),
+                  border: Border.all(color: gradient.first.withValues(alpha: 0.45)),
                 ),
                 child: Text(
                   rankText,
@@ -183,13 +183,13 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                     EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 0.4.h),
                 decoration: BoxDecoration(
                   color: isHighest
-                      ? const Color(0xFFDC2626).withOpacity(0.12)
-                      : onSurface.withOpacity(0.08),
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.12)
+                      : onSurface.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isHighest
-                        ? const Color(0xFFDC2626).withOpacity(0.35)
-                        : onSurface.withOpacity(0.12),
+                        ? const Color(0xFFDC2626).withValues(alpha: 0.35)
+                        : onSurface.withValues(alpha: 0.12),
                   ),
                 ),
                 child: Text(
@@ -210,7 +210,7 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                   Container(
                     height: 1.45.h,
                     decoration: BoxDecoration(
-                      color: onSurface.withOpacity(0.08),
+                      color: onSurface.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -230,7 +230,7 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: gradient.last.withOpacity(0.30),
+                          color: gradient.last.withValues(alpha: 0.30),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),

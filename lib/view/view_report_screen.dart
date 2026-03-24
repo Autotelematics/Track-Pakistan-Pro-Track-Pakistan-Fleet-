@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:share_plus/share_plus.dart';
@@ -23,6 +26,13 @@ class ViewReportScreen extends StatefulWidget {
 
 class _ViewReportScreenState extends State<ViewReportScreen> {
   bool _hasLaunchedBrowser = false;
+  String? _resolvedUrl;
+  bool _isResolvingContent = false;
+  String? _contentResolveError;
+  bool _resolvedIsPdf = false;
+  bool _resolvedIsImage = false;
+  bool _resolvedIsHtml = false;
+  Uint8List? _resolvedBytes;
 
   @override
   void initState() {
@@ -54,6 +64,114 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
         widget.reportData.reportFormat.toLowerCase() == 'html';
   }
 
+  bool _shouldOpenExternallyByFormat() {
+    final format = widget.reportData.reportFormat.toLowerCase().trim();
+    return format == 'html' ||
+        format == 'xls' ||
+        format == 'xlsx' ||
+        format == 'csv';
+  }
+
+  bool _looksLikePdf(Uint8List bytes) {
+    if (bytes.length < 5) return false;
+    return bytes[0] == 0x25 && // %
+        bytes[1] == 0x50 && // P
+        bytes[2] == 0x44 && // D
+        bytes[3] == 0x46 && // F
+        bytes[4] == 0x2D; // -
+  }
+
+  bool _looksLikePng(Uint8List bytes) {
+    if (bytes.length < 8) return false;
+    return bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47 &&
+        bytes[4] == 0x0D &&
+        bytes[5] == 0x0A &&
+        bytes[6] == 0x1A &&
+        bytes[7] == 0x0A;
+  }
+
+  bool _looksLikeJpeg(Uint8List bytes) {
+    if (bytes.length < 3) return false;
+    return bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
+  }
+
+  bool _looksLikeGif(Uint8List bytes) {
+    if (bytes.length < 6) return false;
+    final header = String.fromCharCodes(bytes.sublist(0, 6));
+    return header == 'GIF87a' || header == 'GIF89a';
+  }
+
+  bool _looksLikeWebp(Uint8List bytes) {
+    if (bytes.length < 12) return false;
+    final riff = String.fromCharCodes(bytes.sublist(0, 4));
+    final webp = String.fromCharCodes(bytes.sublist(8, 12));
+    return riff == 'RIFF' && webp == 'WEBP';
+  }
+
+  bool _looksLikeHtml(Uint8List bytes) {
+    if (bytes.isEmpty) return false;
+    final head = String.fromCharCodes(
+      bytes.take(bytes.length > 300 ? 300 : bytes.length),
+    ).toLowerCase();
+    return head.contains('<!doctype html') ||
+        head.contains('<html') ||
+        head.contains('<body');
+  }
+
+  Future<void> _resolveReportContent(String url) async {
+    if (_isResolvingContent && _resolvedUrl == url) return;
+    setState(() {
+      _resolvedUrl = url;
+      _isResolvingContent = true;
+      _contentResolveError = null;
+      _resolvedIsPdf = false;
+      _resolvedIsImage = false;
+      _resolvedIsHtml = false;
+      _resolvedBytes = null;
+    });
+
+    try {
+      final uri = Uri.parse(url);
+      final response = await http.get(uri).timeout(const Duration(seconds: 45));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Server returned ${response.statusCode}');
+      }
+
+      final bytes = response.bodyBytes;
+      final contentType = (response.headers['content-type'] ?? '').toLowerCase();
+
+      final isPdf = contentType.contains('application/pdf') || _looksLikePdf(bytes);
+      final isImage = contentType.startsWith('image/') ||
+          _looksLikePng(bytes) ||
+          _looksLikeJpeg(bytes) ||
+          _looksLikeGif(bytes) ||
+          _looksLikeWebp(bytes);
+      final isHtml = contentType.contains('text/html') || _looksLikeHtml(bytes);
+
+      if (!mounted) return;
+      setState(() {
+        _resolvedBytes = bytes;
+        _resolvedIsPdf = isPdf;
+        _resolvedIsImage = isImage;
+        _resolvedIsHtml = isHtml;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _contentResolveError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResolvingContent = false;
+        });
+      }
+    }
+  }
+
   Widget _buildActionButton({
     required IconData icon,
     required Color color,
@@ -68,7 +186,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: Colors.grey.withValues(alpha: 0.2),
               spreadRadius: 3,
               blurRadius: 5,
               offset: const Offset(2, 2),
@@ -137,6 +255,48 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
             return const Center(child: Text('No report URL available'));
           }
           final url = provider.generatedReport!.url!;
+          if (_shouldOpenExternallyByFormat()) {
+            if (!_hasLaunchedBrowser) {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!mounted) return;
+                setState(() => _hasLaunchedBrowser = true);
+                try {
+                  await _launchURL(url);
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  if (!mounted) return;
+                  Navigator.pop(this.context);
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(content: Text('Failed to open report: $e')),
+                  );
+                  setState(() => _hasLaunchedBrowser = false);
+                }
+              });
+            }
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  const Text('Opening report in external app...'),
+                  const SizedBox(height: 16),
+                  if (_hasLaunchedBrowser)
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                    ),
+                ],
+              ),
+            );
+          }
+          if (_resolvedUrl != url && !_isHtmlContent()) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              _resolveReportContent(url);
+            });
+          }
           if (_isHtmlContent()) {
             if (!_hasLaunchedBrowser) {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -146,18 +306,16 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                 try {
                   await _launchURL(url);
                   await Future.delayed(const Duration(seconds: 1));
-                  if (mounted) {
-                    Navigator.pop(context);
-                  }
+                  if (!mounted) return;
+                  Navigator.pop(this.context);
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to open browser: $e')),
-                    );
-                    setState(() {
-                      _hasLaunchedBrowser = false;
-                    });
-                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(content: Text('Failed to open browser: $e')),
+                  );
+                  setState(() {
+                    _hasLaunchedBrowser = false;
+                  });
                 }
               });
             }
@@ -180,13 +338,77 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
           }
 
           // Handle image URLs
-          if (_isImageUrl(url)) {
+          if (_isResolvingContent) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading report...',
+                    style: TextStyle(fontSize: 14.sp),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (_contentResolveError != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Failed to load report content',
+                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _contentResolveError!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12.sp),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => _launchURL(url),
+                    child: const Text('Open In Browser'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (_resolvedIsHtml && !_hasLaunchedBrowser) {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+              setState(() => _hasLaunchedBrowser = true);
+              await _launchURL(url);
+              if (!mounted) return;
+              Navigator.pop(this.context);
+            });
+          }
+
+          if (_resolvedIsImage || (_isImageUrl(url) && _resolvedBytes == null)) {
             return Stack(
               alignment: Alignment.topCenter,
               children: [
                 Center(
-                  child: Image.network(
-                    url,
+                  child: _resolvedBytes != null
+                      ? Image.memory(
+                          _resolvedBytes!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Text(
+                              'Failed to load image',
+                              style: TextStyle(fontSize: 14.sp, color: Colors.red),
+                            ),
+                          ),
+                        )
+                      : Image.network(
+                          url,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => Center(
                       child: Text(
@@ -214,7 +436,9 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                       _buildActionButton(
                         icon: Icons.share,
                         color: Colors.green,
-                        onTap: () => Share.share(url),
+                        onTap: () => SharePlus.instance.share(
+                          ShareParams(text: url),
+                        ),
                       ),
                     ],
                   ),
@@ -223,12 +447,40 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
             );
           }
 
+          if (!_resolvedIsPdf || _resolvedBytes == null || _resolvedBytes!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.insert_drive_file_outlined,
+                      color: Colors.orange, size: 48),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Unsupported report format',
+                    style:
+                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Open this report in browser instead.',
+                    style: TextStyle(fontSize: 12.sp),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => _launchURL(url),
+                    child: const Text('Open In Browser'),
+                  ),
+                ],
+              ),
+            );
+          }
+
           // Default: PDF viewer
           return Stack(
             alignment: Alignment.topCenter,
             children: [
-              SfPdfViewer.network(
-                url,
+              SfPdfViewer.memory(
+                _resolvedBytes!,
                 initialZoomLevel: 0,
                 pageSpacing: 0,
                 enableDoubleTapZooming: true,
@@ -255,7 +507,9 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                     _buildActionButton(
                       icon: Icons.share,
                       color: Colors.green,
-                      onTap: () => Share.share(url),
+                      onTap: () => SharePlus.instance.share(
+                        ShareParams(text: url),
+                      ),
                     ),
                   ],
                 ),

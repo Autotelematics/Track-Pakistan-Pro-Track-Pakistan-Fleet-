@@ -11,13 +11,12 @@ import 'package:trackerapp/data/repositories/vehicle_repository.dart';
 class VehicleMapProvider extends ChangeNotifier {
   final VehicleRepository repository = VehicleRepository();
   bool _isDisposed = false;
-  static const double _sharedMarkerIconPx = 90.0;
+  static const double _sharedMarkerIconPx = 30.0;
+  static const double _labelScale = 0.65;
+  static const double _markerRenderScale = 3.0;
   // No-label markers can look visually larger than labeled markers on map,
   // so keep a slightly smaller base size for non-labeled mode.
   static const double _plainMarkerScale = 1.0;
-  static const double _labelFontSize = 20.0;
-  static const double _labelPadding = 10.0;
-  static const double _labelMinWidth = 90.0;
 
   GetDevicesListModel? deviceListModel;
   Set<Marker> deviceMarkers = {};
@@ -69,6 +68,9 @@ class VehicleMapProvider extends ChangeNotifier {
 
   final Map<String, BitmapDescriptor> _labeledIcons = {};
 
+  static String get _labelStyleToken =>
+      '$_sharedMarkerIconPx|$_labelScale|$_markerRenderScale';
+
   DateTime? _lastTapTime;
   int? _lastTappedDeviceId;
 
@@ -83,6 +85,8 @@ class VehicleMapProvider extends ChangeNotifier {
 
   Future<void> _loadMarkerIcons() async {
     const plainMarkerPx = _sharedMarkerIconPx * _plainMarkerScale;
+    _icons.clear();
+    _labeledIcons.clear();
 
     for (var entry in _assetPaths.entries) {
       _icons[entry.key] =
@@ -95,15 +99,26 @@ class VehicleMapProvider extends ChangeNotifier {
 
   Future<BitmapDescriptor> _createResizedAssetIcon(
       String assetPath, int targetPx) async {
+    final double logicalPx = targetPx.toDouble();
+    final int physicalPx = (logicalPx * _markerRenderScale).round();
     final ByteData iconData = await rootBundle.load(assetPath);
     final ui.Codec iconCodec = await ui.instantiateImageCodec(
       iconData.buffer.asUint8List(),
-      targetHeight: targetPx,
+      targetHeight: physicalPx,
     );
     final ui.FrameInfo frame = await iconCodec.getNextFrame();
+    final double logicalWidth =
+        frame.image.width.toDouble() / _markerRenderScale;
+    final double logicalHeight =
+        frame.image.height.toDouble() / _markerRenderScale;
     final ByteData? pngBytes =
         await frame.image.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.fromBytes(pngBytes!.buffer.asUint8List());
+    return BitmapDescriptor.bytes(
+      pngBytes!.buffer.asUint8List(),
+      width: logicalWidth,
+      height: logicalHeight,
+      imagePixelRatio: _markerRenderScale,
+    );
   }
 
   String _getIconColorKey(String? online, String? time) {
@@ -159,18 +174,22 @@ class VehicleMapProvider extends ChangeNotifier {
     final ByteData iconData = await rootBundle.load(assetPath);
     final ui.Codec iconCodec = await ui.instantiateImageCodec(
       iconData.buffer.asUint8List(),
-      targetHeight: _sharedMarkerIconPx.toInt(),
+      targetHeight: (_sharedMarkerIconPx * _markerRenderScale).round(),
     );
     final ui.FrameInfo fi = await iconCodec.getNextFrame();
     final ui.Image baseIcon = fi.image;
 
-    final double iconWidth = baseIcon.width.toDouble();
-    final double iconHeight = baseIcon.height.toDouble();
+    final double iconWidth = baseIcon.width.toDouble() / _markerRenderScale;
+    final double iconHeight = baseIcon.height.toDouble() / _markerRenderScale;
 
-    // Text settings
-    const double fontSize = _labelFontSize;
-    const double padding = _labelPadding;
-    const double minLabelWidth = _labelMinWidth;
+    // Label geometry scales with marker icon size, so changing
+    // _sharedMarkerIconPx automatically keeps label proportions balanced.
+    final double fontSize =
+        math.max(3.0, _sharedMarkerIconPx * 0.30 * _labelScale);
+    final double padding =
+        math.max(1.0, _sharedMarkerIconPx * 0.13 * _labelScale);
+    final double minLabelWidth =
+        math.max(10.0, _sharedMarkerIconPx * 1.35 * _labelScale);
 
     final TextPainter tp = TextPainter(textDirection: TextDirection.ltr);
     tp.text = TextSpan(
@@ -186,29 +205,41 @@ class VehicleMapProvider extends ChangeNotifier {
     double labelWidth = math.max(tp.width + padding * 2, minLabelWidth);
     double labelHeight = tp.height + padding * 2;
 
-    const double cornerRadius = 14.0;
+    final double cornerRadius =
+        math.max(4.0, _sharedMarkerIconPx * 0.20 * _labelScale);
 
     // Arrow (tail) settings
-    const double arrowBaseWidth = 28.0;
-    const double arrowHeight = 16.0;
+    final double arrowBaseWidth =
+        math.max(6.0, _sharedMarkerIconPx * 0.40 * _labelScale);
+    final double arrowHeight =
+        math.max(4.0, _sharedMarkerIconPx * 0.22 * _labelScale);
 
     // Space between arrow tip and vehicle icon
-    const double gap = 12.0;
+    final double gap = math.max(2.0, _sharedMarkerIconPx * 0.16 * _labelScale);
 
     // Total canvas size
-    final double totalWidth = math.max(labelWidth, iconWidth + 24);
+    final double totalWidth =
+        math.max(labelWidth, iconWidth + (_sharedMarkerIconPx * 0.35));
     final double totalHeight = labelHeight + arrowHeight + gap + iconHeight;
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas canvas =
-        Canvas(recorder, Rect.fromLTWH(0, 0, totalWidth, totalHeight));
+    final Canvas canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(
+        0,
+        0,
+        totalWidth * _markerRenderScale,
+        totalHeight * _markerRenderScale,
+      ),
+    );
+    canvas.scale(_markerRenderScale);
 
     // Paints
     final Paint fillPaint = Paint()..color = Colors.white;
     final Paint borderPaint = Paint()
       ..color = statusColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5;
+      ..strokeWidth = math.max(0.8, _sharedMarkerIconPx * 0.05 * _labelScale);
 
     // Draw label bubble (white background)
     final double bubbleLeft = (totalWidth - labelWidth) / 2;
@@ -242,16 +273,31 @@ class VehicleMapProvider extends ChangeNotifier {
     // Draw vehicle icon without rotation; marker rotation will handle heading
     final double iconLeft = (totalWidth - iconWidth) / 2;
     final double iconTop = labelHeight + arrowHeight + gap;
-    canvas.drawImage(baseIcon, Offset(iconLeft, iconTop), Paint());
+    canvas.drawImageRect(
+      baseIcon,
+      Rect.fromLTWH(
+        0,
+        0,
+        baseIcon.width.toDouble(),
+        baseIcon.height.toDouble(),
+      ),
+      Rect.fromLTWH(iconLeft, iconTop, iconWidth, iconHeight),
+      Paint(),
+    );
 
     final ui.Image finalImage = await recorder.endRecording().toImage(
-          totalWidth.toInt(),
-          totalHeight.toInt(),
+          (totalWidth * _markerRenderScale).round(),
+          (totalHeight * _markerRenderScale).round(),
         );
     final ByteData? byteData =
         await finalImage.toByteData(format: ui.ImageByteFormat.png);
 
-    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+    return BitmapDescriptor.bytes(
+      byteData!.buffer.asUint8List(),
+      width: totalWidth,
+      height: totalHeight,
+      imagePixelRatio: _markerRenderScale,
+    );
   }
 
   List<Item> _getFilteredItems() {
@@ -629,7 +675,8 @@ class VehicleMapProvider extends ChangeNotifier {
       final int rotKey =
           vehicleRotation.round(); // Keep label direction close to exact course
 
-      final cacheKey = '$iconKey|${item.name ?? "Unknown"}|$rotKey';
+      final cacheKey =
+          '$_labelStyleToken|$iconKey|${item.name ?? "Unknown"}|$rotKey';
       final BitmapDescriptor labeledIcon = _labeledIcons[cacheKey] ??=
           await _createLabeledMarker(
               assetPath, item.name ?? 'Vehicle', statusColor);
@@ -668,7 +715,7 @@ class VehicleMapProvider extends ChangeNotifier {
     if (_lastTapTime != null &&
         _lastTappedDeviceId == deviceId &&
         now.difference(_lastTapTime!).inMilliseconds < 400) {
-      print("DOUBLE TAP! → Navigate to live tracking");
+      debugPrint("DOUBLE TAP! → Navigate to live tracking");
       _lastTapTime = null;
       _lastTappedDeviceId = null;
     } else {
@@ -790,7 +837,7 @@ class VehicleMapProvider extends ChangeNotifier {
     final image =
         await recorder.endRecording().toImage(size.toInt(), size.toInt());
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final icon = BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
+    final icon = BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
     _clusterIcons[label] = icon;
     return icon;
   }

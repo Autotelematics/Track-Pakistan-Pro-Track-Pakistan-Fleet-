@@ -16,16 +16,23 @@ class GetGeofencesModel {
   });
 
   factory GetGeofencesModel.fromJson(Map<String, dynamic> json) {
-    final List<dynamic>? geofencesList = json['items']?['geofences'] as List<dynamic>?;
+    final dynamic rawItems = json['items'];
+    List<dynamic>? geofencesList;
+    if (rawItems is Map && rawItems['geofences'] is List) {
+      geofencesList = rawItems['geofences'] as List<dynamic>;
+    } else if (rawItems is List) {
+      geofencesList = rawItems;
+    }
 
     final List<Geofence> parsedGeofences = geofencesList == null
         ? []
         : geofencesList
-        .map((e) => Geofence.fromJson(e as Map<String, dynamic>))
+        .whereType<Map>()
+        .map((e) => Geofence.fromJson(Map<String, dynamic>.from(e)))
         .toList();
 
     return GetGeofencesModel(
-      status: json['status'] as int?,
+      status: _asInt(json['status']),
       geofences: parsedGeofences,
     );
   }
@@ -80,13 +87,15 @@ class Geofence {
   });
 
   factory Geofence.fromJson(Map<String, dynamic> json) {
-    final String type = json['type'] as String? ?? 'circle';
+    final String type = json['type']?.toString() ?? 'circle';
 
     // Parse center and radius for circle
     LatLng? center;
     double? radius;
     if (type == 'circle') {
-      final Map<String, dynamic>? centerJson = json['center'] as Map<String, dynamic>?;
+      final Map<String, dynamic>? centerJson = json['center'] is Map
+          ? Map<String, dynamic>.from(json['center'] as Map)
+          : null;
       if (centerJson != null) {
         final double? lat = double.tryParse(centerJson['lat']?.toString() ?? '');
         final double? lng = double.tryParse(centerJson['lng']?.toString() ?? '');
@@ -94,14 +103,14 @@ class Geofence {
           center = LatLng(lat, lng);
         }
       }
-      final int? radiusInt = json['radius'] as int?;
+      final int? radiusInt = _asInt(json['radius']);
       radius = radiusInt?.toDouble();
     }
 
     // Parse polygon points
     List<LatLng> points = [];
     if (type == 'polygon') {
-      final String coordsStr = json['coordinates'] as String? ?? '[]';
+      final String coordsStr = json['coordinates']?.toString() ?? '[]';
       if (coordsStr.isNotEmpty && coordsStr != '[]') {
         try {
           final List<dynamic> decoded = jsonDecode(coordsStr);
@@ -122,18 +131,18 @@ class Geofence {
     }
 
     // Parse dates
-    final DateTime createdAt = DateTime.tryParse(json['created_at'] as String? ?? '') ??
+    final DateTime createdAt = DateTime.tryParse(json['created_at']?.toString() ?? '') ??
         DateTime.now();
-    final DateTime updatedAt = DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+    final DateTime updatedAt = DateTime.tryParse(json['updated_at']?.toString() ?? '') ??
         DateTime.now();
 
     return Geofence(
-      id: json['id'] as int,
-      userId: json['user_id'] as int,
-      groupId: json['group_id'] as int,
-      active: (json['active'] as int? ?? 0) == 1,
-      name: json['name'] as String? ?? '',
-      polygonColor: json['polygon_color'] as String? ?? '#000000',
+      id: _asInt(json['id']) ?? 0,
+      userId: _asInt(json['user_id']) ?? 0,
+      groupId: _asInt(json['group_id']) ?? 0,
+      active: (_asInt(json['active']) ?? 0) == 1,
+      name: json['name']?.toString() ?? '',
+      polygonColor: json['polygon_color']?.toString() ?? '#000000',
       createdAt: createdAt,
       updatedAt: updatedAt,
       type: type,
@@ -177,4 +186,12 @@ class Geofence {
       'device_id': deviceId,
     };
   }
+}
+
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value.trim());
+  return null;
 }

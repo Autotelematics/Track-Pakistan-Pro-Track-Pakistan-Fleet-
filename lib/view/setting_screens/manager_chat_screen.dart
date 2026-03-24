@@ -82,7 +82,8 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
       builder: (context, provider, _) {
         if (_lastMessageCount != provider.messages.length) {
           _lastMessageCount = provider.messages.length;
-          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+          WidgetsBinding.instance
+              .addPostFrameCallback((_) => _scrollToBottom());
         }
 
         return Scaffold(
@@ -100,7 +101,7 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
                 Text(
                   'Connected to your manager team',
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 12.sp,
+                    fontSize: 13.sp,
                   ),
                 ),
               ],
@@ -147,7 +148,8 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
                         vertical: 0.9.h,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.green.withValues(alpha: isDark ? .18 : .1),
+                        color: AppColors.green
+                            .withValues(alpha: isDark ? .18 : .1),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
@@ -161,7 +163,8 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
                           Expanded(
                             child: Text(
                               provider.vehicleLabel,
-                              style: AppStyles.regularTextStyle(context).copyWith(
+                              style:
+                                  AppStyles.regularTextStyle(context).copyWith(
                                 fontSize: 13.sp,
                                 color: theme.colorScheme.onSurface,
                               ),
@@ -299,7 +302,9 @@ class _EmptyChatState extends StatelessWidget {
                 label: Text(
                   isStarting
                       ? 'Starting...'
-                      : (hasLinkedVehicle ? 'Start Complaint Chat' : 'Start Chat'),
+                      : (hasLinkedVehicle
+                          ? 'Start Complaint Chat'
+                          : 'Start Chat'),
                   style: AppStyles.semiboldTextStyle(context).copyWith(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -401,8 +406,7 @@ class _MessageBubble extends StatelessWidget {
     final bubbleColor = isCustomer
         ? AppColors.green
         : (isDark ? theme.cardColor : Colors.white);
-    final textColor =
-        isCustomer ? Colors.white : theme.colorScheme.onSurface;
+    final textColor = isCustomer ? Colors.white : theme.colorScheme.onSurface;
     final alignment =
         isCustomer ? CrossAxisAlignment.end : CrossAxisAlignment.start;
     final rowAlignment =
@@ -434,7 +438,8 @@ class _MessageBubble extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? .18 : .06),
+                        color:
+                            Colors.black.withValues(alpha: isDark ? .18 : .06),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),

@@ -36,8 +36,8 @@ class FuelPriceCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.black.withOpacity(0.12),
+                ? Colors.black.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isDark ? 14 : 10,
             offset: const Offset(0, 4),
           ),
@@ -56,25 +56,25 @@ class FuelPriceCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.h),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: onSurface.withOpacity(0.08)),
+              border: Border.all(color: onSurface.withValues(alpha: 0.08)),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.02),
-                        Colors.white.withOpacity(0.01),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.white.withValues(alpha: 0.01),
                       ]
                     : [
-                        Colors.white.withOpacity(0.95),
+                        Colors.white.withValues(alpha: 0.95),
                         Colors.grey.shade50,
                       ],
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withOpacity(0.25)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -88,21 +88,21 @@ class FuelPriceCard extends StatelessWidget {
                   price: "${data.petrolPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFF16A34A),
                 ),
-                Divider(height: 1.6.h, color: onSurface.withOpacity(0.12)),
+                Divider(height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
                 _fuelRow(
                   context,
                   label: context.l10n.diesel,
                   price: "${data.dieselPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFFF59E0B),
                 ),
-                Divider(height: 1.6.h, color: onSurface.withOpacity(0.12)),
+                Divider(height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
                 Row(
                   children: [
                     // Container(
                     //   height: 3.h,
                     //   width: 3.h,
                     //   decoration: BoxDecoration(
-                    //     color: const Color(0xFF2563EB).withOpacity(0.14),
+                    //     color: const Color(0xFF2563EB).withValues(alpha: 0.14),
                     //     borderRadius: BorderRadius.circular(8),
                     //   ),
                     //   // child: Icon(
@@ -125,7 +125,7 @@ class FuelPriceCard extends StatelessWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: 2.4.w, vertical: 0.45.h),
                       // decoration: BoxDecoration(
-                      //   color: onSurface.withOpacity(0.08),
+                      //   color: onSurface.withValues(alpha: 0.08),
                       //   // borderRadius: BorderRadius.circular(20),
                       // ),
                       child: Text(
@@ -158,7 +158,7 @@ class FuelPriceCard extends StatelessWidget {
           height: 3.3.h,
           width: 3.3.h,
           decoration: BoxDecoration(
-            color: accent.withOpacity(0.14),
+            color: accent.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -180,9 +180,9 @@ class FuelPriceCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 0.45.h),
           decoration: BoxDecoration(
-            color: accent.withOpacity(0.12),
+            color: accent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: accent.withOpacity(0.30)),
+            border: Border.all(color: accent.withValues(alpha: 0.30)),
           ),
           child: Text(
             price,

@@ -18,7 +18,6 @@ class GetDevicesListProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _showLoading = true;
   String? _error;
-  GetDevicesListModel? _model;
   List<Item> _filteredVehicles = [];
 
   String _filterStatus = 'all';
@@ -75,11 +74,9 @@ class GetDevicesListProvider with ChangeNotifier {
       final data = await _fetchWithRetry(context);
       if (data != null && data.items != null && data.items!.isNotEmpty) {
         _lastValidModel = data;
-        _model = data;
         _error = null;
         _applyFilters();
       } else {
-        _model = _lastValidModel;
         _filteredVehicles = hasValidData ? _filteredVehicles : [];
         notifyListeners();
       }

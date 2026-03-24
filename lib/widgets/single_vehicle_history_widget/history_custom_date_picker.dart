@@ -11,7 +11,6 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
   final DateTime? customEndDate;
   final TimeOfDay? customStartTime;
   final TimeOfDay? customEndTime;
-  final VoidCallback onClose;
   final VoidCallback onApply;
   final VoidCallback onFromDateTap;
   final VoidCallback onToDateTap;
@@ -24,7 +23,6 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
     required this.customEndDate,
     required this.customStartTime,
     required this.customEndTime,
-    required this.onClose,
     required this.onApply,
     required this.onFromDateTap,
     required this.onToDateTap,
@@ -43,7 +41,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.2.h),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A2433) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
         ),
@@ -52,7 +50,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                child: _RangePickerTile(
+                  child: _RangePickerTile(
                     title: l10n.fromDate,
                     value: _formatDate(customStartDate),
                     emptyValue: l10n.selectDate,
@@ -62,7 +60,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                 ),
                 horizontalSpace(width: 2.w),
                 Expanded(
-                child: _RangePickerTile(
+                  child: _RangePickerTile(
                     title: l10n.toDate,
                     value: _formatDate(customEndDate),
                     emptyValue: l10n.selectDate,
@@ -76,7 +74,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                child: _RangePickerTile(
+                  child: _RangePickerTile(
                     title: l10n.fromTime,
                     value: _formatTime(context, customStartTime),
                     emptyValue: l10n.selectTime,
@@ -84,9 +82,9 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                     onTap: onFromTimeTap,
                   ),
                 ),
-                horizontalSpace(width: 3.w),
+                horizontalSpace(width: 2.w),
                 Expanded(
-                child: _RangePickerTile(
+                  child: _RangePickerTile(
                     title: l10n.toTime,
                     value: _formatTime(context, customEndTime),
                     emptyValue: l10n.selectTime,
@@ -96,7 +94,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                 ),
               ],
             ),
-            verticalSpace(height: .4.h),
+            verticalSpace(height: .8.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -107,33 +105,7 @@ class HistoryCustomDateTimePicker extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text(
-                  l10n.applyRange,
-                  style: AppStyles.semiboldTextStyle(context).copyWith(
-                    color: Colors.white,
-                    fontSize: 12.3.sp,
-                  ),
-                ),
-              ),
-            ),
-            verticalSpace(height: .0.h),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: onClose,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: .0.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  l10n.cancel,
-                  style: AppStyles.semiboldTextStyle(context).copyWith(
-                    color: isDark ? Colors.white70 : Colors.black54,
-                    fontSize: 12.8.sp,
-                  ),
-                ),
+                child: Text(l10n.applyRange),
               ),
             ),
           ],
@@ -178,7 +150,9 @@ class _RangePickerTile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .75.h),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
+          color: isDark
+              ? Colors.white.withValues(alpha: .05)
+              : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: ConstantColor.primaryColor.withValues(alpha: .25),
@@ -190,7 +164,7 @@ class _RangePickerTile extends StatelessWidget {
             Text(
               title,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.8.sp,
+                fontSize: 10.8.sp,
                 color: isDark ? Colors.white70 : Colors.black54,
                 fontWeight: FontWeight.w700,
               ),
@@ -206,7 +180,7 @@ class _RangePickerTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(fontSize: 12.5.sp),
+                        .copyWith(fontSize: 11.5.sp),
                   ),
                 ),
               ],

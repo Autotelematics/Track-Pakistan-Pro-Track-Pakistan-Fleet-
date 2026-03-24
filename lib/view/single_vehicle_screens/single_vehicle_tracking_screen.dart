@@ -29,6 +29,8 @@ class VehicleTrackingScreen extends StatefulWidget {
 
 class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     with WidgetsBindingObserver {
+  static const double _vehicleMarkerLogicalHeight = 30.0;
+  static const double _vehicleMarkerRenderScale = 3.0;
   final Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? mapController;
   late VehicleTrackingProvider provider;
@@ -234,13 +236,22 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       final ByteData data = await rootBundle.load(path);
       final ui.Codec codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
-        targetWidth: 18,
-        targetHeight: 42,
+        targetHeight:
+            (_vehicleMarkerLogicalHeight * _vehicleMarkerRenderScale).round(),
       );
       final ui.FrameInfo frame = await codec.getNextFrame();
       final ByteData? bytes =
           await frame.image.toByteData(format: ui.ImageByteFormat.png);
-      return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
+      final logicalWidth =
+          frame.image.width.toDouble() / _vehicleMarkerRenderScale;
+      final logicalHeight =
+          frame.image.height.toDouble() / _vehicleMarkerRenderScale;
+      return BitmapDescriptor.bytes(
+        bytes!.buffer.asUint8List(),
+        width: logicalWidth,
+        height: logicalHeight,
+        imagePixelRatio: _vehicleMarkerRenderScale,
+      );
     }
 
     try {
@@ -262,7 +273,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     final l10n = context.l10n;
     final textScale = trackingTextScale(context);
     final iconScale = trackingIconScale(context);
-    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     return ChangeNotifierProvider.value(
       value: provider,
       child: Scaffold(
@@ -509,20 +520,15 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          child: SafeArea(
-                            top: false,
-                            left: false,
-                            right: false,
-                            child: VehicleBottomCard(
-                              deviceId: prov.deviceId,
-                              deviceName: prov.deviceName,
-                              deviceSpeed: prov.deviceSpeed,
-                              totalDistance: prov.totalDistance,
-                              vehicleOdometer: prov.odometer,
-                              deviceAddress: prov.address,
-                              deviceLatestUpdate: prov.lastUpdate,
-                              sensors: prov.sensors,
-                            ),
+                          child: VehicleBottomCard(
+                            deviceId: prov.deviceId,
+                            deviceName: prov.deviceName,
+                            deviceSpeed: prov.deviceSpeed,
+                            totalDistance: prov.totalDistance,
+                            vehicleOdometer: prov.odometer,
+                            deviceAddress: prov.address,
+                            deviceLatestUpdate: prov.lastUpdate,
+                            sensors: prov.sensors,
                           ),
                         ),
                       ],

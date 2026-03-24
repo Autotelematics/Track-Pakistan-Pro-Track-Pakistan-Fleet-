@@ -19,7 +19,7 @@ NumericAxis _yAxis(String format) => NumericAxis(
   labelFormat: format,
   majorGridLines: MajorGridLines(
     dashArray: const [4, 4],
-    color: Colors.grey.withOpacity(0.3),
+    color: Colors.grey.withValues(alpha: 0.3),
   ),
 );
 
@@ -101,8 +101,8 @@ class AnalyticsDistanceChart extends StatelessWidget {
             enableTooltip: true,
             gradient: LinearGradient(
               colors: [
-                AppColors.green.withOpacity(0.5),
-                AppColors.green.withOpacity(0.1),
+                AppColors.green.withValues(alpha: 0.5),
+                AppColors.green.withValues(alpha: 0.1),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -242,8 +242,8 @@ class AnalyticsEngineHoursChart extends StatelessWidget {
             enableTooltip: true,
             gradient: LinearGradient(
               colors: [
-                AppColors.purple.withOpacity(0.5),
-                AppColors.purple.withOpacity(0.1),
+                AppColors.purple.withValues(alpha: 0.5),
+                AppColors.purple.withValues(alpha: 0.1),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

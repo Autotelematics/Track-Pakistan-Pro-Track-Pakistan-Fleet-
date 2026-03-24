@@ -80,24 +80,21 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
           );
         },
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(4.w, 0, 4.w, 1.2.h),
-          child: Consumer<AlertSettingsProvider>(
-            builder: (context, provider, child) {
-              return provider.isSyncing
-                  ? const Center(child: CircularProgressIndicator())
-                  : CustomButton(
-                      text: "Save",
-                      onPressed: () async {
-                        final ok = await provider.syncUserAlertSettings();
-                        if (!mounted) return;
-                        if (ok) Navigator.of(this.context).pop();
-                      },
-                    );
-            },
-          ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(4.w, 0, 4.w, 1.2.h),
+        child: Consumer<AlertSettingsProvider>(
+          builder: (context, provider, child) {
+            return provider.isSyncing
+                ? const Center(child: CircularProgressIndicator())
+                : CustomButton(
+                    text: "Save",
+                    onPressed: () async {
+                      final ok = await provider.syncUserAlertSettings();
+                      if (!mounted) return;
+                      if (ok) Navigator.of(this.context).pop();
+                    },
+                  );
+          },
         ),
       ),
     );

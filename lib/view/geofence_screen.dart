@@ -188,9 +188,9 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         boxShadow: [
                                           BoxShadow(
                                             color: isDark
-                                                ? Colors.black.withOpacity(0.4)
+                                                ? Colors.black.withValues(alpha: 0.4)
                                                 : Colors.black
-                                                    .withOpacity(0.08),
+                                                    .withValues(alpha: 0.08),
                                             blurRadius: 12,
                                             offset: const Offset(0, 4),
                                           ),
@@ -200,7 +200,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                         leading: CircleAvatar(
                                           radius: 22,
                                           backgroundColor:
-                                              color.withOpacity(0.2),
+                                              color.withValues(alpha: 0.2),
                                           child: Icon(
                                             geofence.type == 'circle'
                                                 ? Icons.circle_outlined
@@ -222,7 +222,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                                           style:
                                               AppStyles.lightTextStyle(context)
                                                   .copyWith(
-                                            color: onSurface.withOpacity(0.7),
+                                            color: onSurface.withValues(alpha: 0.7),
                                           ),
                                         ),
                                         trailing: Switch(

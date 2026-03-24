@@ -394,7 +394,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                                     child: CustomButton(
                                       text: "Save",
                                       height: 4.4.h,
-                                      onPressed: () {
+                                      onPressed: () async {
                                         final emailValid = RegExp(
                                                 r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$")
                                             .hasMatch(emailCtrl.text.trim());
@@ -416,16 +416,15 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                                                 "Please enter your valid email",
                                           );
                                         } else {
-                                          driverProvider
-                                              .addDriver(
-                                                  name: nameCtrl.text,
-                                                  rfId: rfIdCtrl.text,
-                                                  phone: phoneCtrl.text,
-                                                  email: emailCtrl.text,
-                                                  deviceId: "")
-                                              .then((_) {
-                                            Navigator.pop(context);
-                                          });
+                                          await driverProvider.addDriver(
+                                            name: nameCtrl.text,
+                                            rfId: rfIdCtrl.text,
+                                            phone: phoneCtrl.text,
+                                            email: emailCtrl.text,
+                                            deviceId: "",
+                                          );
+                                          if (!context.mounted) return;
+                                          Navigator.pop(context);
                                           // Navigator.pop(context);
                                         }
                                       },
@@ -747,7 +746,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                                           child: CustomButton(
                                             text: "Update",
                                             height: 3.9.h,
-                                            onPressed: () {
+                                            onPressed: () async {
                                               if (selectedIndex == null) {
                                                 showValidationErrorDialog(
                                                   context,
@@ -760,18 +759,16 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                                               final driver =
                                                   drivers[selectedIndex!];
 
-                                              driverProvider
-                                                  .editDriver(
+                                              await driverProvider.editDriver(
                                                 driverId: driver.id.toString(),
                                                 name: nameCtrl.text.trim(),
                                                 rfid: rfIdCtrl.text.trim(),
                                                 phone: phoneCtrl.text.trim(),
                                                 email: emailCtrl.text.trim(),
                                                 description: '',
-                                              )
-                                                  .then((_) {
-                                                Navigator.pop(ctx);
-                                              });
+                                              );
+                                              if (!ctx.mounted) return;
+                                              Navigator.pop(ctx);
                                             },
                                           ),
                                         ),
@@ -987,7 +984,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.08),
+                                          color: Colors.black.withValues(alpha: 0.08),
                                           blurRadius: 6,
                                           offset: const Offset(0, 3),
                                         ),
@@ -1060,7 +1057,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 3.w, vertical: .35.h),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(.92),
+                                        color: Colors.white.withValues(alpha: .92),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                             color: Colors.grey.shade300),
@@ -1085,7 +1082,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 3.w, vertical: .35.h),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(.92),
+                                        color: Colors.white.withValues(alpha: .92),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                             color: Colors.grey.shade300),
@@ -1148,17 +1145,6 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                         "Please select at least one driver",
                                   );
                                   return;
-                                }
-
-                                final selectedDrivers = drivers
-                                    .where(
-                                        (d) => selectedDriverIds.contains(d.id))
-                                    .toList();
-
-                                for (final driver in selectedDrivers) {
-                                  // driverProvider.deleteDriver(
-                                  //   driverId: driver.id.toString(),
-                                  // );
                                 }
 
                                 isClosingDialog = true;
@@ -1224,7 +1210,7 @@ Future<void> showDeviceCommandsPopup(
                           Text(
                             "Loading commands...",
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 12.8.sp,
+                              fontSize: 13.5.sp,
                               color: onSurface.withValues(alpha: .68),
                             ),
                           ),
@@ -1285,7 +1271,7 @@ Future<void> showDeviceCommandsPopup(
                                   child: Icon(
                                     Icons.electric_bolt_rounded,
                                     color: ConstantColor.primaryColor
-                                        .withOpacity(isDark ? 0.22 : 0.16),
+                                        .withValues(alpha: isDark ? 0.22 : 0.16),
                                     size: 6.2.h,
                                   ),
                                 ),
@@ -1308,7 +1294,7 @@ Future<void> showDeviceCommandsPopup(
                           Text(
                             "Select and send command",
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              color: onSurface.withOpacity(.62),
+                              color: onSurface.withValues(alpha: .62),
                               fontSize: 12.8.sp,
                             ),
                           ),
@@ -1318,7 +1304,7 @@ Future<void> showDeviceCommandsPopup(
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 14.4.sp,
-                              color: onSurface.withOpacity(.88),
+                              color: onSurface.withValues(alpha: .88),
                             ),
                           ),
                           verticalSpace(height: .8.h),
@@ -1346,15 +1332,15 @@ Future<void> showDeviceCommandsPopup(
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? ConstantColor.primaryColor
-                                          .withOpacity(.12)
+                                          .withValues(alpha: .12)
                                       : (isDark
-                                          ? Colors.white.withOpacity(.04)
-                                          : Colors.black.withOpacity(.02)),
+                                          ? Colors.white.withValues(alpha: .04)
+                                          : Colors.black.withValues(alpha: .02)),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isSelected
                                         ? ConstantColor.primaryColor
-                                            .withOpacity(.7)
+                                            .withValues(alpha: .7)
                                         : (isDark
                                             ? Colors.white10
                                             : Colors.black12),
@@ -1369,7 +1355,7 @@ Future<void> showDeviceCommandsPopup(
                                       size: 17.sp,
                                       color: isSelected
                                           ? ConstantColor.primaryColor
-                                          : onSurface.withOpacity(.44),
+                                          : onSurface.withValues(alpha: .44),
                                     ),
                                     horizontalSpace(width: 2.1.w),
                                     Expanded(
@@ -1379,7 +1365,7 @@ Future<void> showDeviceCommandsPopup(
                                             AppStyles.regularTextStyle(context)
                                                 .copyWith(
                                           fontSize: 13.8.sp,
-                                          color: onSurface.withOpacity(.88),
+                                          color: onSurface.withValues(alpha: .88),
                                           fontWeight: isSelected
                                               ? FontWeight.w700
                                               : FontWeight.w600,
@@ -1410,17 +1396,17 @@ Future<void> showDeviceCommandsPopup(
                                 hintText: "Enter custom command message",
                                 filled: true,
                                 fillColor: isDark
-                                    ? Colors.white.withOpacity(.05)
-                                    : Colors.black.withOpacity(.02),
+                                    ? Colors.white.withValues(alpha: .05)
+                                    : Colors.black.withValues(alpha: .02),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                      color: onSurface.withOpacity(.15)),
+                                      color: onSurface.withValues(alpha: .15)),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                      color: onSurface.withOpacity(.15)),
+                                      color: onSurface.withValues(alpha: .15)),
                                 ),
                               ),
                             ),
@@ -1432,7 +1418,7 @@ Future<void> showDeviceCommandsPopup(
                                 child: CustomButton(
                                   text: "Cancel",
                                   backgroundColor: Colors.transparent,
-                                  textColor: onSurface.withOpacity(.82),
+                                  textColor: onSurface.withValues(alpha: .82),
                                   height: 4.4.h,
                                   onPressed: () => Navigator.pop(ctx),
                                 ),
@@ -2541,6 +2527,7 @@ Future<void> showAssignDriverPopup(
                                               await driverProvider
                                                   .getDriverUser(
                                                       deviceId: deviceId);
+                                              if (!ctx.mounted) return;
                                               Navigator.pop(
                                                   ctx, selectedDriver);
                                             } else {
@@ -3587,6 +3574,7 @@ Future<void> showAlertSettingsPopup(
   final onSurface = theme.colorScheme.onSurface;
   final provider = Provider.of<AlertSettingsProvider>(context, listen: false);
   await provider.fetchAlertSettings(deviceId: deviceId.toString());
+  if (!context.mounted) return;
 
   await showDialog(
     context: context,
@@ -3777,7 +3765,7 @@ Widget _tile(
       boxShadow: [
         if (!isDark)
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 2)),
       ],
@@ -3789,7 +3777,7 @@ Widget _tile(
         title,
         style: AppStyles.regularTextStyle(context).copyWith(
           color: onSurface,
-          fontSize: 12.6.sp,
+          fontSize: 14.0.sp,
         ),
       ),
       trailing: Checkbox(
@@ -3971,7 +3959,7 @@ Widget _geofenceTile(
       boxShadow: [
         if (!isDark)
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 2)),
       ],
@@ -3981,7 +3969,7 @@ Widget _geofenceTile(
       onTap: isLoading ? null : onTap,
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: color.withOpacity(0.2),
+        backgroundColor: color.withValues(alpha: 0.2),
         child: Icon(
           type == 'circle' ? Icons.circle_outlined : Icons.pentagon_outlined,
           color: color,
@@ -3996,7 +3984,7 @@ Widget _geofenceTile(
       subtitle: Text(
         type.capitalize(),
         style: AppStyles.lightTextStyle(context)
-            .copyWith(color: onSurface.withOpacity(0.7), fontSize: 12.sp),
+            .copyWith(color: onSurface.withValues(alpha: 0.7), fontSize: 12.sp),
       ),
       trailing: Checkbox(
         value: value,

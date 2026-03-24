@@ -26,11 +26,11 @@ class VehicleStatusRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: color, size: 16.0.sp),
-        SizedBox(width: 1.0.w),
+        SizedBox(width: 0.6.w),
         Text(
           "$label:",
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.0.sp,
+            fontSize: 12.5.sp,
             color: onSurface.withValues(alpha: .62),
           ),
         ),
@@ -38,7 +38,7 @@ class VehicleStatusRow extends StatelessWidget {
         Text(
           value,
           style: AppStyles.semiboldTextStyle(context).copyWith(
-            fontSize: 11.2.sp,
+            fontSize: 12.5.sp,
             color: color,
           ),
         ),

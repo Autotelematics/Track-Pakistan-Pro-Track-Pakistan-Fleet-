@@ -19,10 +19,16 @@ class GetDeviceHistoryModel {
 
   factory GetDeviceHistoryModel.fromJson(Map<String, dynamic> json) =>
       GetDeviceHistoryModel(
-        device: Device.fromJson(json["device"]),
-        summary: HistorySummary.fromJson(json["summary"]),
+        device: Device.fromJson((json["device"] is Map<String, dynamic>)
+            ? json["device"] as Map<String, dynamic>
+            : <String, dynamic>{}),
+        summary: HistorySummary.fromJson((json["summary"] is Map<String, dynamic>)
+            ? json["summary"] as Map<String, dynamic>
+            : <String, dynamic>{}),
         history: List<HistoryItem>.from(
-            json["History"].map((x) => HistoryItem.fromJson(x))),
+            ((json["History"] is List) ? json["History"] : const <dynamic>[])
+                .whereType<Map<String, dynamic>>()
+                .map((x) => HistoryItem.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -48,11 +54,11 @@ class Device {
   });
 
   factory Device.fromJson(Map<String, dynamic> json) => Device(
-    id: json["id"],
-    name: json["name"],
-    engineType: json["engine_type"],
-    fuelQuantity: json["fuel_quantity"],
-    totalDistance: json["total_distance"]?.toDouble() ?? 0.0,
+    id: _asInt(json["id"]),
+    name: _asString(json["name"]),
+    engineType: _asString(json["engine_type"]),
+    fuelQuantity: _asString(json["fuel_quantity"]),
+    totalDistance: _asDouble(json["total_distance"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -86,14 +92,18 @@ class HistorySummary {
   });
 
   factory HistorySummary.fromJson(Map<String, dynamic> json) => HistorySummary(
-    totalDistance: json["Total Distance"] ?? "",
-    topSpeed: json["Top Speed"] ?? "",
-    moveDuration: json["Move Duration"] ?? "",
-    stopDuration1: json["Stop Duration 1"] ?? "",
-    stopDuration2: json["Stop Duration 2"] ?? "",
-    totalTrips: json["Total Trips"] ?? 0,
-    fuelPrices: FuelPrices.fromJson(json["Fuel Prices"]),
-    fuelSpent: FuelSpent.fromJson(json["Fuel Spent"]),
+    totalDistance: _asString(json["Total Distance"]),
+    topSpeed: _asString(json["Top Speed"]),
+    moveDuration: _asString(json["Move Duration"]),
+    stopDuration1: _asString(json["Stop Duration 1"]),
+    stopDuration2: _asString(json["Stop Duration 2"]),
+    totalTrips: _asInt(json["Total Trips"]),
+    fuelPrices: FuelPrices.fromJson((json["Fuel Prices"] is Map<String, dynamic>)
+        ? json["Fuel Prices"] as Map<String, dynamic>
+        : <String, dynamic>{}),
+    fuelSpent: FuelSpent.fromJson((json["Fuel Spent"] is Map<String, dynamic>)
+        ? json["Fuel Spent"] as Map<String, dynamic>
+        : <String, dynamic>{}),
   );
 
   Map<String, dynamic> toJson() => {
@@ -120,9 +130,9 @@ class FuelPrices {
   });
 
   factory FuelPrices.fromJson(Map<String, dynamic> json) => FuelPrices(
-    petrolPrice: json["petrol_price"]?.toDouble() ?? 0.0,
-    dieselPrice: json["diesel_price"]?.toDouble() ?? 0.0,
-    fuelPriceLastUpdated: json["fuel_price_last_updated"] ?? "",
+    petrolPrice: _asDouble(json["petrol_price"]),
+    dieselPrice: _asDouble(json["diesel_price"]),
+    fuelPriceLastUpdated: _asString(json["fuel_price_last_updated"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -142,8 +152,8 @@ class FuelSpent {
   });
 
   factory FuelSpent.fromJson(Map<String, dynamic> json) => FuelSpent(
-    totalFuelSpent: json["Total Fuel Spent"]?.toDouble() ?? 0.0,
-    totalFuelCost: json["Total Fuel Cost"]?.toDouble() ?? 0.0,
+    totalFuelSpent: _asDouble(json["Total Fuel Spent"]),
+    totalFuelCost: _asDouble(json["Total Fuel Cost"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -179,16 +189,16 @@ class Driver {
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) => Driver(
-    id: json["id"],
-    userId: json["user_id"],
-    deviceId: json["device_id"],
-    devicePort: json["device_port"],
-    name: json["name"],
-    rfid: json["rfid"],
-    phone: json["phone"],
-    email: json["email"],
-    description: json["description"],
-    createdAt: json["created_at"],
+    id: _asNullableInt(json["id"]),
+    userId: _asNullableInt(json["user_id"]),
+    deviceId: _asNullableInt(json["device_id"]),
+    devicePort: _asNullableString(json["device_port"]),
+    name: _asNullableString(json["name"]),
+    rfid: _asNullableString(json["rfid"]),
+    phone: _asNullableString(json["phone"]),
+    email: _asNullableString(json["email"]),
+    description: _asNullableString(json["description"]),
+    createdAt: _asNullableString(json["created_at"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -245,19 +255,21 @@ class HistoryItem {
     }
 
     return HistoryItem(
-      status: json["status"],
-      name: json["name"],
-      rawTime: json["raw_time"],
-      distance: json["distance"]?.toDouble() ?? 0.0,
+      status: _asInt(json["status"]),
+      name: _asNullableString(json["name"]),
+      rawTime: _asString(json["raw_time"]),
+      distance: _asDouble(json["distance"]),
       driver: driverObj,
-      time: json["time"],
-      left: json["left"],
-      timeSeconds: json["time_seconds"],
-      topSpeed: json["top_speed"],
-      averageSpeed: json["average_speed"],
-      message: json["message"],
+      time: _asNullableString(json["time"]),
+      left: _asNullableString(json["left"]),
+      timeSeconds: _asNullableInt(json["time_seconds"]),
+      topSpeed: _asNullableInt(json["top_speed"]),
+      averageSpeed: _asNullableInt(json["average_speed"]),
+      message: _asNullableString(json["message"]),
       items: List<LocationItem>.from(
-          json["items"].map((x) => LocationItem.fromJson(x))),
+          ((json["items"] is List) ? json["items"] : const <dynamic>[])
+              .whereType<Map<String, dynamic>>()
+              .map((x) => LocationItem.fromJson(x))),
     );
   }
 
@@ -305,24 +317,24 @@ class LocationItem {
   });
 
   factory LocationItem.fromJson(Map<String, dynamic> json) => LocationItem(
-    id: json["id"],
-    rawTime: json["raw_time"],
-    altitude: json["altitude"],
-    course: json["course"],
-    speed: json["speed"] ?? 0,
+    id: _asNullableInt(json["id"]),
+    rawTime: _asNullableString(json["raw_time"]),
+    altitude: _asNullableInt(json["altitude"]),
+    course: _asNullableInt(json["course"]),
+    speed: _asInt(json["speed"]),
     lat: _parseLatLng(json["lat"]),
     lng: _parseLatLng(json["lng"]),
-    distance: json["distance"]?.toDouble() ?? 0.0,
-    valid: json["valid"],
-    other: json["other"],
-    time: json["time"],
+    distance: _asDouble(json["distance"]),
+    valid: _asNullableInt(json["valid"]),
+    other: _asNullableString(json["other"]),
+    time: _asNullableString(json["time"]),
   );
 
   static double _parseLatLng(dynamic value) {
-    if (value is double) return value;
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    if (value is int) return value.toDouble();
-    return 0.0;
+    if (value is Map<String, dynamic>) {
+      return _asDouble(value['value']);
+    }
+    return _asDouble(value);
   }
 
   Map<String, dynamic> toJson() => {
@@ -338,4 +350,47 @@ class LocationItem {
     "other": other,
     "time": time,
   };
+}
+
+String _asString(dynamic value, {String fallback = ''}) {
+  if (value == null) return fallback;
+  if (value is String) return value;
+  if (value is num || value is bool) return value.toString();
+  if (value is Map<String, dynamic>) {
+    for (final key in const ['text', 'value', 'label', 'name']) {
+      final nested = value[key];
+      if (nested is String && nested.trim().isNotEmpty) return nested;
+    }
+    return jsonEncode(value);
+  }
+  if (value is List) return value.join(', ');
+  return value.toString();
+}
+
+String? _asNullableString(dynamic value) {
+  if (value == null) return null;
+  final parsed = _asString(value).trim();
+  return parsed.isEmpty ? null : parsed;
+}
+
+int _asInt(dynamic value, {int fallback = 0}) {
+  if (value == null) return fallback;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? fallback;
+  return fallback;
+}
+
+int? _asNullableInt(dynamic value) {
+  if (value == null) return null;
+  final parsed = _asInt(value, fallback: -2147483648);
+  return parsed == -2147483648 ? null : parsed;
+}
+
+double _asDouble(dynamic value, {double fallback = 0.0}) {
+  if (value == null) return fallback;
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? fallback;
+  return fallback;
 }

@@ -24,7 +24,8 @@ class StatusBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<GetDevicesListProvider>(context, listen: false);
+    final provider =
+        Provider.of<GetDevicesListProvider>(context, listen: false);
     final isSelected = provider.filterStatus == statusKey;
 
     final countStr = count.toString();
@@ -51,7 +52,7 @@ class StatusBox extends StatelessWidget {
                   width: boxWidth,
                   height: boxHeight,
                   decoration: BoxDecoration(
-                    color: isSelected ? color : color.withOpacity(0.3),
+                    color: isSelected ? color : color.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   padding: EdgeInsets.only(top: 1.6.h),
@@ -59,9 +60,11 @@ class StatusBox extends StatelessWidget {
                     title,
                     textAlign: TextAlign.center,
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 12.2.sp,
+                      fontSize: 12.7.sp,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : onSurface.withOpacity(0.7),
+                      color: isSelected
+                          ? Colors.white
+                          : onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -77,19 +80,25 @@ class StatusBox extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: cardColor,
                     border: Border.all(
-                      color: isSelected ? color : color.withOpacity(0.5),
+                      color: isSelected ? color : color.withValues(alpha: 0.5),
                       width: isSelected ? 3 : 2,
                     ),
                     boxShadow: isSelected
-                        ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: Offset(0, 2))]
+                        ? [
+                            BoxShadow(
+                                color: color.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: Offset(0, 2))
+                          ]
                         : null,
                   ),
                   child: Text(
                     countStr,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 11.4.sp,
+                      fontSize: 12.8.sp,
                       color: isSelected ? color : onSurface,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),

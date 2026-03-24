@@ -79,8 +79,8 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.black.withOpacity(0.12),
+                ? Colors.black.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isDark ? 14 : 10,
             offset: const Offset(0, 4),
           ),
@@ -107,25 +107,25 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: onSurface.withOpacity(0.08)),
+              border: Border.all(color: onSurface.withValues(alpha: 0.08)),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.02),
-                        Colors.white.withOpacity(0.01),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.white.withValues(alpha: 0.01),
                       ]
                     : [
-                        Colors.white.withOpacity(0.95),
+                        Colors.white.withValues(alpha: 0.95),
                         Colors.grey.shade50,
                       ],
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withOpacity(0.25)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -253,7 +253,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
               TextSpan(
                 text: '${rod.toY.toStringAsFixed(1)} km',
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  color: Colors.white.withOpacity(0.92),
+                  color: Colors.white.withValues(alpha: 0.92),
                   fontSize: 11.5.sp,
                 ),
               ),
@@ -272,7 +272,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
       drawVerticalLine: false,
       horizontalInterval: yInterval,
       getDrawingHorizontalLine: (value) => FlLine(
-        color: onSurface.withOpacity(0.16),
+        color: onSurface.withValues(alpha: 0.16),
         strokeWidth: 1.1,
       ),
     );
@@ -298,7 +298,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
               backDrawRodData: BackgroundBarChartRodData(
                 show: true,
                 toY: _getMaxY(),
-                color: onSurface.withOpacity(0.06),
+                color: onSurface.withValues(alpha: 0.06),
               ),
             ),
           ],

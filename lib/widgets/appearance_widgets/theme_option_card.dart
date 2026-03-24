@@ -37,7 +37,7 @@ class ThemeOptionCard extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 6,
                   offset: const Offset(0, 3),
                 ),
@@ -52,7 +52,7 @@ class ThemeOptionCard extends StatelessWidget {
                     ClipPath(
                       clipper: DiagonalClipper(),
                       child: Container(
-                        color: Colors.black.withOpacity(0.35),
+                        color: Colors.black.withValues(alpha: 0.35),
                       ),
                     ),
                 ],
@@ -110,7 +110,7 @@ class ThemeOptionCard extends StatelessWidget {
           child: Container(
             height: 18,
             decoration: BoxDecoration(
-              color: isDark ? Colors.green[800] : accent.withOpacity(0.2),
+              color: isDark ? Colors.green[800] : accent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(5),
             ),
           ),

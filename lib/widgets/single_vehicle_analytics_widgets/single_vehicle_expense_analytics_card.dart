@@ -27,6 +27,9 @@ class SingleVehicleExpenseAnalyticsCard extends StatefulWidget {
 class _SingleVehicleExpenseAnalyticsCardState
     extends State<SingleVehicleExpenseAnalyticsCard> {
   late final SingleVehicleExpenseAnalyticsProvider _provider;
+  static const Color _expensePrimaryColor = Color(0xFF2563EB);
+  static const Color _expenseSecondaryColor = Color(0xFF0EA5A4);
+  static const Color _expenseAccentColor = Color(0xFFF59E0B);
 
   @override
   void initState() {
@@ -103,17 +106,20 @@ class _SingleVehicleExpenseAnalyticsCardState
                           verticalSpace(height: .8.h),
                           _KpiRow(provider: provider),
                           verticalSpace(height: .9.h),
-                          _SectionTitle(title: l10n.expenseTrend),
-                          verticalSpace(height: .4.h),
-                          _TrendChart(provider: provider),
-                          verticalSpace(height: .9.h),
-                          _SectionTitle(title: l10n.topExpenseTypes),
-                          verticalSpace(height: .4.h),
-                          _TypeBar(provider: provider),
-                          verticalSpace(height: .9.h),
-                          _SectionTitle(title: l10n.recentExpenseActivity),
-                          verticalSpace(height: .4.h),
-                          _RecentList(provider: provider),
+                          _InnerCard(
+                            title: l10n.expenseTrend,
+                            child: _TrendChart(provider: provider),
+                          ),
+                          verticalSpace(height: .8.h),
+                          _InnerCard(
+                            title: l10n.topExpenseTypes,
+                            child: _TypeBar(provider: provider),
+                          ),
+                          verticalSpace(height: .8.h),
+                          _InnerCard(
+                            title: l10n.recentExpenseActivity,
+                            child: _RecentList(provider: provider),
+                          ),
                         ],
                       ),
           );
@@ -140,6 +146,7 @@ class _PresetBar extends StatelessWidget {
       (SingleExpenseRangePreset.custom, l10n.custom),
     ];
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
           spacing: 1.6.w,
@@ -147,6 +154,13 @@ class _PresetBar extends StatelessWidget {
           children: items
               .map(
                 (item) => ChoiceChip(
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withValues(alpha: .05)
+                          : const Color(0xFFF7FAFC),
+                  selectedColor: _SingleVehicleExpenseAnalyticsCardState
+                      ._expensePrimaryColor
+                      .withValues(alpha: .14),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: const VisualDensity(
                     horizontal: -2,
@@ -154,13 +168,19 @@ class _PresetBar extends StatelessWidget {
                   ),
                   labelPadding: EdgeInsets.symmetric(horizontal: 1.6.w),
                   side: BorderSide(
-                    color:
-                        Theme.of(context).dividerColor.withValues(alpha: .18),
+                    color: provider.preset == item.$1
+                        ? _SingleVehicleExpenseAnalyticsCardState
+                            ._expensePrimaryColor
+                            .withValues(alpha: .42)
+                        : Theme.of(context).dividerColor.withValues(alpha: .18),
                   ),
                   label: Text(
                     item.$2,
                     style: AppStyles.regularTextStyle(context).copyWith(
                       fontSize: 12.9.sp,
+                      fontWeight: provider.preset == item.$1
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                   ),
                   selected: provider.preset == item.$1,
@@ -241,8 +261,13 @@ class _DatePickButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .75.h),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withValues(alpha: .05)
+              : const Color(0xFFF7FAFC),
           border: Border.all(
-              color: Theme.of(context).dividerColor.withValues(alpha: .3)),
+            color: _SingleVehicleExpenseAnalyticsCardState._expensePrimaryColor
+                .withValues(alpha: .28),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,9 +278,15 @@ class _DatePickButton extends StatelessWidget {
                   : l10n.toValue(DateFormat('dd/MM/yy').format(value)),
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 12.8.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            Icon(Icons.calendar_month_rounded, size: 16.sp),
+            Icon(
+              Icons.calendar_month_rounded,
+              size: 16.sp,
+              color:
+                  _SingleVehicleExpenseAnalyticsCardState._expensePrimaryColor,
+            ),
           ],
         ),
       ),
@@ -276,6 +307,7 @@ class _KpiRow extends StatelessWidget {
           child: _MiniKpi(
             title: l10n.totalRange,
             value: "Rs ${provider.selectedTotal.toStringAsFixed(0)}",
+            color: _SingleVehicleExpenseAnalyticsCardState._expensePrimaryColor,
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -283,6 +315,8 @@ class _KpiRow extends StatelessWidget {
           child: _MiniKpi(
             title: l10n.avgPerTxn,
             value: "Rs ${provider.avgPerTransaction.toStringAsFixed(0)}",
+            color:
+                _SingleVehicleExpenseAnalyticsCardState._expenseSecondaryColor,
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -290,6 +324,9 @@ class _KpiRow extends StatelessWidget {
           child: _MiniKpi(
             title: l10n.changeLabel,
             value: "${provider.monthChangePercent.toStringAsFixed(1)}%",
+            color: provider.monthChangePercent < 0
+                ? const Color(0xFFDC2626)
+                : _SingleVehicleExpenseAnalyticsCardState._expenseAccentColor,
           ),
         ),
       ],
@@ -300,19 +337,22 @@ class _KpiRow extends StatelessWidget {
 class _MiniKpi extends StatelessWidget {
   final String title;
   final String value;
-  const _MiniKpi({required this.title, required this.value});
+  final Color color;
+  const _MiniKpi({
+    required this.title,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: .9.h),
+      padding: EdgeInsets.symmetric(horizontal: 2.3.w, vertical: .85.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white.withValues(alpha: .05)
-            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: .12),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: .18),
+          color: color.withValues(alpha: .3),
         ),
       ),
       child: Column(
@@ -321,14 +361,15 @@ class _MiniKpi extends StatelessWidget {
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 10.8.sp,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          verticalSpace(height: .3.h),
+          verticalSpace(height: .15.h),
           Text(
             value,
-            style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 11.8.sp,
+            style: AppStyles.boldTextStyle(context).copyWith(
+              fontSize: 13.5.sp,
             ),
           ),
         ],
@@ -337,15 +378,39 @@ class _MiniKpi extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _InnerCard extends StatelessWidget {
   final String title;
-  const _SectionTitle({required this.title});
+  final Widget child;
+  const _InnerCard({
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: AppStyles.semiboldTextStyle(context).copyWith(fontSize: 13.2.sp),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 2.8.w, vertical: .9.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: .05)
+            : const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppStyles.semiboldTextStyle(context)
+                .copyWith(fontSize: 12.4.sp),
+          ),
+          verticalSpace(height: .45.h),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -382,7 +447,13 @@ class _TrendChart extends StatelessWidget {
                 interval: (maxY == 0 ? 10 : maxY) / 4,
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
-                  style: TextStyle(fontSize: 10.sp),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: .6),
+                  ),
                 ),
               ),
             ),
@@ -398,7 +469,13 @@ class _TrendChart extends StatelessWidget {
                     padding: EdgeInsets.only(top: .4.h),
                     child: Text(
                       DateFormat('dd').format(points[i].date),
-                      style: TextStyle(fontSize: 10.sp),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: .7),
+                      ),
                     ),
                   );
                 },
@@ -412,9 +489,16 @@ class _TrendChart extends StatelessWidget {
                 (i) => FlSpot(i.toDouble(), points[i].amount),
               ),
               isCurved: true,
-              barWidth: 2.5,
+              barWidth: 2.8,
               dotData: const FlDotData(show: false),
-              color: Colors.blueAccent,
+              color:
+                  _SingleVehicleExpenseAnalyticsCardState._expensePrimaryColor,
+              belowBarData: BarAreaData(
+                show: true,
+                color: _SingleVehicleExpenseAnalyticsCardState
+                    ._expensePrimaryColor
+                    .withValues(alpha: .16),
+              ),
             )
           ],
         ),
@@ -459,7 +543,13 @@ class _TypeBar extends StatelessWidget {
                 interval: maxY / 4,
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
-                  style: TextStyle(fontSize: 10.sp),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: .6),
+                  ),
                 ),
               ),
             ),
@@ -475,7 +565,13 @@ class _TypeBar extends StatelessWidget {
                     padding: EdgeInsets.only(top: .4.h),
                     child: Text(
                       text.length > 8 ? "${text.substring(0, 8)}..." : text,
-                      style: TextStyle(fontSize: 9.8.sp),
+                      style: TextStyle(
+                        fontSize: 11.8.sp,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: .75),
+                      ),
                     ),
                   );
                 },
@@ -523,6 +619,11 @@ class _RecentList extends StatelessWidget {
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.white.withValues(alpha: .04)
                       : const Color(0xFFF7FAFC),
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white10
+                        : Colors.black12,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -531,15 +632,33 @@ class _RecentList extends StatelessWidget {
                         "${e.type} • ${e.name.isEmpty ? '-' : e.name}",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 11.sp),
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ),
                     horizontalSpace(width: 2.w),
-                    Text(
-                      "Rs ${e.amount.toStringAsFixed(0)}",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 2.w,
+                        vertical: .2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _SingleVehicleExpenseAnalyticsCardState
+                            ._expensePrimaryColor
+                            .withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: _SingleVehicleExpenseAnalyticsCardState
+                              ._expensePrimaryColor
+                              .withValues(alpha: .32),
+                        ),
+                      ),
+                      child: Text(
+                        "Rs ${e.amount.toStringAsFixed(0)}",
+                        style: AppStyles.semiboldTextStyle(context).copyWith(
+                          fontSize: 11.8.sp,
+                        ),
                       ),
                     ),
                   ],
@@ -594,9 +713,10 @@ class _ErrorBlock extends StatelessWidget {
             ),
           ),
           verticalSpace(height: .8.h),
-          OutlinedButton(
+          TextButton.icon(
             onPressed: onRetry,
-            child: Text(context.l10n.retry),
+            icon: const Icon(Icons.refresh_rounded),
+            label: Text(context.l10n.retry),
           )
         ],
       ),
