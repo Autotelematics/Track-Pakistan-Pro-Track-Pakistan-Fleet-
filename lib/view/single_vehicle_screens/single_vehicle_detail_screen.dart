@@ -395,8 +395,8 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
             left: 3.w,
             right: 3.w,
             child: Container(
-              height: 6.3.h,
-              padding: EdgeInsets.symmetric(horizontal: 1.2.w, vertical: .45.h),
+              height: 8.0.h,
+              padding: EdgeInsets.symmetric(horizontal: 1.2.w, vertical: .35.h),
               decoration: BoxDecoration(
                 color: isDark
                     ? theme.cardColor.withValues(alpha: .92)
@@ -415,62 +415,66 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   ),
                 ],
               ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabAlignment: TabAlignment.fill,
-                labelPadding: EdgeInsets.zero,
-                isScrollable: false,
-                dividerHeight: 0,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ConstantColor.primaryColor,
-                      ConstantColor.primaryColor.withValues(alpha: .85),
+              child: MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.noScaling),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  tabAlignment: TabAlignment.fill,
+                  labelPadding: EdgeInsets.zero,
+                  isScrollable: false,
+                  dividerHeight: 0,
+                  dividerColor: Colors.transparent,
+                  indicator: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        ConstantColor.primaryColor,
+                        ConstantColor.primaryColor.withValues(alpha: .85),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10.px),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ConstantColor.primaryColor.withValues(alpha: .30),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(10.px),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ConstantColor.primaryColor.withValues(alpha: .30),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
+                  labelStyle: AppStyles.statusTitle(context).copyWith(
+                    fontSize: 11.sp,
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  unselectedLabelStyle: AppStyles.statusTitle(context).copyWith(
+                    fontSize: 11.sp,
+                    color: isDark ? AppColors.white : AppColors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  tabs: [
+                    Tab(
+                        icon: const Icon(Icons.location_on_outlined, size: 18),
+                        text: l10n.liveTab),
+                    Tab(
+                        icon: const Icon(Icons.bar_chart, size: 18),
+                        text: l10n.analyticsTab),
+                    Tab(
+                        icon: const Icon(Icons.description_outlined, size: 18),
+                        text: l10n.reportTab),
+                    Tab(
+                        icon: const Icon(Icons.access_time, size: 18),
+                        text: l10n.historyTab),
+                    Tab(
+                        icon: const Icon(Icons.notifications_none, size: 18),
+                        text: l10n.alertsTabLong),
+                    Tab(
+                        icon: const Icon(Icons.info_outline_rounded, size: 18),
+                        text: l10n.infoTab),
                   ],
                 ),
-                labelStyle: AppStyles.statusTitle(context).copyWith(
-                  fontSize: 14.sp,
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-                unselectedLabelStyle: AppStyles.statusTitle(context).copyWith(
-                  fontSize: 14.sp,
-                  color: isDark ? AppColors.white : AppColors.black,
-                  fontWeight: FontWeight.w600,
-                ),
-                tabs: [
-                  Tab(
-                      icon: const Icon(Icons.location_on_outlined),
-                      text: l10n.liveTab),
-                  Tab(
-                      icon: const Icon(Icons.bar_chart),
-                      text: l10n.analyticsTab),
-                  Tab(
-                      icon: const Icon(Icons.description_outlined),
-                      text: l10n.reportTab),
-                  Tab(
-                      icon: const Icon(Icons.access_time),
-                      text: l10n.historyTab),
-                  Tab(
-                      icon: const Icon(Icons.notifications_none),
-                      text: l10n.alertsTabLong),
-                  Tab(
-                      icon: const Icon(Icons.info_outline_rounded),
-                      text: l10n.infoTab),
-                ],
               ),
             ),
           ),
