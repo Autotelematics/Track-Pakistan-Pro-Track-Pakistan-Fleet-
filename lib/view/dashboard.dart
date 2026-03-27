@@ -120,31 +120,38 @@ class _NewDashboardState extends State<NewDashboard>
                       Expanded(
                         child: SingleChildScrollView(
                           padding: EdgeInsets.zero,
-                          child: Column(
-                            children: [
-                              _DashboardCustomizeBar(
-                                onTap: () => _showCustomizeSheet(context),
-                              ),
-                              verticalSpace(height: 1.h),
-                              if (orderedVisibleIds.isEmpty)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 5.w, vertical: 2.h),
-                                  child: Text(
-                                    l10n.noDashboardCardsSelected,
-                                    textAlign: TextAlign.center,
-                                    style: AppStyles.regularTextStyle(context)
-                                        .copyWith(fontSize: 13.2.sp),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 980),
+                              child: Column(
+                                children: [
+                                  _DashboardCustomizeBar(
+                                    onTap: () => _showCustomizeSheet(context),
                                   ),
-                                )
-                              else
-                                ...orderedVisibleIds.expand(
-                                  (id) => [
-                                    cards[id]!,
-                                    verticalSpace(height: 1.h),
-                                  ],
-                                ),
-                            ],
+                                  verticalSpace(height: 1.h),
+                                  if (orderedVisibleIds.isEmpty)
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 5.w, vertical: 2.h),
+                                      child: Text(
+                                        l10n.noDashboardCardsSelected,
+                                        textAlign: TextAlign.center,
+                                        style:
+                                            AppStyles.regularTextStyle(context)
+                                                .copyWith(fontSize: 13.2.sp),
+                                      ),
+                                    )
+                                  else
+                                    ...orderedVisibleIds.expand(
+                                      (id) => [
+                                        cards[id]!,
+                                        verticalSpace(height: 1.h),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),

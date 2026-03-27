@@ -363,7 +363,7 @@ class _SingleVehicleAnalyticsScreenState
               return Stack(
                 children: [
                   SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 3.0.h),
+                    padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 3.0.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -527,7 +527,8 @@ class _SingleVehicleAnalyticsScreenState
                             ),
                             verticalSpace(height: 1.h),
                           ],
-                          if (!isMultiDay && provider.fuelChartData.isNotEmpty) ...[
+                          if (!isMultiDay &&
+                              provider.fuelChartData.isNotEmpty) ...[
                             AnalyticsFuelChart(
                               provider: provider,
                               tooltip: _fuelTooltip,

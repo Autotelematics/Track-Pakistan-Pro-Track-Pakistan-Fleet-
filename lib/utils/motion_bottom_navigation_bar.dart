@@ -32,7 +32,7 @@ class MotionBottomNavigationBar extends StatefulWidget {
 }
 
 class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   late MotionBottomBarProvider _bottomBarProvider;
   late List<_NavTabItem> _tabs;
@@ -228,14 +228,21 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     );
     final navBackground =
         isDark ? theme.cardColor : ConstantColor.secondaryColor;
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = bottomInset > 0 ? bottomInset + 6 : 10.0;
     return Scaffold(
       floatingActionButton: _showBackToAdminAction
           ? FloatingActionButton.extended(
               onPressed: _handleBackToAdmin,
-              icon: const Icon(Icons.arrow_back, size: 16),
+              icon: const Icon(Icons.arrow_back, size: 14),
+              extendedPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 0,
+              ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               label: Text(
                 context.l10n.backToAdmin,
-                style: TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 11),
               ),
             )
           : null,
@@ -246,7 +253,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                 10,
                 8,
                 10,
-                10,
+                bottomPadding,
               ),
               decoration: BoxDecoration(
                 color: navBackground,
@@ -260,60 +267,59 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
               ),
               child: Row(
                 children: displayedTabs.map((tab) {
-                    final logicalIndex = _tabs.indexOf(tab);
-                    final isSelected = provider.currentIndex == logicalIndex;
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(18),
-                          onTap: () => provider.setIndex(logicalIndex),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            height: barHeight,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.white
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  tab.icon,
-                                  size:
-                                      isSelected ? selectedIconSize : iconSize,
+                  final logicalIndex = _tabs.indexOf(tab);
+                  final isSelected = provider.currentIndex == logicalIndex;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () => provider.setIndex(logicalIndex),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                          height: barHeight,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.white
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                tab.icon,
+                                size: isSelected ? selectedIconSize : iconSize,
+                                color: isSelected
+                                    ? ConstantColor.primaryColor
+                                    : AppColors.white,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                tab.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
                                   color: isSelected
                                       ? ConstantColor.primaryColor
                                       : AppColors.white,
+                                  fontSize: labelSize,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  tab.label,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? ConstantColor.primaryColor
-                                        : AppColors.white,
-                                    fontSize: labelSize,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    );
+                    ),
+                  );
                 }).toList(growable: false),
               ),
             ),

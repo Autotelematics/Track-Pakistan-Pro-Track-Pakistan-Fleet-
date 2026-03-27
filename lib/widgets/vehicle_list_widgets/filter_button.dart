@@ -10,11 +10,13 @@ import 'package:trackerapp/utils/app_localizations_x.dart';
 class FilterButton extends StatelessWidget {
   final Color onSurface;
   final Color primary;
+  final bool compactMode;
 
   const FilterButton({
     super.key,
     required this.onSurface,
     required this.primary,
+    this.compactMode = false,
   });
 
   @override
@@ -22,14 +24,16 @@ class FilterButton extends StatelessWidget {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
         final hasActiveFilter = provider.selectedGroupId != null;
+        final buttonHeight = compactMode ? 44.0 : 5.h;
+        final buttonWidth = compactMode ? 52.0 : 13.w;
         return InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () {
             _showFilterMenu(context, primary, onSurface);
           },
           child: Container(
-            height: 5.h,
-            width: 13.w,
+            height: buttonHeight,
+            width: buttonWidth,
             decoration: BoxDecoration(
               color: hasActiveFilter
                   ? primary.withValues(alpha: 0.14)
@@ -52,8 +56,8 @@ class FilterButton extends StatelessWidget {
                 ),
                 if (hasActiveFilter)
                   Positioned(
-                    right: 2.4.w,
-                    top: 1.1.h,
+                    right: compactMode ? 8 : 2.4.w,
+                    top: compactMode ? 8 : 1.1.h,
                     child: Container(
                       width: .9.h,
                       height: .9.h,

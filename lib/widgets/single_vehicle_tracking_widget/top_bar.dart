@@ -25,6 +25,9 @@ class TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<VehicleTrackingProvider>(
       builder: (context, provider, child) {
+        final topOffset = (MediaQuery.sizeOf(context).height * 0.0055)
+            .clamp(4.0, 7.0)
+            .toDouble();
         final l10n = context.l10n;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final panelBase = isDark ? const Color(0xFF1B1D24) : AppColors.white;
@@ -38,7 +41,7 @@ class TopBar extends StatelessWidget {
         final isRunning = provider.status == 'online';
 
         return Positioned(
-          top: 5.2.h,
+          top: topOffset,
           left: 3.w,
           right: 3.w,
           child: Row(

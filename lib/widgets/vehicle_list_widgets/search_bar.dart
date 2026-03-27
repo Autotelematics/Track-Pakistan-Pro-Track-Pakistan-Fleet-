@@ -9,12 +9,14 @@ class SearchFiled extends StatefulWidget {
   final Color primary;
   final Color onSurface;
   final Color outline;
+  final bool compactMode;
 
   const SearchFiled({
     super.key,
     required this.primary,
     required this.onSurface,
     required this.outline,
+    this.compactMode = false,
   });
 
   @override
@@ -26,8 +28,10 @@ class _SearchFiledState extends State<SearchFiled> {
   Widget build(BuildContext context) {
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
+        final fieldHeight = widget.compactMode ? 44.0 : 5.h;
+        final verticalPadding = widget.compactMode ? 10.0 : 1.2.h;
         return SizedBox(
-          height: 5.h,
+          height: fieldHeight,
           child: TextField(
             cursorColor: widget.primary,
             style: AppStyles.regularTextStyle(context).copyWith(
@@ -43,26 +47,30 @@ class _SearchFiledState extends State<SearchFiled> {
               filled: true,
               fillColor: widget.primary.withValues(alpha: 0.06),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: widget.outline.withValues(alpha: 0.2)),
+                borderSide:
+                    BorderSide(color: widget.outline.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(14),
               ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: widget.outline.withValues(alpha: 0.2)),
+                borderSide:
+                    BorderSide(color: widget.outline.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(14),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: widget.primary, width: 1.1),
                 borderRadius: BorderRadius.circular(14),
               ),
-              contentPadding:
-                  EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 2.8.w),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: verticalPadding,
+                horizontal: 2.8.w,
+              ),
               prefixIcon: Icon(
                 Icons.search_rounded,
                 size: 18.5.sp,
                 color: widget.onSurface.withValues(alpha: 0.72),
               ),
               prefixIconConstraints: BoxConstraints(
-                minHeight: 5.h,
+                minHeight: fieldHeight,
                 minWidth: 10.w,
               ),
             ),

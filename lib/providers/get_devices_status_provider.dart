@@ -17,6 +17,7 @@ class VehicleMapProvider extends ChangeNotifier {
   // No-label markers can look visually larger than labeled markers on map,
   // so keep a slightly smaller base size for non-labeled mode.
   static const double _plainMarkerScale = 1.0;
+  static const double _markerSizeBaselineShortest = 393.0;
 
   GetDevicesListModel? deviceListModel;
   Set<Marker> deviceMarkers = {};
@@ -67,9 +68,10 @@ class VehicleMapProvider extends ChangeNotifier {
   };
 
   final Map<String, BitmapDescriptor> _labeledIcons = {};
+  double _screenMarkerScale = 1.0;
 
-  static String get _labelStyleToken =>
-      '$_sharedMarkerIconPx|$_labelScale|$_markerRenderScale';
+  String get _labelStyleToken =>
+      '$_sharedMarkerIconPx|$_labelScale|$_markerRenderScale|${_screenMarkerScale.toStringAsFixed(3)}';
 
   DateTime? _lastTapTime;
   int? _lastTappedDeviceId;
@@ -78,13 +80,29 @@ class VehicleMapProvider extends ChangeNotifier {
     _loadMarkerIcons();
   }
 
+  Future<void> updateMarkerScaleForScreen(Size size) async {
+    final shortestSide = size.shortestSide;
+    final nextScale = (shortestSide / _markerSizeBaselineShortest)
+        .clamp(1.0, 1.45)
+        .toDouble();
+    if ((nextScale - _screenMarkerScale).abs() < 0.04) return;
+    _screenMarkerScale = nextScale;
+    _clusterIcons.clear();
+    await _loadMarkerIcons();
+    if (deviceListModel?.items != null) {
+      await _prepareMarkers(_getFilteredItems());
+    }
+    _notifySafely();
+  }
+
   void _notifySafely() {
     if (_isDisposed) return;
     notifyListeners();
   }
 
   Future<void> _loadMarkerIcons() async {
-    const plainMarkerPx = _sharedMarkerIconPx * _plainMarkerScale;
+    final plainMarkerPx =
+        _sharedMarkerIconPx * _plainMarkerScale * _screenMarkerScale;
     _icons.clear();
     _labeledIcons.clear();
 
@@ -163,6 +181,7 @@ class VehicleMapProvider extends ChangeNotifier {
     String label,
     Color statusColor,
   ) async {
+    final markerPx = _sharedMarkerIconPx * _screenMarkerScale;
     label = label.trim();
     if (label.isEmpty) {
       // Fallback to normal icon if no label
@@ -174,7 +193,7 @@ class VehicleMapProvider extends ChangeNotifier {
     final ByteData iconData = await rootBundle.load(assetPath);
     final ui.Codec iconCodec = await ui.instantiateImageCodec(
       iconData.buffer.asUint8List(),
-      targetHeight: (_sharedMarkerIconPx * _markerRenderScale).round(),
+      targetHeight: (markerPx * _markerRenderScale).round(),
     );
     final ui.FrameInfo fi = await iconCodec.getNextFrame();
     final ui.Image baseIcon = fi.image;
@@ -184,12 +203,9 @@ class VehicleMapProvider extends ChangeNotifier {
 
     // Label geometry scales with marker icon size, so changing
     // _sharedMarkerIconPx automatically keeps label proportions balanced.
-    final double fontSize =
-        math.max(3.0, _sharedMarkerIconPx * 0.30 * _labelScale);
-    final double padding =
-        math.max(1.0, _sharedMarkerIconPx * 0.13 * _labelScale);
-    final double minLabelWidth =
-        math.max(10.0, _sharedMarkerIconPx * 1.35 * _labelScale);
+    final double fontSize = math.max(3.0, markerPx * 0.30 * _labelScale);
+    final double padding = math.max(1.0, markerPx * 0.13 * _labelScale);
+    final double minLabelWidth = math.max(10.0, markerPx * 1.35 * _labelScale);
 
     final TextPainter tp = TextPainter(textDirection: TextDirection.ltr);
     tp.text = TextSpan(
@@ -205,21 +221,18 @@ class VehicleMapProvider extends ChangeNotifier {
     double labelWidth = math.max(tp.width + padding * 2, minLabelWidth);
     double labelHeight = tp.height + padding * 2;
 
-    final double cornerRadius =
-        math.max(4.0, _sharedMarkerIconPx * 0.20 * _labelScale);
+    final double cornerRadius = math.max(4.0, markerPx * 0.20 * _labelScale);
 
     // Arrow (tail) settings
-    final double arrowBaseWidth =
-        math.max(6.0, _sharedMarkerIconPx * 0.40 * _labelScale);
-    final double arrowHeight =
-        math.max(4.0, _sharedMarkerIconPx * 0.22 * _labelScale);
+    final double arrowBaseWidth = math.max(6.0, markerPx * 0.40 * _labelScale);
+    final double arrowHeight = math.max(4.0, markerPx * 0.22 * _labelScale);
 
     // Space between arrow tip and vehicle icon
-    final double gap = math.max(2.0, _sharedMarkerIconPx * 0.16 * _labelScale);
+    final double gap = math.max(2.0, markerPx * 0.16 * _labelScale);
 
     // Total canvas size
     final double totalWidth =
-        math.max(labelWidth, iconWidth + (_sharedMarkerIconPx * 0.35));
+        math.max(labelWidth, iconWidth + (markerPx * 0.35));
     final double totalHeight = labelHeight + arrowHeight + gap + iconHeight;
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();

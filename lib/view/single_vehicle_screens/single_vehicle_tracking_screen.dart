@@ -200,7 +200,10 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   }
 
   Future<BitmapDescriptor> _markerIcon(
-      String status, String vehicleType) async {
+    String status,
+    String vehicleType, {
+    required double markerLogicalHeight,
+  }) async {
     final typeLower = vehicleType.toLowerCase().trim();
     String baseType = "car";
     if (typeLower.contains("ambulance")) {
@@ -236,8 +239,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       final ByteData data = await rootBundle.load(path);
       final ui.Codec codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
-        targetHeight:
-            (_vehicleMarkerLogicalHeight * _vehicleMarkerRenderScale).round(),
+        targetHeight: (markerLogicalHeight * _vehicleMarkerRenderScale).round(),
       );
       final ui.FrameInfo frame = await codec.getNextFrame();
       final ByteData? bytes =
@@ -274,6 +276,9 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     final textScale = trackingTextScale(context);
     final iconScale = trackingIconScale(context);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    const infoBannerTop = 64.0;
+    const rulerBannerTop = 102.0;
+    final markerLogicalHeight = _adaptiveMarkerLogicalHeight(context);
     return ChangeNotifierProvider.value(
       value: provider,
       child: Scaffold(
@@ -327,6 +332,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                 prov.vehicleType.trim().isNotEmpty
                     ? prov.vehicleType
                     : (widget.initialVehicleType ?? ''),
+                markerLogicalHeight: markerLogicalHeight,
               ),
               builder: (context, snap) {
                 if (!snap.hasData) {
@@ -439,7 +445,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                         if (_showUserDistanceBanner &&
                             prov.userPosition != null)
                           Positioned(
-                            top: 10.8.h,
+                            top: infoBannerTop,
                             left: 4.w,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -459,7 +465,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                           ),
                         if (prov.isLocatingUser)
                           Positioned(
-                            top: 10.8.h,
+                            top: infoBannerTop,
                             left: 4.w,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -479,7 +485,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                           ),
                         if (prov.rulerMode)
                           Positioned(
-                            top: 15.2.h,
+                            top: rulerBannerTop,
                             left: 4.w,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -541,6 +547,13 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
         ),
       ),
     );
+  }
+
+  double _adaptiveMarkerLogicalHeight(BuildContext context) {
+    const baselineShortest = 393.0; // iPhone 15 Pro baseline
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    final scale = (shortest / baselineShortest).clamp(1.0, 1.45);
+    return _vehicleMarkerLogicalHeight * scale;
   }
 
   @override

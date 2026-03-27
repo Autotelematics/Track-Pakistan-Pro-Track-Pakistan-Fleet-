@@ -125,8 +125,8 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
   Future<void> _loadInitialLiveMarkerIcon() async {
     if (widget.initialLivePosition == null) return;
     try {
-      final ByteData data =
-          await rootBundle.load(_liveStatusToCarAsset(widget.initialLiveStatus));
+      final ByteData data = await rootBundle
+          .load(_liveStatusToCarAsset(widget.initialLiveStatus));
       final ui.Codec codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
         targetHeight:
@@ -615,123 +615,115 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                 _buildTaskPlaybackRangeCard()
               else
                 Positioned(
-                  top: 5.6.h,
+                  top: .6.h,
                   left: 4.w,
                   right: 4.w,
-                  child: Transform.translate(
-                    offset: Offset(0, -0.4.h),
-                    transformHitTests: false,
-                    child: MediaQuery(
-                      data: MediaQuery.of(context)
-                          .copyWith(textScaler: TextScaler.linear(textScale)),
-                      child: IconTheme(
-                        data: IconTheme.of(context)
-                            .copyWith(size: 24 * iconScale),
-                        child: Column(
-                          children: [
-                            SingleVehicleDateFilterBar(
-                              filterLabels: [
-                                l10n.today,
-                                l10n.yesterday,
-                                l10n.last3Days,
-                                l10n.last7Days,
-                                l10n.custom,
-                              ],
-                              selectedFilterIndex: _selectedQuickFilterIndex(),
-                              showDateRangePicker: showCustomPicker,
-                              rangeText:
-                                  '${_formatDateDisplay(fromDate)} ${_formatTimeDisplay(fromTime)}  ->  ${_formatDateDisplay(toDate)} ${_formatTimeDisplay(toTime)}',
-                              onFilterTap: (index) {
-                                if (index == 4) {
-                                  _openCustomPicker();
-                                  return;
-                                }
-                                const filters = [
-                                  "Today",
-                                  "Yesterday",
-                                  "Last 3 Days",
-                                  "Last 7 Days",
-                                ];
-                                _applyQuickFilter(filters[index]);
-                              },
-                              onDateRangeTap: _toggleCustomPicker,
-                            ),
-                            if (showCustomPicker) ...[
-                              verticalSpace(height: 1.h),
-                              SingleVehicleDateRangePickerCard(
-                                fromDateTitle: l10n.fromDate,
-                                toDateTitle: l10n.toDate,
-                                fromTimeTitle: l10n.fromTime,
-                                toTimeTitle: l10n.toTime,
-                                selectDateLabel: l10n.selectDate,
-                                selectTimeLabel: l10n.selectTime,
-                                applyLabel: l10n.applyRange,
-                                fromDateValue:
-                                    _formatPickerDate(customStartDate),
-                                toDateValue: _formatPickerDate(customEndDate),
-                                fromTimeValue:
-                                    _formatPickerTime(customStartTime),
-                                toTimeValue: _formatPickerTime(customEndTime),
-                                onApply: () {
-                                  if (customStartDate != null &&
-                                      customEndDate != null &&
-                                      customStartTime != null &&
-                                      customEndTime != null) {
-                                    if (!_isDateRangeValid(
-                                        customStartDate, customEndDate)) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(l10n
-                                              .fromDateCannotBeLaterThanToDate),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    setState(() {
-                                      showCustomPicker = false;
-                                      _hasFilterApplied = true;
-                                      selectedFilter = "Custom";
-                                    });
-                                    _fetchHistory();
-                                  }
-                                },
-                                onFromDateTap: () async {
-                                  final picked = await _pickDate(
-                                    customStartDate ?? DateTime.now(),
-                                    maxDate: customEndDate ?? DateTime.now(),
-                                  );
-                                  if (picked != null) {
-                                    _onDatePicked(picked, true);
-                                  }
-                                },
-                                onToDateTap: () async {
-                                  final picked = await _pickDate(
-                                    customEndDate ?? DateTime.now(),
-                                    minDate: customStartDate ?? DateTime(2020),
-                                    maxDate: DateTime.now(),
-                                  );
-                                  if (picked != null) {
-                                    _onDatePicked(picked, false);
-                                  }
-                                },
-                                onFromTimeTap: () async {
-                                  final picked =
-                                      await _pickTime(customStartTime);
-                                  if (picked != null) {
-                                    _onTimePicked(picked, true);
-                                  }
-                                },
-                                onToTimeTap: () async {
-                                  final picked = await _pickTime(customEndTime);
-                                  if (picked != null) {
-                                    _onTimePicked(picked, false);
-                                  }
-                                },
-                              ),
+                  child: MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(textScaler: TextScaler.linear(textScale)),
+                    child: IconTheme(
+                      data:
+                          IconTheme.of(context).copyWith(size: 24 * iconScale),
+                      child: Column(
+                        children: [
+                          SingleVehicleDateFilterBar(
+                            filterLabels: [
+                              l10n.today,
+                              l10n.yesterday,
+                              l10n.last3Days,
+                              l10n.last7Days,
+                              l10n.custom,
                             ],
+                            selectedFilterIndex: _selectedQuickFilterIndex(),
+                            showDateRangePicker: showCustomPicker,
+                            rangeText:
+                                '${_formatDateDisplay(fromDate)} ${_formatTimeDisplay(fromTime)}  ->  ${_formatDateDisplay(toDate)} ${_formatTimeDisplay(toTime)}',
+                            onFilterTap: (index) {
+                              if (index == 4) {
+                                _openCustomPicker();
+                                return;
+                              }
+                              const filters = [
+                                "Today",
+                                "Yesterday",
+                                "Last 3 Days",
+                                "Last 7 Days",
+                              ];
+                              _applyQuickFilter(filters[index]);
+                            },
+                            onDateRangeTap: _toggleCustomPicker,
+                          ),
+                          if (showCustomPicker) ...[
+                            verticalSpace(height: 1.h),
+                            SingleVehicleDateRangePickerCard(
+                              fromDateTitle: l10n.fromDate,
+                              toDateTitle: l10n.toDate,
+                              fromTimeTitle: l10n.fromTime,
+                              toTimeTitle: l10n.toTime,
+                              selectDateLabel: l10n.selectDate,
+                              selectTimeLabel: l10n.selectTime,
+                              applyLabel: l10n.applyRange,
+                              fromDateValue: _formatPickerDate(customStartDate),
+                              toDateValue: _formatPickerDate(customEndDate),
+                              fromTimeValue: _formatPickerTime(customStartTime),
+                              toTimeValue: _formatPickerTime(customEndTime),
+                              onApply: () {
+                                if (customStartDate != null &&
+                                    customEndDate != null &&
+                                    customStartTime != null &&
+                                    customEndTime != null) {
+                                  if (!_isDateRangeValid(
+                                      customStartDate, customEndDate)) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(l10n
+                                            .fromDateCannotBeLaterThanToDate),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  setState(() {
+                                    showCustomPicker = false;
+                                    _hasFilterApplied = true;
+                                    selectedFilter = "Custom";
+                                  });
+                                  _fetchHistory();
+                                }
+                              },
+                              onFromDateTap: () async {
+                                final picked = await _pickDate(
+                                  customStartDate ?? DateTime.now(),
+                                  maxDate: customEndDate ?? DateTime.now(),
+                                );
+                                if (picked != null) {
+                                  _onDatePicked(picked, true);
+                                }
+                              },
+                              onToDateTap: () async {
+                                final picked = await _pickDate(
+                                  customEndDate ?? DateTime.now(),
+                                  minDate: customStartDate ?? DateTime(2020),
+                                  maxDate: DateTime.now(),
+                                );
+                                if (picked != null) {
+                                  _onDatePicked(picked, false);
+                                }
+                              },
+                              onFromTimeTap: () async {
+                                final picked = await _pickTime(customStartTime);
+                                if (picked != null) {
+                                  _onTimePicked(picked, true);
+                                }
+                              },
+                              onToTimeTap: () async {
+                                final picked = await _pickTime(customEndTime);
+                                if (picked != null) {
+                                  _onTimePicked(picked, false);
+                                }
+                              },
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -1019,7 +1011,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
   Widget _buildErrorBanner(String message) {
     final theme = Theme.of(context);
     return Positioned(
-      top: 20.h,
+      top: 8.4.h,
       left: 4.w,
       right: 4.w,
       child: Container(

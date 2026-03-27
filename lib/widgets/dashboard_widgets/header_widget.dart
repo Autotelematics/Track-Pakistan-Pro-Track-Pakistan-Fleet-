@@ -27,12 +27,6 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth * 0.90;
-    final isCompactSummary = cardWidth < 335;
-    final summaryTop = isCompactSummary ? 16.5.h : 18.h;
-    final headerHeight = isCompactSummary ? 49.h : 37.h;
-
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final foregroundColor = isDark ? theme.colorScheme.onSurface : Colors.white;
@@ -46,37 +40,40 @@ class HeaderWidget extends StatelessWidget {
     final userEmail = emailFromApi.isNotEmpty ? emailFromApi : storedEmail;
     final l10n = context.l10n;
     final hiText = userEmail.isNotEmpty ? l10n.hiUser(userEmail) : l10n.hi;
+    final settingsIconColor =
+        isDark ? const Color(0xFF93C5FD) : const Color(0xFF60A5FA);
+    final alertIconColor =
+        isDark ? const Color(0xFFFCA5A5) : const Color(0xFFF87171);
 
-    return SizedBox(
-      height: headerHeight,
-      width: 100.w,
-      child: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 6.w),
-            height: 32.h,
-            decoration: BoxDecoration(
-              color: isDark ? theme.colorScheme.surface : null,
-              gradient: isDark ? null : AppColors.mainGradient,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(38),
-                bottomRight: Radius.circular(38),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.4)
-                      : Colors.black.withValues(alpha: 0.12),
-                  offset: const Offset(0, 4),
-                  blurRadius: isDark ? 16 : 20,
-                ),
-              ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 100.w,
+          padding: EdgeInsets.symmetric(horizontal: 6.w),
+          decoration: BoxDecoration(
+            color: isDark ? theme.colorScheme.surface : null,
+            gradient: isDark ? null : AppColors.mainGradient,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(38),
+              bottomRight: Radius.circular(38),
             ),
-            child: SafeArea(
-              bottom: false,
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.4)
+                    : Colors.black.withValues(alpha: 0.12),
+                offset: const Offset(0, 4),
+                blurRadius: isDark ? 16 : 20,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.only(top: .8.h, bottom: 1.5.h),
               child: Column(
                 children: [
-                  verticalSpace(height: 1.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -108,12 +105,18 @@ class HeaderWidget extends StatelessWidget {
                                   ),
                           ),
                           SizedBox(width: 2.4.w),
-                          Text(
-                            hiText,
-                            style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 14.sp,
-                              color: foregroundColor,
-                              fontWeight: FontWeight.w700,
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 52.w),
+                            child: Text(
+                              hiText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  AppStyles.regularTextStyle(context).copyWith(
+                                fontSize: 14.sp,
+                                color: foregroundColor,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],
@@ -128,7 +131,7 @@ class HeaderWidget extends StatelessWidget {
                             icon: Icon(
                               Icons.settings,
                               size: (3 * iconScale).h,
-                              color: foregroundColor,
+                              color: settingsIconColor,
                             ),
                           ),
                           SizedBox(width: 1.w),
@@ -140,7 +143,7 @@ class HeaderWidget extends StatelessWidget {
                             icon: Icon(
                               Icons.notifications,
                               size: (3 * iconScale).h,
-                              color: foregroundColor,
+                              color: alertIconColor,
                             ),
                           ),
                         ],
@@ -161,21 +164,17 @@ class HeaderWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  verticalSpace(height: 1.3.h),
                 ],
               ),
             ),
           ),
-
-          // Overlapping Vehicle Summary Card
-          Positioned(
-            top: summaryTop,
-            left: 5.w,
-            right: 5.w,
-            child: VehicleSummaryCard(data1: data1),
-          ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(5.w, 1.h, 5.w, 0),
+          child: VehicleSummaryCard(data1: data1),
+        ),
+        verticalSpace(height: .9.h),
+      ],
     );
   }
 }

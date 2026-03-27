@@ -569,7 +569,9 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                 padding: EdgeInsets.all(2.4.w),
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: isDark ? Colors.white24 : Colors.black26,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : Colors.black26,
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -582,8 +584,9 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                           'No geofences found',
                                       style: TextStyle(
                                         fontSize: 11.8.sp,
-                                        color:
-                                            isDark ? Colors.white70 : Colors.black54,
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black54,
                                       ),
                                     ),
                                     verticalSpace(height: .8.h),
@@ -609,7 +612,8 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                               constraints: BoxConstraints(maxHeight: 24.h),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: isDark ? Colors.white24 : Colors.black26,
+                                  color:
+                                      isDark ? Colors.white24 : Colors.black26,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -630,7 +634,8 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                         if (v == true) {
                                           selectedGeofenceIds.add(geofence.id);
                                         } else {
-                                          selectedGeofenceIds.remove(geofence.id);
+                                          selectedGeofenceIds
+                                              .remove(geofence.id);
                                         }
                                       });
                                     },
@@ -697,10 +702,13 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                 backgroundColor: ConstantColor.primaryColor,
                               ),
                               onPressed: () {
-                                final speed = int.tryParse(speedCtrl.text.trim()) ?? 0;
+                                final speed =
+                                    int.tryParse(speedCtrl.text.trim()) ?? 0;
                                 final ignitionOff =
-                                    int.tryParse(ignitionOffCtrl.text.trim()) ?? 0;
-                                final stops = int.tryParse(stopsCtrl.text.trim()) ?? 0;
+                                    int.tryParse(ignitionOffCtrl.text.trim()) ??
+                                        0;
+                                final stops =
+                                    int.tryParse(stopsCtrl.text.trim()) ?? 0;
                                 final geofences =
                                     selectedGeofenceIds.toList(growable: false);
 
@@ -754,11 +762,11 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
         child: IconTheme(
           data: IconTheme.of(context).copyWith(size: 24 * iconScale),
           child: Padding(
-            padding: EdgeInsets.fromLTRB(4.w, 4.6.h, 4.w, 1.2.h),
+            padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 1.2.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                verticalSpace(height: .6.h),
+                verticalSpace(height: .3.h),
                 SingleVehicleDateFilterBar(
                   filterLabels: List.generate(
                       filters.length, (i) => _filterLabel(context, i)),

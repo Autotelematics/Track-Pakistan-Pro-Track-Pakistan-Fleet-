@@ -272,13 +272,25 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final mediaQuery = MediaQuery.of(context);
+    final topInset = mediaQuery.padding.top;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape ||
+        mediaQuery.size.width >= 900;
+    final isTallScreen = mediaQuery.size.height >= 850 && !isLandscape;
+    final tabBarHeight = isLandscape ? 54.0 : 60.0;
+    final tabBarTop = topInset + (isLandscape ? 16.0 : 54.0);
+    final contentTop = tabBarTop + tabBarHeight + (isLandscape ? 8.0 : 10.0);
+    final headerHeight = contentTop + (isLandscape ? 3.0 : 2.0);
+    final headerTopPadding = topInset + (isLandscape ? 3.0 : 7.0);
+    final tabIconSize = isTallScreen ? 21.0 : 19.0;
+    final tabTextSize = isTallScreen ? 12.6.sp : 11.6.sp;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Container(
-            margin: EdgeInsets.only(top: 16.h),
+            margin: EdgeInsets.only(top: contentTop),
             child: TabBarView(
               controller: _tabController,
               physics: NeverScrollableScrollPhysics(),
@@ -334,7 +346,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
             left: 0,
             right: 0,
             child: Container(
-              height: 19.h,
+              height: headerHeight,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -358,7 +370,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   ),
                 ],
               ),
-              padding: EdgeInsets.only(top: 7.h),
+              padding: EdgeInsets.only(top: headerTopPadding),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 3.w),
                 child: Row(
@@ -391,12 +403,12 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
 
           // TabBar (Placed over header)
           Positioned(
-            top: 14.h,
+            top: tabBarTop,
             left: 3.w,
             right: 3.w,
             child: Container(
-              height: 8.0.h,
-              padding: EdgeInsets.symmetric(horizontal: 1.2.w, vertical: .35.h),
+              height: tabBarHeight,
+              padding: EdgeInsets.symmetric(horizontal: 1.0.w, vertical: .22.h),
               decoration: BoxDecoration(
                 color: isDark
                     ? theme.cardColor.withValues(alpha: .92)
@@ -438,40 +450,44 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                     borderRadius: BorderRadius.circular(10.px),
                     boxShadow: [
                       BoxShadow(
-                        color: ConstantColor.primaryColor.withValues(alpha: .30),
+                        color:
+                            ConstantColor.primaryColor.withValues(alpha: .30),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   labelStyle: AppStyles.statusTitle(context).copyWith(
-                    fontSize: 11.sp,
+                    fontSize: tabTextSize,
                     color: AppColors.white,
                     fontWeight: FontWeight.w700,
                   ),
                   unselectedLabelStyle: AppStyles.statusTitle(context).copyWith(
-                    fontSize: 11.sp,
+                    fontSize: tabTextSize,
                     color: isDark ? AppColors.white : AppColors.black,
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: [
                     Tab(
-                        icon: const Icon(Icons.location_on_outlined, size: 18),
+                        icon:
+                            Icon(Icons.location_on_outlined, size: tabIconSize),
                         text: l10n.liveTab),
                     Tab(
-                        icon: const Icon(Icons.bar_chart, size: 18),
+                        icon: Icon(Icons.bar_chart, size: tabIconSize),
                         text: l10n.analyticsTab),
                     Tab(
-                        icon: const Icon(Icons.description_outlined, size: 18),
+                        icon:
+                            Icon(Icons.description_outlined, size: tabIconSize),
                         text: l10n.reportTab),
                     Tab(
-                        icon: const Icon(Icons.access_time, size: 18),
+                        icon: Icon(Icons.access_time, size: tabIconSize),
                         text: l10n.historyTab),
                     Tab(
-                        icon: const Icon(Icons.notifications_none, size: 18),
+                        icon: Icon(Icons.notifications_none, size: tabIconSize),
                         text: l10n.alertsTabLong),
                     Tab(
-                        icon: const Icon(Icons.info_outline_rounded, size: 18),
+                        icon:
+                            Icon(Icons.info_outline_rounded, size: tabIconSize),
                         text: l10n.infoTab),
                   ],
                 ),

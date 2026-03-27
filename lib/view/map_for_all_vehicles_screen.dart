@@ -333,6 +333,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
         value: _provider,
         child: Consumer<VehicleMapProvider>(
           builder: (context, provider, child) {
+            provider.updateMarkerScaleForScreen(MediaQuery.sizeOf(context));
             return Stack(
               children: [
                 GoogleMap(

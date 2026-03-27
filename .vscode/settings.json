@@ -1,3 +1,7 @@
 {
-  "cmake.sourceDirectory": "/Users/aligoharmaitlo/Development/Autotel_Fleet/Autotel_Fleet/third_party/flutter_tts/windows"
+  "cmake.sourceDirectory": "/Users/aligoharmaitlo/Development/Autotel_Fleet/Autotel_Fleet/third_party/flutter_tts/windows",
+  "java.import.exclusions": [
+    "**/third_party/flutter_tts/android/**",
+    "**/third_party/flutter_tts/example/android/**"
+  ]
 }

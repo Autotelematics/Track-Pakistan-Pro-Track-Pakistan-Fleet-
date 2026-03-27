@@ -87,7 +87,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 335;
-        final chartSize = isCompact ? 17.h : 16.2.h;
+        final chartSize = isCompact ? 14.6.h : 16.2.h;
         return Container(
           padding: EdgeInsets.symmetric(
             horizontal: 4.w,
@@ -121,7 +121,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
                         child: _buildLegend(context),
                       ),
                     ),
-                    verticalSpace(height: 1.2.h),
+                    verticalSpace(height: .6.h),
                     _buildPieChart(context, size: chartSize),
                   ],
                 )
@@ -150,13 +150,13 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
         // verticalSpace(height: .0.h),
         _legendItem(
             AppColors.red, l10n.vehicleStatusStopped, status.ack, 0, context),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: .7.h),
         _legendItem(AppColors.green, l10n.vehicleStatusRunning, status.online,
             1, context),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: .7.h),
         _legendItem(
             AppColors.yellow, l10n.vehicleStatusIdle, status.idle, 2, context),
-        verticalSpace(height: 1.h),
+        verticalSpace(height: .7.h),
         _legendItem(AppColors.blueCyan, l10n.vehicleStatusOffline,
             status.offline, 3, context),
       ],

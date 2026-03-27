@@ -93,7 +93,7 @@ class SingleVehicleInfoScreen extends StatelessWidget {
         body: SafeArea(
           top: false,
           child: ListView(
-            padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 1.h),
+            padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 1.h),
             children: [
               // Text(
               //   "Vehicle Info",

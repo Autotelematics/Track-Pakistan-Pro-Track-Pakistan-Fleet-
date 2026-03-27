@@ -62,6 +62,7 @@ ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 android/.gradle/
 android/local.properties
+third_party/flutter_tts/**/.gradle/
 
 .dart_tool/
 build/

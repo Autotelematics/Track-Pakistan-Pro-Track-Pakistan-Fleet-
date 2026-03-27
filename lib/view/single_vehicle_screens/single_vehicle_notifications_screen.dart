@@ -272,7 +272,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(4.w, 5.2.h, 4.w, 0),
+              padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 0),
               child: Consumer<AlertsProvider>(
                 builder: (context, provider, _) {
                   final alerts =

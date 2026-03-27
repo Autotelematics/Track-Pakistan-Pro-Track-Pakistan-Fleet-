@@ -98,6 +98,13 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
     Color primary,
     Color outline,
   ) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompactLandscape =
+        mediaQuery.orientation == Orientation.landscape ||
+            mediaQuery.size.height < 720;
+    final topContentSpacing =
+        MediaQuery.paddingOf(context).top + (isCompactLandscape ? 4 : 8);
+    final sectionGap = isCompactLandscape ? .35.h : 1.h;
     return Consumer<GetDevicesListProvider>(
       builder: (context, provider, child) {
         if (provider.showLoading) {
@@ -111,88 +118,112 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             provider.vehicleData!.items!.isEmpty) {
           return _buildEmptyState(context);
         }
-        return Column(
-          children: [
-            verticalSpace(height: 5.2.h),
-            _buildStatusBoxes(provider, onSurface, cardColor),
-            verticalSpace(height: .2.h),
-            _buildSearchAndFilterRow(primary, onSurface, outline),
-            verticalSpace(height: 1.h),
-            _buildVehicleList(provider, theme),
-          ],
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1120),
+            child: Column(
+              children: [
+                SizedBox(height: topContentSpacing),
+                _buildStatusBoxes(provider, onSurface, cardColor),
+                verticalSpace(height: isCompactLandscape ? .08.h : .2.h),
+                _buildSearchAndFilterRow(
+                  primary,
+                  onSurface,
+                  outline,
+                  compactMode: isCompactLandscape,
+                ),
+                verticalSpace(height: sectionGap),
+                _buildVehicleList(provider, theme),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
   Widget _buildShimmer(ThemeData theme, Color onSurface, Color cardColor) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompactLandscape =
+        mediaQuery.orientation == Orientation.landscape ||
+            mediaQuery.size.height < 720;
+    final topContentSpacing =
+        MediaQuery.paddingOf(context).top + (isCompactLandscape ? 4 : 8);
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
-      child: Column(
-        children: [
-          verticalSpace(height: 5.2.h),
-          SizedBox(
-            height: 7.1.h,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: .75.h),
-              itemCount: 7,
-              itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.symmetric(horizontal: 1.w),
-                child: Container(
-                  width: 20.w,
-                  height: 6.h,
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          verticalSpace(height: .8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2.6.w),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 5.h,
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(8),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1120),
+          child: Column(
+            children: [
+              SizedBox(height: topContentSpacing),
+              SizedBox(
+                height: 7.1.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 1.w, vertical: .75.h),
+                  itemCount: 7,
+                  itemBuilder: (context, index) => Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 1.w),
+                    child: Container(
+                      width: 20.w,
+                      height: 6.h,
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-                horizontalSpace(width: 2.w),
-                Container(
-                  height: 5.h,
-                  width: 5.h,
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          verticalSpace(height: .8.h),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0),
-              itemCount: 5,
-              itemBuilder: (_, i) => Container(
-                margin: EdgeInsets.symmetric(vertical: 1.h),
-                height: 20.h,
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
+              ),
+              verticalSpace(height: .8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2.6.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 5.h,
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    horizontalSpace(width: 2.w),
+                    Container(
+                      height: 5.h,
+                      width: 5.h,
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              verticalSpace(height: .8.h),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0),
+                  itemCount: 5,
+                  itemBuilder: (_, i) => Container(
+                    margin: EdgeInsets.symmetric(vertical: 1.h),
+                    height: 20.h,
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -304,17 +335,29 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
   }
 
   Widget _buildSearchAndFilterRow(
-      Color primary, Color onSurface, Color outline) {
+    Color primary,
+    Color onSurface,
+    Color outline, {
+    bool compactMode = false,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 2.6.w),
       child: Row(
         children: [
           Expanded(
             child: SearchFiled(
-                primary: primary, onSurface: onSurface, outline: outline),
+              primary: primary,
+              onSurface: onSurface,
+              outline: outline,
+              compactMode: compactMode,
+            ),
           ),
           horizontalSpace(width: 2.w),
-          FilterButton(onSurface: onSurface, primary: primary),
+          FilterButton(
+            onSurface: onSurface,
+            primary: primary,
+            compactMode: compactMode,
+          ),
         ],
       ),
     );
@@ -502,8 +545,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
             ),
             verticalSpace(height: 2.h),
             ElevatedButton(
-                onPressed: provider.fetchData,
-                child: Text(context.l10n.retry)),
+                onPressed: provider.fetchData, child: Text(context.l10n.retry)),
           ],
         ),
       ),

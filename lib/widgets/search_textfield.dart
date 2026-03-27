@@ -23,6 +23,7 @@ class SearchAndFilterBar extends StatefulWidget {
   final String? toDateLabel;
   final TextEditingController? searchController;
   final VoidCallback? onFilterReset;
+  final bool compactMode;
 
   const SearchAndFilterBar({
     super.key,
@@ -42,6 +43,7 @@ class SearchAndFilterBar extends StatefulWidget {
     this.fromDateLabel,
     this.toDateLabel,
     this.onFilterReset, // ← add this
+    this.compactMode = false,
   });
 
   @override
@@ -50,6 +52,20 @@ class SearchAndFilterBar extends StatefulWidget {
 
 class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
   bool _isCollapsed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isCollapsed = widget.compactMode;
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchAndFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.compactMode && !oldWidget.compactMode) {
+      _isCollapsed = true;
+    }
+  }
 
   void _toggleCollapsed() {
     setState(() {
@@ -71,9 +87,13 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
     final panelBorder = isDark
         ? Colors.white.withValues(alpha: 0.12)
         : Colors.white.withValues(alpha: 0.45);
+    final panelPadding = widget.compactMode
+        ? EdgeInsets.fromLTRB(3.2.w, .8.h, 3.2.w, .8.h)
+        : EdgeInsets.fromLTRB(3.2.w, 1.4.h, 3.2.w, 1.4.h);
+    final sectionGap = widget.compactMode ? .7.h : 1.1.h;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(3.2.w, 1.4.h, 3.2.w, 1.4.h),
+      padding: panelPadding,
       decoration: BoxDecoration(
         color: panelColor,
         borderRadius: BorderRadius.circular(16.px),
@@ -161,6 +181,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       verticalSpace(height: 1.1.h),
+                      if (widget.compactMode) verticalSpace(height: .2.h),
                       Text(
                         'Search By Vehicle And Type',
                         style: AppStyles.regularTextStyle(context).copyWith(
@@ -197,7 +218,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                           ),
                         ],
                       ),
-                      verticalSpace(height: 1.0.h),
+                      verticalSpace(height: widget.compactMode ? .75.h : 1.0.h),
                       Text(
                         'Search By Date Range',
                         style: AppStyles.regularTextStyle(context).copyWith(
@@ -205,7 +226,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                           color: Colors.white.withValues(alpha: .82),
                         ),
                       ),
-                      verticalSpace(height: .55.h),
+                      verticalSpace(height: widget.compactMode ? .4.h : .55.h),
                       Row(
                         children: [
                           Expanded(
@@ -237,6 +258,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                           ),
                         ],
                       ),
+                      verticalSpace(height: sectionGap),
                     ],
                   ),
           ),

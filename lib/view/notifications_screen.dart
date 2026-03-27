@@ -261,8 +261,14 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final isDark = theme.brightness == Brightness.dark;
+    final mediaQuery = MediaQuery.of(context);
+    final isCompactLandscape =
+        mediaQuery.orientation == Orientation.landscape ||
+            mediaQuery.size.height < 720;
     final cardColor = theme.cardColor;
     final onSurface = theme.colorScheme.onSurface;
+    final topContentSpacing =
+        MediaQuery.paddingOf(context).top + (isCompactLandscape ? 4 : 8);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -278,102 +284,112 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              verticalSpace(height: 6.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 5.w),
-                child: Consumer2<AlertsProvider, GetDevicesListProvider>(
-                  builder: (context, alertsProvider, devicesProvider, child) {
-                    final alertTypes = alertsProvider.alertTypeList;
-                    final alertCounts = alertsProvider.alertTypeCounts;
+              SizedBox(height: topContentSpacing),
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1120),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5.w),
+                    child: Consumer2<AlertsProvider, GetDevicesListProvider>(
+                      builder:
+                          (context, alertsProvider, devicesProvider, child) {
+                        final alertTypes = alertsProvider.alertTypeList;
+                        final alertCounts = alertsProvider.alertTypeCounts;
 
-                    final List<DeviceModel.Item> devices =
-                        devicesProvider.model?.items ?? [];
-                    final allVehiclesLabel = l10n.allVehicles;
+                        final List<DeviceModel.Item> devices =
+                            devicesProvider.model?.items ?? [];
+                        final allVehiclesLabel = l10n.allVehicles;
 
-                    final vehicleItems = [
-                      allVehiclesLabel,
-                      ...devices.map((d) => d.name ?? 'Device ${d.id}')
-                    ];
-                    String? selectedVehicleName;
-                    if (_selectedDeviceId == null) {
-                      selectedVehicleName = allVehiclesLabel;
-                    } else {
-                      try {
-                        final device = devices.firstWhere(
-                          (d) => d.id == _selectedDeviceId,
-                        );
-                        selectedVehicleName =
-                            device.name ?? 'Device ${device.id}';
-                      } catch (e) {
-                        selectedVehicleName = allVehiclesLabel;
-                      }
-                    }
+                        final vehicleItems = [
+                          allVehiclesLabel,
+                          ...devices.map((d) => d.name ?? 'Device ${d.id}')
+                        ];
+                        String? selectedVehicleName;
+                        if (_selectedDeviceId == null) {
+                          selectedVehicleName = allVehiclesLabel;
+                        } else {
+                          try {
+                            final device = devices.firstWhere(
+                              (d) => d.id == _selectedDeviceId,
+                            );
+                            selectedVehicleName =
+                                device.name ?? 'Device ${device.id}';
+                          } catch (e) {
+                            selectedVehicleName = allVehiclesLabel;
+                          }
+                        }
 
-                    // Safe alert type selection
-                    String? selectedAlertType =
-                        alertTypes.contains(_selectedAlertType)
+                        // Safe alert type selection
+                        String? selectedAlertType = alertTypes
+                                .contains(_selectedAlertType)
                             ? _selectedAlertType
                             : (alertTypes.isNotEmpty ? alertTypes.first : null);
 
-                    return SearchAndFilterBar(
-                      alertTypes: alertTypes,
-                      vehicles: vehicleItems,
-                      alertCounts: alertCounts,
-                      selectedVehicle: selectedVehicleName,
-                      selectedAlertType: selectedAlertType,
-                      selectedPreset: _selectedDatePreset,
-                      onPresetSelected: _applyDatePreset,
-                      fromDateLabel: _fromFilterDate == null
-                          ? l10n.fromDate
-                          : DateFormat('dd/MM/yyyy').format(_fromFilterDate!),
-                      toDateLabel: _toFilterDate == null
-                          ? l10n.toDate
-                          : DateFormat('dd/MM/yyyy').format(_toFilterDate!),
-                      onFromDateTap: _pickFromDateFilter,
-                      onToDateTap: _pickToDateFilter,
-                      searchController: _searchController,
-                      onVehicleChanged: (val) {
-                        setState(() {
-                          if (val == allVehiclesLabel || val == null) {
-                            _selectedDeviceId = null;
-                          } else {
-                            try {
-                              final device = devices.firstWhere(
-                                (d) => (d.name ?? 'Device ${d.id}') == val,
-                              );
-                              _selectedDeviceId = device.id;
-                            } catch (e) {
+                        return SearchAndFilterBar(
+                          compactMode: isCompactLandscape,
+                          alertTypes: alertTypes,
+                          vehicles: vehicleItems,
+                          alertCounts: alertCounts,
+                          selectedVehicle: selectedVehicleName,
+                          selectedAlertType: selectedAlertType,
+                          selectedPreset: _selectedDatePreset,
+                          onPresetSelected: _applyDatePreset,
+                          fromDateLabel: _fromFilterDate == null
+                              ? l10n.fromDate
+                              : DateFormat('dd/MM/yyyy')
+                                  .format(_fromFilterDate!),
+                          toDateLabel: _toFilterDate == null
+                              ? l10n.toDate
+                              : DateFormat('dd/MM/yyyy').format(_toFilterDate!),
+                          onFromDateTap: _pickFromDateFilter,
+                          onToDateTap: _pickToDateFilter,
+                          searchController: _searchController,
+                          onVehicleChanged: (val) {
+                            setState(() {
+                              if (val == allVehiclesLabel || val == null) {
+                                _selectedDeviceId = null;
+                              } else {
+                                try {
+                                  final device = devices.firstWhere(
+                                    (d) => (d.name ?? 'Device ${d.id}') == val,
+                                  );
+                                  _selectedDeviceId = device.id;
+                                } catch (e) {
+                                  _selectedDeviceId = null;
+                                }
+                              }
+                            });
+                            _applyFilters();
+                          },
+                          onAlertTypeChanged: (val) {
+                            setState(() {
+                              _selectedAlertType = val;
+                            });
+                            _applyFilters();
+                          },
+                          onSearchPressed: _applyFilters,
+                          onFilterReset: () {
+                            final alertsProvider = Provider.of<AlertsProvider>(
+                              context,
+                              listen: false,
+                            );
+                            setState(() {
                               _selectedDeviceId = null;
-                            }
-                          }
-                        });
-                        _applyFilters();
+                              _selectedAlertType = 'All';
+                              _selectedDatePreset = null;
+                              _fromFilterDate = null;
+                              _toFilterDate = null;
+                            });
+                            alertsProvider.resetFiltersOnly(context);
+                          },
+                        );
                       },
-                      onAlertTypeChanged: (val) {
-                        setState(() {
-                          _selectedAlertType = val;
-                        });
-                        _applyFilters();
-                      },
-                      onSearchPressed: _applyFilters,
-                      onFilterReset: () {
-                        final alertsProvider =
-                            Provider.of<AlertsProvider>(context, listen: false);
-                        setState(() {
-                          _selectedDeviceId = null;
-                          _selectedAlertType = 'All';
-                          _selectedDatePreset = null;
-                          _fromFilterDate = null;
-                          _toFilterDate = null;
-                        });
-                        alertsProvider.resetFiltersOnly(context);
-                      },
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
-
-              verticalSpace(height: 2.h),
+              verticalSpace(height: isCompactLandscape ? 1.h : 2.h),
 
               // Main Curved Area
               Expanded(
@@ -399,7 +415,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                     padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: Column(
                       children: [
-                        verticalSpace(height: 2.h),
+                        verticalSpace(height: isCompactLandscape ? 1.h : 2.h),
 
                         // Title + Delete Button
                         Row(
@@ -471,7 +487,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                           ],
                         ),
 
-                        verticalSpace(height: 2.h),
+                        verticalSpace(height: isCompactLandscape ? 1.h : 2.h),
 
                         SizedBox(
                           height: 5.7.h,
