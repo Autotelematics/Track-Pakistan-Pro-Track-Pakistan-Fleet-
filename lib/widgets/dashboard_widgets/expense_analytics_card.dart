@@ -39,23 +39,45 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+    final isCompactPhone = MediaQuery.sizeOf(context).width <= 360;
     return ChangeNotifierProvider<DashboardExpenseAnalyticsProvider>.value(
       value: _provider,
       child: Consumer<DashboardExpenseAnalyticsProvider>(
         builder: (context, provider, _) {
           return Container(
-            margin: EdgeInsets.symmetric(horizontal: 5.w),
-            padding: EdgeInsets.symmetric(horizontal: 3.6.w, vertical: 1.4.h),
+            margin: EdgeInsets.symmetric(
+                horizontal: _eW(context, phone: 5, compact: 4)),
+            padding: EdgeInsets.symmetric(
+              horizontal: _eW(context, phone: 3.6, compact: 3.1),
+              vertical: _eH(context, phone: 1.4, compact: 1.2),
+            ),
             decoration: BoxDecoration(
-              color: theme.cardColor,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? <Color>[
+                        theme.cardColor.withValues(alpha: .98),
+                        theme.cardColor.withValues(alpha: .92),
+                      ]
+                    : <Color>[
+                        Colors.white,
+                        const Color(0xFFF6FBFF),
+                      ],
+              ),
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFF0EA5E9)
+                    .withValues(alpha: isDark ? .24 : .14),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
                       ? Colors.black.withValues(alpha: 0.5)
-                      : Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                      : const Color(0xFF0284C7).withValues(alpha: 0.10),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -72,18 +94,41 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
                         children: [
                           Row(
                             children: [
+                              Container(
+                                width: _eW(context, phone: 5.8, compact: 6.6),
+                                height: _eW(context, phone: 5.8, compact: 6.6),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: <Color>[
+                                      Color(0xFF22D3EE),
+                                      Color(0xFF0284C7),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                                child: Icon(
+                                  Icons.receipt_long_rounded,
+                                  color: Colors.white,
+                                  size: _eSp(context, phone: 15.0),
+                                ),
+                              ),
+                              horizontalSpace(width: 2.w),
                               Expanded(
                                 child: Text(
                                   context.l10n.expenseAnalytics,
                                   style: AppStyles.semiboldTextStyle(context)
-                                      .copyWith(fontSize: 15.2.sp),
+                                      .copyWith(
+                                    fontSize: _eSp(context, phone: 12.8),
+                                    fontWeight: FontWeight.w900,
+                                    color: onSurface.withValues(alpha: .92),
+                                  ),
                                 ),
                               ),
                               IconButton(
                                 onPressed: provider.exportSummary,
                                 icon: const Icon(Icons.ios_share_rounded),
                                 tooltip: context.l10n.export,
-                                iconSize: 19,
+                                iconSize: 18,
                                 padding: EdgeInsets.zero,
                                 visualDensity: const VisualDensity(
                                   horizontal: -3,
@@ -98,27 +143,37 @@ class _ExpenseAnalyticsCardState extends State<ExpenseAnalyticsCard> {
                           ),
                           _DatePresetBar(provider: provider),
                           verticalSpace(height: 1.h),
-                          _KpiRow(provider: provider),
+                          _KpiRow(
+                            provider: provider,
+                            isCompactPhone: isCompactPhone,
+                          ),
                           verticalSpace(height: 1.h),
-                          _AvgRow(provider: provider),
+                          _AvgRow(
+                            provider: provider,
+                            isCompactPhone: isCompactPhone,
+                          ),
                           verticalSpace(height: 1.3.h),
                           _SectionBlock(
                             title: context.l10n.expenseTrend,
+                            icon: Icons.show_chart_rounded,
                             child: _TrendChart(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
                             title: context.l10n.topExpenseTypes,
+                            icon: Icons.pie_chart_rounded,
                             child: _TypeBarChart(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
                             title: context.l10n.topVehiclesByExpense,
+                            icon: Icons.local_shipping_rounded,
                             child: _TopVehicles(provider: provider),
                           ),
                           verticalSpace(height: 1.2.h),
                           _SectionBlock(
                             title: context.l10n.recentExpenseActivity,
+                            icon: Icons.history_rounded,
                             child: _RecentList(provider: provider),
                           ),
                         ],
@@ -232,7 +287,9 @@ class _DatePickButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final icon = label == "From" ? Icons.event : Icons.event_available;
+    final icon = label.toLowerCase().contains('from')
+        ? Icons.event
+        : Icons.event_available;
     final softGreenBg =
         isDark ? const Color(0xFF22352A) : const Color(0xFFEAF8EE);
     final softGreenBorder =
@@ -244,7 +301,10 @@ class _DatePickButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .75.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: _eW(context, phone: 2.2, compact: 2.0),
+          vertical: _eH(context, phone: .75, compact: .7),
+        ),
         decoration: BoxDecoration(
           color: softGreenBg,
           borderRadius: BorderRadius.circular(10),
@@ -256,7 +316,7 @@ class _DatePickButton extends StatelessWidget {
             Text(
               "$label Date",
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.8.sp,
+                fontSize: _eSp(context, phone: 12.1),
                 color: isDark ? Colors.white70 : Colors.black54,
                 fontWeight: FontWeight.w700,
               ),
@@ -272,7 +332,7 @@ class _DatePickButton extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 12.5.sp,
+                      fontSize: _eSp(context, phone: 11.8),
                       color: isDark ? AppColors.white : AppColors.textBlack,
                     ),
                   ),
@@ -315,8 +375,14 @@ class _PresetFilterChip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         alignment: Alignment.center,
-        constraints: BoxConstraints(minHeight: 4.4.h, minWidth: 15.w),
-        padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .7.h),
+        constraints: BoxConstraints(
+          minHeight: _eH(context, phone: 4.2, compact: 4.0, min: 36),
+          minWidth: _eW(context, phone: 15, compact: 16),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: _eW(context, phone: 2.2, compact: 2.0),
+          vertical: _eH(context, phone: .7, compact: .65),
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? softYellowBg
@@ -334,7 +400,7 @@ class _PresetFilterChip extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: AppStyles.semiboldTextStyle(context).copyWith(
-            fontSize: 12.3.sp,
+            fontSize: _eSp(context, phone: 11.5),
             color: isSelected
                 ? softYellowText
                 : (isDark ? Colors.white70 : Colors.black87),
@@ -347,16 +413,52 @@ class _PresetFilterChip extends StatelessWidget {
 
 class _KpiRow extends StatelessWidget {
   final DashboardExpenseAnalyticsProvider provider;
-  const _KpiRow({required this.provider});
+  final bool isCompactPhone;
+  const _KpiRow({
+    required this.provider,
+    required this.isCompactPhone,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (isCompactPhone) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _MiniKpi(
+                  title: context.l10n.thisMonth,
+                  value: "Rs ${provider.thisMonthTotal.toStringAsFixed(0)}",
+                  accent: const Color(0xFF2563EB),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: _MiniKpi(
+                  title: context.l10n.lastMonth,
+                  value: "Rs ${provider.lastMonthTotal.toStringAsFixed(0)}",
+                  accent: const Color(0xFF7C3AED),
+                ),
+              ),
+            ],
+          ),
+          verticalSpace(height: .65.h),
+          _MiniKpi(
+            title: context.l10n.changeLabel,
+            value: "${provider.monthChangePercent.toStringAsFixed(1)}%",
+            accent: const Color(0xFFF59E0B),
+          ),
+        ],
+      );
+    }
     return Row(
       children: [
         Expanded(
           child: _MiniKpi(
             title: context.l10n.thisMonth,
             value: "Rs ${provider.thisMonthTotal.toStringAsFixed(0)}",
+            accent: const Color(0xFF2563EB),
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -364,6 +466,7 @@ class _KpiRow extends StatelessWidget {
           child: _MiniKpi(
             title: context.l10n.lastMonth,
             value: "Rs ${provider.lastMonthTotal.toStringAsFixed(0)}",
+            accent: const Color(0xFF7C3AED),
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -371,6 +474,7 @@ class _KpiRow extends StatelessWidget {
           child: _MiniKpi(
             title: context.l10n.changeLabel,
             value: "${provider.monthChangePercent.toStringAsFixed(1)}%",
+            accent: const Color(0xFFF59E0B),
           ),
         ),
       ],
@@ -380,16 +484,52 @@ class _KpiRow extends StatelessWidget {
 
 class _AvgRow extends StatelessWidget {
   final DashboardExpenseAnalyticsProvider provider;
-  const _AvgRow({required this.provider});
+  final bool isCompactPhone;
+  const _AvgRow({
+    required this.provider,
+    required this.isCompactPhone,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (isCompactPhone) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _MiniKpi(
+                  title: context.l10n.totalRange,
+                  value: "Rs ${provider.selectedTotal.toStringAsFixed(0)}",
+                  accent: const Color(0xFF0284C7),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: _MiniKpi(
+                  title: context.l10n.avgPerTxn,
+                  value: "Rs ${provider.avgPerTransaction.toStringAsFixed(0)}",
+                  accent: const Color(0xFF16A34A),
+                ),
+              ),
+            ],
+          ),
+          verticalSpace(height: .65.h),
+          _MiniKpi(
+            title: context.l10n.avgPerDay,
+            value: "Rs ${provider.avgDailySpend.toStringAsFixed(0)}",
+            accent: const Color(0xFFDC2626),
+          ),
+        ],
+      );
+    }
     return Row(
       children: [
         Expanded(
           child: _MiniKpi(
             title: context.l10n.totalRange,
             value: "Rs ${provider.selectedTotal.toStringAsFixed(0)}",
+            accent: const Color(0xFF0284C7),
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -397,6 +537,7 @@ class _AvgRow extends StatelessWidget {
           child: _MiniKpi(
             title: context.l10n.avgPerTxn,
             value: "Rs ${provider.avgPerTransaction.toStringAsFixed(0)}",
+            accent: const Color(0xFF16A34A),
           ),
         ),
         horizontalSpace(width: 2.w),
@@ -404,6 +545,7 @@ class _AvgRow extends StatelessWidget {
           child: _MiniKpi(
             title: context.l10n.avgPerDay,
             value: "Rs ${provider.avgDailySpend.toStringAsFixed(0)}",
+            accent: const Color(0xFFDC2626),
           ),
         ),
       ],
@@ -414,20 +556,46 @@ class _AvgRow extends StatelessWidget {
 class _MiniKpi extends StatelessWidget {
   final String title;
   final String value;
-  const _MiniKpi({required this.title, required this.value});
+  final Color accent;
+  const _MiniKpi({
+    required this.title,
+    required this.value,
+    required this.accent,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: .9.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _eW(context, phone: 2.0, compact: 1.8),
+        vertical: _eH(context, phone: .9, compact: .8),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white.withValues(alpha: .05)
-            : const Color(0xFFF7FAFC),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: .18),
+        gradient: LinearGradient(
+          colors: <Color>[
+            accent.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? .20
+                    : .17),
+            accent.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? .10
+                    : .08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        border: Border.all(
+          color: accent.withValues(alpha: .35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: .14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,14 +603,19 @@ class _MiniKpi extends StatelessWidget {
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.8.sp,
+              fontSize: _eSp(context, phone: 11.0),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: .78),
             ),
           ),
           verticalSpace(height: .3.h),
           Text(
             value,
             style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 12.8.sp,
+              fontSize: _eSp(context, phone: 12.0),
+              color: accent,
             ),
           ),
         ],
@@ -453,9 +626,11 @@ class _MiniKpi extends StatelessWidget {
 
 class _SectionBlock extends StatelessWidget {
   final String title;
+  final IconData icon;
   final Widget child;
   const _SectionBlock({
     required this.title,
+    required this.icon,
     required this.child,
   });
 
@@ -464,12 +639,25 @@ class _SectionBlock extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 2.8.w, vertical: 1.0.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _eW(context, phone: 2.8, compact: 2.3),
+        vertical: _eH(context, phone: 1.0, compact: .9),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: isDark
-            ? Colors.white.withValues(alpha: .04)
-            : const Color(0xFFF8FAFD),
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  Colors.white.withValues(alpha: .06),
+                  Colors.white.withValues(alpha: .03),
+                ]
+              : <Color>[
+                  const Color(0xFFF9FBFE),
+                  Colors.white,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: .14),
         ),
@@ -477,13 +665,39 @@ class _SectionBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 13.2.sp,
-            ),
+          Row(
+            children: [
+              Container(
+                width: _eW(context, phone: 5.8, compact: 6.5),
+                height: _eW(context, phone: 5.8, compact: 6.5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  icon,
+                  size: _eSp(context, phone: 10.6),
+                  color: Colors.white,
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _eSp(context, phone: 12.4),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
           ),
-          verticalSpace(height: .5.h),
+          verticalSpace(height: .65.h),
           child,
         ],
       ),
@@ -524,7 +738,7 @@ class _TrendChart extends StatelessWidget {
                 interval: (maxY == 0 ? 10 : maxY) / 4,
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
-                  style: TextStyle(fontSize: 11.sp),
+                  style: TextStyle(fontSize: _eSp(context, phone: 10.0)),
                 ),
               ),
             ),
@@ -540,7 +754,7 @@ class _TrendChart extends StatelessWidget {
                     padding: EdgeInsets.only(top: .4.h),
                     child: Text(
                       DateFormat('dd').format(points[i].date),
-                      style: TextStyle(fontSize: 11.sp),
+                      style: TextStyle(fontSize: _eSp(context, phone: 10.0)),
                     ),
                   );
                 },
@@ -600,7 +814,7 @@ class _TypeBarChart extends StatelessWidget {
                     (items.first.amount * 1.15).clamp(10, double.infinity) / 4,
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
-                  style: TextStyle(fontSize: 11.sp),
+                  style: TextStyle(fontSize: _eSp(context, phone: 10.0)),
                 ),
               ),
             ),
@@ -616,7 +830,7 @@ class _TypeBarChart extends StatelessWidget {
                     padding: EdgeInsets.only(top: .4.h),
                     child: Text(
                       text.length > 8 ? "${text.substring(0, 8)}..." : text,
-                      style: TextStyle(fontSize: 11.0.sp),
+                      style: TextStyle(fontSize: _eSp(context, phone: 10.0)),
                     ),
                   );
                 },
@@ -647,7 +861,7 @@ class _TypeBarChart extends StatelessWidget {
                   "${item.type}\nRs ${item.amount.toStringAsFixed(0)}",
                   TextStyle(
                     color: Colors.white,
-                    fontSize: 10.2.sp,
+                    fontSize: _eSp(context, phone: 9.2),
                     fontWeight: FontWeight.w600,
                   ),
                 );
@@ -693,13 +907,13 @@ class _TopVehicles extends StatelessWidget {
                         e.vehicleName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12.0.sp),
+                        style: TextStyle(fontSize: _eSp(context, phone: 11.2)),
                       ),
                     ),
                     Text(
                       "Rs ${e.amount.toStringAsFixed(0)}",
                       style: TextStyle(
-                        fontSize: 12.0.sp,
+                        fontSize: _eSp(context, phone: 11.2),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -747,7 +961,7 @@ class _RecentList extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: _eSp(context, phone: 11.2),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -756,7 +970,7 @@ class _RecentList extends StatelessWidget {
               Text(
                 "Rs ${e.amount.toStringAsFixed(0)}",
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: _eSp(context, phone: 11.2),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -779,8 +993,8 @@ class _EmptyLine extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style:
-              AppStyles.regularTextStyle(context).copyWith(fontSize: 11.8.sp),
+          style: AppStyles.regularTextStyle(context)
+              .copyWith(fontSize: _eSp(context, phone: 11.0)),
         ),
       ),
     );
@@ -805,7 +1019,7 @@ class _ErrorBlock extends StatelessWidget {
             error,
             textAlign: TextAlign.center,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.5.sp,
+              fontSize: _eSp(context, phone: 10.8),
               color: Theme.of(context).colorScheme.error,
             ),
           ),
@@ -818,4 +1032,37 @@ class _ErrorBlock extends StatelessWidget {
       ),
     );
   }
+}
+
+double _eSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
+}
+
+double _eW(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360 && compact != null) return compact.w;
+  return phone.w;
+}
+
+double _eH(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+  double min = 0,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  final value = (width <= 360 && compact != null ? compact : phone).h;
+  if (min <= 0) return value;
+  return value < min ? min : value;
 }

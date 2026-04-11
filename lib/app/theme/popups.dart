@@ -15,6 +15,7 @@ import 'package:trackerapp/providers/driver_provider.dart';
 import 'package:trackerapp/providers/get_geofence_provider.dart';
 import 'package:trackerapp/providers/reminder_provider.dart';
 import 'package:trackerapp/utils/app_loading.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
 import 'package:trackerapp/utils/app_validation_dialog.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
@@ -31,6 +32,7 @@ Future<void> showDriverActionPopup(BuildContext context) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
 
   const transitionDuration = Duration(milliseconds: 400);
   const reverseDuration = Duration(milliseconds: 400);
@@ -78,7 +80,7 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                           Align(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              "Driver Options",
+                              l10n.driverOptions,
                               style: AppStyles.boldTextStyle(context).copyWith(
                                 fontSize: 16.2.sp,
                                 fontWeight: FontWeight.w700,
@@ -91,7 +93,7 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                     ),
                     verticalSpace(height: .45.h),
                     Text(
-                      "Add, update, or remove drivers",
+                      l10n.manageDriversSubtitle,
                       style: AppStyles.regularTextStyle(context).copyWith(
                         color: onSurface.withValues(alpha: .64),
                         fontSize: 13.8.sp,
@@ -101,8 +103,8 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                     _DriverActionTile(
                       context: context,
                       icon: Icons.person_add_alt_1,
-                      title: "Add New Driver",
-                      subtitle: "Create a new driver",
+                      title: l10n.addNewDriver,
+                      subtitle: l10n.createNewDriver,
                       color: AppColors.green,
                       onTap: () {
                         Navigator.pop(context);
@@ -113,8 +115,8 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                     _DriverActionTile(
                       context: context,
                       icon: Icons.edit,
-                      title: "Edit Driver",
-                      subtitle: "Update driver info",
+                      title: l10n.editDriverLabel,
+                      subtitle: l10n.updateDriverInfo,
                       color: AppColors.blueCyan,
                       onTap: () {
                         Navigator.pop(context);
@@ -125,8 +127,8 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                     _DriverActionTile(
                       context: context,
                       icon: Icons.delete_forever,
-                      title: "Delete driver",
-                      subtitle: "Permanent delete driver",
+                      title: l10n.deleteDriverLabel,
+                      subtitle: l10n.permanentDeleteDriver,
                       color: AppColors.red,
                       onTap: () {
                         Navigator.pop(context);
@@ -135,7 +137,7 @@ Future<void> showDriverActionPopup(BuildContext context) async {
                     ),
                     verticalSpace(height: 1.6.h),
                     CustomButton(
-                      text: "Cancel",
+                      text: l10n.cancel,
                       height: 4.4.h,
                       backgroundColor: Colors.transparent,
                       textColor: onSurface.withValues(alpha: .82),
@@ -265,6 +267,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   final compactFieldHeight = 5.5.h;
   final compactTitleSize = 14.sp;
   final compactInputSize = 14.sp;
@@ -309,7 +312,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                     verticalSpace(height: .4.h),
                     Center(
                       child: Text(
-                        "Add Driver",
+                        l10n.addDriverLabel,
                         style: AppStyles.boldTextStyle(context).copyWith(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -321,8 +324,8 @@ Future<void> showAddDriverPopup(BuildContext context) async {
 
                     // Driver Name field
                     MaintenanceField(
-                      title: "Driver Name",
-                      hint: "Enter driver name",
+                      title: l10n.driverNameLabel,
+                      hint: l10n.enterDriverName,
                       controller: nameCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -333,8 +336,8 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                     ),
                     verticalSpace(height: .9.h),
                     MaintenanceField(
-                      title: "RFID",
-                      hint: "Enter driver RfId",
+                      title: l10n.rfidLabel,
+                      hint: l10n.enterDriverRfid,
                       controller: rfIdCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -347,7 +350,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
 
                     // Phone field
                     MaintenanceField(
-                      title: "Phone",
+                      title: l10n.phoneNumberLabel,
                       hint: "03xxxxxxxxx",
                       controller: phoneCtrl,
                       height: compactFieldHeight,
@@ -361,7 +364,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
 
                     // Email field
                     MaintenanceField(
-                      title: "Email",
+                      title: l10n.emailLabel,
                       hint: "driver@email.com",
                       controller: emailCtrl,
                       height: compactFieldHeight,
@@ -378,7 +381,7 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                       children: [
                         Expanded(
                           child: CustomButton(
-                            text: "Cancel",
+                            text: l10n.cancel,
                             backgroundColor: Colors.transparent,
                             textColor: onSurface.withValues(alpha: .82),
                             height: 4.4.h,
@@ -392,35 +395,34 @@ Future<void> showAddDriverPopup(BuildContext context) async {
                                 ? AppLoadings.buttonLoading() // loading widget
                                 : Expanded(
                                     child: CustomButton(
-                                      text: "Save",
+                                      text: l10n.save,
                                       height: 4.4.h,
                                       onPressed: () async {
-                                        final emailValid = RegExp(
-                                                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$")
-                                            .hasMatch(emailCtrl.text.trim());
+                                        final name = nameCtrl.text.trim();
+                                        final rfId = rfIdCtrl.text.trim();
+                                        final phone = phoneCtrl.text.trim();
+                                        final email = emailCtrl.text.trim();
+                                        final emailValid = email.isEmpty ||
+                                            RegExp(
+                                              r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$",
+                                            ).hasMatch(email);
 
-                                        if (nameCtrl.text.isEmpty) {
+                                        if (name.isEmpty) {
                                           showValidationErrorDialog(
                                             context,
-                                            message: "Driver name is required",
-                                          );
-                                        } else if (emailCtrl.text.isEmpty) {
-                                          showValidationErrorDialog(
-                                            context,
-                                            message: "Please enter your email",
+                                            message: l10n.driverNameRequired,
                                           );
                                         } else if (!emailValid) {
                                           showValidationErrorDialog(
                                             context,
-                                            message:
-                                                "Please enter your valid email",
+                                            message: l10n.pleaseEnterValidEmail,
                                           );
                                         } else {
                                           await driverProvider.addDriver(
-                                            name: nameCtrl.text,
-                                            rfId: rfIdCtrl.text,
-                                            phone: phoneCtrl.text,
-                                            email: emailCtrl.text,
+                                            name: name,
+                                            rfId: rfId,
+                                            phone: phone,
+                                            email: email,
                                             deviceId: "",
                                           );
                                           if (!context.mounted) return;
@@ -450,9 +452,11 @@ Future<void> showEditDriverPopup(BuildContext context) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   final compactFieldHeight = 5.5.h;
   final compactTitleSize = 14.sp;
   final compactInputSize = 14.sp;
+  TextEditingController? driverSearchController;
 
   final driverProvider = Provider.of<DriverProvider>(context, listen: false);
   driverProvider.getDriverUser(deviceId: "");
@@ -514,7 +518,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                         /// Title
                         Center(
                           child: Text(
-                            "Edit Driver",
+                            l10n.editDriverLabel,
                             style: AppStyles.boldTextStyle(context).copyWith(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
@@ -527,7 +531,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
 
                         /// Dropdown Label
                         Text(
-                          "Select Driver",
+                          l10n.selectDriverLabel,
                           style: TextStyle(
                             fontSize: 13.2.sp,
                             fontWeight: FontWeight.w500,
@@ -558,6 +562,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                             focusNode,
                             onFieldSubmitted,
                           ) {
+                            driverSearchController = textEditingController;
                             if (selectedIndex != null &&
                                 textEditingController.text.isEmpty) {
                               textEditingController.text =
@@ -592,12 +597,12 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                                   color: onSurface,
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: "Driver",
+                                  labelText: l10n.selectDriverLabel,
                                   labelStyle: TextStyle(
                                     fontSize: 13.8.sp,
                                     color: onSurface.withValues(alpha: .72),
                                   ),
-                                  hintText: "Search and select driver",
+                                  hintText: l10n.searchAndSelectDriver,
                                   suffixIcon: Icon(
                                     Icons.arrow_drop_down_rounded,
                                     color: onSurface.withValues(alpha: .7),
@@ -673,8 +678,8 @@ Future<void> showEditDriverPopup(BuildContext context) async {
 
                         /// Editable Fields
                         MaintenanceField(
-                          title: "Driver Name",
-                          hint: "Enter driver name",
+                          title: l10n.driverNameLabel,
+                          hint: l10n.enterDriverName,
                           controller: nameCtrl,
                           height: compactFieldHeight,
                           titleFontSize: compactTitleSize,
@@ -686,8 +691,8 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                         verticalSpace(height: .9.h),
 
                         MaintenanceField(
-                          title: "RFID",
-                          hint: "Enter RFID",
+                          title: l10n.rfidLabel,
+                          hint: l10n.enterDriverRfid,
                           controller: rfIdCtrl,
                           height: compactFieldHeight,
                           titleFontSize: compactTitleSize,
@@ -699,7 +704,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                         verticalSpace(height: .9.h),
 
                         MaintenanceField(
-                          title: "Phone",
+                          title: l10n.phoneNumberLabel,
                           hint: "03xxxxxxxxx",
                           controller: phoneCtrl,
                           height: compactFieldHeight,
@@ -712,7 +717,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                         verticalSpace(height: .9.h),
 
                         MaintenanceField(
-                          title: "Email",
+                          title: l10n.emailLabel,
                           hint: "driver@email.com",
                           controller: emailCtrl,
                           height: compactFieldHeight,
@@ -730,7 +735,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                           children: [
                             Expanded(
                               child: CustomButton(
-                                text: "Cancel",
+                                text: l10n.cancel,
                                 backgroundColor: Colors.transparent,
                                 textColor: onSurface.withValues(alpha: .82),
                                 height: 4.4.h,
@@ -744,27 +749,96 @@ Future<void> showEditDriverPopup(BuildContext context) async {
                                       ? AppLoadings.buttonLoading()
                                       : Expanded(
                                           child: CustomButton(
-                                            text: "Update",
+                                            text: l10n.update,
                                             height: 3.9.h,
                                             onPressed: () async {
-                                              if (selectedIndex == null) {
+                                              Datum? selectedDriver;
+                                              if (selectedIndex != null &&
+                                                  selectedIndex! >= 0 &&
+                                                  selectedIndex! <
+                                                      drivers.length) {
+                                                selectedDriver =
+                                                    drivers[selectedIndex!];
+                                              }
+
+                                              final typedName =
+                                                  driverSearchController?.text
+                                                          .trim()
+                                                          .toLowerCase() ??
+                                                      '';
+
+                                              if (selectedDriver == null &&
+                                                  typedName.isNotEmpty) {
+                                                final exactMatches = drivers
+                                                    .where((d) =>
+                                                        d.name
+                                                            .trim()
+                                                            .toLowerCase() ==
+                                                        typedName)
+                                                    .toList();
+                                                if (exactMatches.isNotEmpty) {
+                                                  selectedDriver =
+                                                      exactMatches.first;
+                                                } else {
+                                                  final partialMatches = drivers
+                                                      .where((d) => d.name
+                                                          .toLowerCase()
+                                                          .contains(typedName))
+                                                      .toList();
+                                                  if (partialMatches.length ==
+                                                      1) {
+                                                    selectedDriver =
+                                                        partialMatches.first;
+                                                  }
+                                                }
+                                              }
+
+                                              if (selectedDriver == null) {
                                                 showValidationErrorDialog(
                                                   context,
                                                   message:
-                                                      "Please select a driver",
+                                                      l10n.pleaseSelectDriver,
                                                 );
                                                 return;
                                               }
 
-                                              final driver =
-                                                  drivers[selectedIndex!];
+                                              final name = nameCtrl.text.trim();
+                                              final rfId = rfIdCtrl.text.trim();
+                                              final phone =
+                                                  phoneCtrl.text.trim();
+                                              final email =
+                                                  emailCtrl.text.trim();
+                                              final emailValid =
+                                                  email.isEmpty ||
+                                                      RegExp(
+                                                        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$",
+                                                      ).hasMatch(email);
+
+                                              if (name.isEmpty) {
+                                                showValidationErrorDialog(
+                                                  context,
+                                                  message:
+                                                      l10n.driverNameRequired,
+                                                );
+                                                return;
+                                              }
+
+                                              if (!emailValid) {
+                                                showValidationErrorDialog(
+                                                  context,
+                                                  message: l10n
+                                                      .pleaseEnterValidEmail,
+                                                );
+                                                return;
+                                              }
 
                                               await driverProvider.editDriver(
-                                                driverId: driver.id.toString(),
-                                                name: nameCtrl.text.trim(),
-                                                rfid: rfIdCtrl.text.trim(),
-                                                phone: phoneCtrl.text.trim(),
-                                                email: emailCtrl.text.trim(),
+                                                driverId: selectedDriver.id
+                                                    .toString(),
+                                                name: name,
+                                                rfid: rfId,
+                                                phone: phone,
+                                                email: email,
                                                 description: '',
                                               );
                                               if (!ctx.mounted) return;
@@ -792,6 +866,7 @@ Future<void> showEditDriverPopup(BuildContext context) async {
 Future<void> showDeleteDriverPopup(BuildContext context) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
+  final l10n = context.l10n;
   final driverProvider = Provider.of<DriverProvider>(context, listen: false);
   driverProvider.getDriverUser(deviceId: "");
   final ScrollController scrollController = ScrollController();
@@ -883,7 +958,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                       verticalSpace(height: .6.h),
                       Center(
                         child: Text(
-                          "Delete Driver",
+                          l10n.deleteDriverLabel,
                           style: AppStyles.boldTextStyle(context).copyWith(
                             fontSize: 16.sp,
                           ),
@@ -892,7 +967,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                       verticalSpace(height: 2.h),
 
                       Text(
-                        "Select Drivers",
+                        l10n.selectDrivers,
                         style: AppStyles.semiboldTextStyle(context).copyWith(
                           fontSize: 15.sp,
                         ),
@@ -900,7 +975,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
 
                       verticalSpace(height: .2.h),
                       Text(
-                        "Use the checkbox to select multiple drivers",
+                        l10n.useCheckboxToSelectDrivers,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 13.sp,
                           color: Colors.grey.shade600,
@@ -926,7 +1001,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                           color: AppColors.textBlack,
                         ),
                         decoration: InputDecoration(
-                          hintText: "Search driver name",
+                          hintText: l10n.searchDriverName,
                           prefixIcon: Icon(
                             Icons.search_rounded,
                             color: Colors.grey.shade600,
@@ -952,7 +1027,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                             if (filteredDrivers.isEmpty)
                               Center(
                                 child: Text(
-                                  "No drivers found",
+                                  l10n.noDriversFound,
                                   style: AppStyles.regularTextStyle(context)
                                       .copyWith(
                                     fontSize: 13.2.sp,
@@ -984,7 +1059,8 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.08),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.08),
                                           blurRadius: 6,
                                           offset: const Offset(0, 3),
                                         ),
@@ -1057,7 +1133,8 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 3.w, vertical: .35.h),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: .92),
+                                        color:
+                                            Colors.white.withValues(alpha: .92),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                             color: Colors.grey.shade300),
@@ -1082,7 +1159,8 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 3.w, vertical: .35.h),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: .92),
+                                        color:
+                                            Colors.white.withValues(alpha: .92),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                             color: Colors.grey.shade300),
@@ -1105,7 +1183,9 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                         Padding(
                           padding: EdgeInsets.only(top: 1.h),
                           child: Text(
-                            "${selectedDriverIds.length} driver(s) selected",
+                            l10n.driversSelectedCount(
+                              selectedDriverIds.length,
+                            ),
                             style: TextStyle(
                               color: AppColors.red,
                               fontWeight: FontWeight.w600,
@@ -1120,7 +1200,7 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                         children: [
                           Expanded(
                             child: CustomButton(
-                              text: "Cancel",
+                              text: l10n.cancel,
                               backgroundColor: Colors.transparent,
                               textColor: AppColors.textBlack,
                               height: 4.4.h,
@@ -1135,18 +1215,21 @@ Future<void> showDeleteDriverPopup(BuildContext context) async {
                           Expanded(
                             child: CustomButton(
                               backgroundColor: AppColors.red,
-                              text: "Delete",
+                              text: l10n.delete,
                               height: 4.5.h,
-                              onPressed: () {
+                              onPressed: () async {
                                 if (selectedDriverIds.isEmpty) {
                                   showValidationErrorDialog(
                                     context,
-                                    message:
-                                        "Please select at least one driver",
+                                    message: l10n.pleaseSelectAtLeastOneDriver,
                                   );
                                   return;
                                 }
 
+                                await driverProvider.deleteDrivers(
+                                  driverIds: selectedDriverIds.toList(),
+                                );
+                                if (!ctx.mounted) return;
                                 isClosingDialog = true;
                                 Navigator.pop(ctx);
                               },
@@ -1271,7 +1354,8 @@ Future<void> showDeviceCommandsPopup(
                                   child: Icon(
                                     Icons.electric_bolt_rounded,
                                     color: ConstantColor.primaryColor
-                                        .withValues(alpha: isDark ? 0.22 : 0.16),
+                                        .withValues(
+                                            alpha: isDark ? 0.22 : 0.16),
                                     size: 6.2.h,
                                   ),
                                 ),
@@ -1335,7 +1419,8 @@ Future<void> showDeviceCommandsPopup(
                                           .withValues(alpha: .12)
                                       : (isDark
                                           ? Colors.white.withValues(alpha: .04)
-                                          : Colors.black.withValues(alpha: .02)),
+                                          : Colors.black
+                                              .withValues(alpha: .02)),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isSelected
@@ -1365,7 +1450,8 @@ Future<void> showDeviceCommandsPopup(
                                             AppStyles.regularTextStyle(context)
                                                 .copyWith(
                                           fontSize: 13.8.sp,
-                                          color: onSurface.withValues(alpha: .88),
+                                          color:
+                                              onSurface.withValues(alpha: .88),
                                           fontWeight: isSelected
                                               ? FontWeight.w700
                                               : FontWeight.w600,
@@ -1851,6 +1937,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   final compactFieldHeight = 4.4.h;
   final compactTitleSize = 13.6.sp;
   final compactInputSize = 13.2.sp;
@@ -1865,10 +1952,14 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
   final String currentOdometer = "-";
   final String currentEngineHours = "808.32";
 
-  String? expirationBy = "Odometer";
+  String? expirationBy = l10n.odometerLabel;
   bool renewAfterExpiration = false;
 
-  final expirationOptions = ["Odometer", "Engine Hours", "Date"];
+  final List<String> expirationOptions = [
+    l10n.odometerLabel,
+    l10n.engineHoursLabel,
+    l10n.dateLabel,
+  ];
 
   await showDialog(
     context: context,
@@ -1905,7 +1996,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                           Align(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              "Add Service",
+                              l10n.addServiceLabel,
                               style: AppStyles.boldTextStyle(context).copyWith(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w700,
@@ -1919,8 +2010,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                     verticalSpace(height: .4.h),
 
                     MaintenanceField(
-                      title: "Name",
-                      hint: "Enter service name",
+                      title: l10n.nameLabel,
+                      hint: l10n.enterServiceName,
                       controller: nameCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -1932,7 +2023,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                     verticalSpace(height: 1.0.h),
 
                     Text(
-                      "Expiration by",
+                      l10n.expirationByLabel,
                       style: TextStyle(
                           fontSize: compactTitleSize,
                           fontWeight: FontWeight.w500,
@@ -1950,7 +2041,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                           fontWeight: FontWeight.w500,
                         ),
                         hint: Text(
-                          "Select expiration type",
+                          l10n.selectExpirationType,
                           style: TextStyle(
                             fontSize: compactInputSize,
                             color: onSurface.withValues(alpha: .58),
@@ -1963,7 +2054,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                               borderRadius: BorderRadius.circular(10)),
                         ),
                         items: expirationOptions
-                            .map((e) => DropdownMenuItem(
+                            .map((e) => DropdownMenuItem<String>(
                                   value: e,
                                   child: Text(
                                     e,
@@ -1982,8 +2073,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                       children: [
                         Expanded(
                           child: MaintenanceField(
-                            title: "Interval",
-                            hint: "Enter interval",
+                            title: l10n.interval,
+                            hint: l10n.enterInterval,
                             controller: intervalCtrl,
                             height: compactFieldHeight,
                             titleFontSize: compactTitleSize,
@@ -1996,8 +2087,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                         horizontalSpace(width: 3.w),
                         Expanded(
                           child: MaintenanceField(
-                            title: "Last service",
-                            hint: "Enter last value/date",
+                            title: l10n.lastService,
+                            hint: l10n.enterLastValueDate,
                             controller: lastServiceCtrl,
                             height: compactFieldHeight,
                             titleFontSize: compactTitleSize,
@@ -2012,8 +2103,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                     verticalSpace(height: 1.0.h),
 
                     MaintenanceField(
-                      title: "Trigger event when left",
-                      hint: "e.g. 1000 km",
+                      title: l10n.triggerEventWhenLeftLabel,
+                      hint: l10n.triggerEventWhenLeftHint,
                       controller: triggerLeftCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -2028,7 +2119,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Renew after expiration",
+                          l10n.renewAfterExpirationLabel,
                           style: TextStyle(
                               fontSize: 13.6.sp,
                               fontWeight: FontWeight.w500,
@@ -2056,7 +2147,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Odometer",
+                                l10n.odometerLabel,
                                 style: TextStyle(
                                     fontSize: compactTitleSize,
                                     fontWeight: FontWeight.w500,
@@ -2090,7 +2181,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Engine hours",
+                                l10n.engineHoursLabel,
                                 style: TextStyle(
                                     fontSize: compactTitleSize,
                                     fontWeight: FontWeight.w500,
@@ -2123,8 +2214,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                     verticalSpace(height: 1.0.h),
 
                     MaintenanceField(
-                      title: "Description",
-                      hint: "Optional notes",
+                      title: l10n.description,
+                      hint: l10n.optionalNotes,
                       controller: descriptionCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -2136,8 +2227,8 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                     verticalSpace(height: 1.0.h),
 
                     MaintenanceField(
-                      title: "Email",
-                      hint: "notification@email.com",
+                      title: l10n.emailLabel,
+                      hint: l10n.notificationEmailHint,
                       controller: emailCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -2153,7 +2244,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                       children: [
                         Expanded(
                           child: CustomButton(
-                            text: "Cancel",
+                            text: l10n.cancel,
                             backgroundColor: Colors.transparent,
                             textColor: onSurface.withValues(alpha: .82),
                             height: 4.4.h,
@@ -2163,7 +2254,7 @@ Future<void> showAddMaintenancePopup(BuildContext context) async {
                         horizontalSpace(width: 3.w),
                         Expanded(
                           child: CustomButton(
-                            text: "Save",
+                            text: l10n.save,
                             height: 4.4.h,
                             onPressed: () {
                               debugPrint(
@@ -2209,10 +2300,11 @@ Future<void> showAssignDriverPopup(
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   final compactFieldHeight = 4.4.h;
   TextEditingController? driverSearchController;
   const int noDriverOptionIndex = -1;
-  const String noDriverLabel = "No Driver";
+  final String noDriverLabel = l10n.noDriverLabel;
 
   final driverProvider = Provider.of<DriverProvider>(context, listen: false);
   driverProvider.getDriverUser(deviceId: "");
@@ -2263,7 +2355,7 @@ Future<void> showAssignDriverPopup(
                             Align(
                               alignment: Alignment.topLeft,
                               child: Text(
-                                "Assign Driver",
+                                l10n.assignDriverLabel,
                                 style:
                                     AppStyles.boldTextStyle(context).copyWith(
                                   fontSize: 16.2.sp,
@@ -2277,7 +2369,7 @@ Future<void> showAssignDriverPopup(
                       ),
                       verticalSpace(height: .45.h),
                       Text(
-                        "Select Driver",
+                        l10n.selectDriverLabel,
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w500,
@@ -2358,12 +2450,12 @@ Future<void> showAssignDriverPopup(
                                   color: onSurface,
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: "Driver",
+                                  labelText: l10n.driverNameLabel,
                                   labelStyle: TextStyle(
                                     fontSize: 12.8.sp,
                                     color: onSurface.withValues(alpha: .72),
                                   ),
-                                  hintText: "Search and select driver",
+                                  hintText: l10n.searchAndSelectDriver,
                                   hintStyle: TextStyle(
                                     fontSize: 12.6.sp,
                                     color: onSurface.withValues(alpha: .58),
@@ -2440,7 +2532,7 @@ Future<void> showAssignDriverPopup(
                         children: [
                           Expanded(
                             child: CustomButton(
-                              text: "Cancel",
+                              text: l10n.cancel,
                               backgroundColor: Colors.transparent,
                               textColor: onSurface.withValues(alpha: .82),
                               height: 4.4.h,
@@ -2454,7 +2546,7 @@ Future<void> showAssignDriverPopup(
                                     ? AppLoadings.buttonLoading()
                                     : Expanded(
                                         child: CustomButton(
-                                          text: "Save",
+                                          text: l10n.save,
                                           textColor: Colors.white,
                                           height: 4.4.h,
                                           onPressed: () async {
@@ -2534,7 +2626,7 @@ Future<void> showAssignDriverPopup(
                                               showValidationErrorDialog(
                                                 context,
                                                 message:
-                                                    "Please select a driver",
+                                                    l10n.pleaseSelectDriver,
                                               );
                                             }
                                           },
@@ -2565,6 +2657,7 @@ Future<void> showAddReminderPopup(
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
   final compactFieldHeight = 4.4.h;
   final compactTitleSize = 13.6.sp;
   final compactInputSize = 13.2.sp;
@@ -2599,6 +2692,7 @@ Future<void> showAddReminderPopup(
       isScrollControlled: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final pickerIsDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 36.h,
@@ -2623,11 +2717,11 @@ Future<void> showAddReminderPopup(
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Date",
+                      l10n.selectDate,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -2635,7 +2729,7 @@ Future<void> showAddReminderPopup(
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempDate),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -2676,6 +2770,7 @@ Future<void> showAddReminderPopup(
       isScrollControlled: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         final pickerIsDark = Theme.of(ctx).brightness == Brightness.dark;
         return Container(
           height: 34.h,
@@ -2700,11 +2795,11 @@ Future<void> showAddReminderPopup(
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                     const Spacer(),
                     Text(
-                      "Select Time",
+                      l10n.selectTime,
                       style: AppStyles.semiboldTextStyle(ctx)
                           .copyWith(fontSize: 14.sp),
                     ),
@@ -2712,7 +2807,7 @@ Future<void> showAddReminderPopup(
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, tempTime),
                       child: Text(
-                        "Done",
+                        l10n.done,
                         style: TextStyle(color: ConstantColor.primaryColor),
                       ),
                     ),
@@ -2789,8 +2884,8 @@ Future<void> showAddReminderPopup(
                             alignment: Alignment.topLeft,
                             child: Text(
                               existingReminder == null
-                                  ? "Add Reminder"
-                                  : "Edit Reminder",
+                                  ? l10n.addReminderLabel
+                                  : l10n.editReminderLabel,
                               style: AppStyles.boldTextStyle(context).copyWith(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w700,
@@ -2805,7 +2900,7 @@ Future<void> showAddReminderPopup(
 
                     // Type label and dropdown
                     Text(
-                      "Type",
+                      l10n.typeLabel,
                       style: TextStyle(
                           fontSize: compactTitleSize,
                           fontWeight: FontWeight.w500,
@@ -2823,7 +2918,7 @@ Future<void> showAddReminderPopup(
                           fontWeight: FontWeight.w500,
                         ),
                         hint: Text(
-                          "Select type",
+                          l10n.selectType,
                           style: TextStyle(
                             fontSize: compactInputSize,
                             color: onSurface.withValues(alpha: .58),
@@ -2838,9 +2933,9 @@ Future<void> showAddReminderPopup(
                               borderRadius: BorderRadius.circular(10)),
                         ),
                         items: reminderTypes
-                            .map((e) => DropdownMenuItem(
+                            .map((e) => DropdownMenuItem<String>(
                                 value: e,
-                                child: Text(e,
+                                child: Text(_localizedReminderType(context, e),
                                     style: TextStyle(
                                       fontSize: compactInputSize,
                                       fontWeight: FontWeight.w500,
@@ -2850,7 +2945,8 @@ Future<void> showAddReminderPopup(
                           setState(() {
                             selectedReminderType = v;
                             if (v != null && v != 'Custom') {
-                              titleCtrl.text = v;
+                              titleCtrl.text =
+                                  _localizedReminderType(context, v);
                             }
                           });
                         },
@@ -2860,8 +2956,8 @@ Future<void> showAddReminderPopup(
 
                     // Title field
                     MaintenanceField(
-                      title: "Title",
-                      hint: "Reminder title",
+                      title: l10n.titleLabel,
+                      hint: l10n.reminderTitleHint,
                       controller: titleCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -2874,7 +2970,7 @@ Future<void> showAddReminderPopup(
 
                     if (!(isRecurring && recurringMode == "daily"))
                       MaintenanceField(
-                        title: "Due Date",
+                        title: l10n.dueDateLabel,
                         hint: reminderDueDate == null
                             ? "dd/mm/yyyy"
                             : "${reminderDueDate!.day.toString().padLeft(2, '0')}/${reminderDueDate!.month.toString().padLeft(2, '0')}/${reminderDueDate!.year}",
@@ -2895,7 +2991,7 @@ Future<void> showAddReminderPopup(
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Date is ignored for daily repeat",
+                          l10n.dateIgnoredForDailyRepeat,
                           style: AppStyles.regularTextStyle(context).copyWith(
                             fontSize: 11.4.sp,
                             color: onSurface.withValues(alpha: .65),
@@ -2905,9 +3001,9 @@ Future<void> showAddReminderPopup(
                     verticalSpace(height: 1.0.h),
 
                     MaintenanceField(
-                      title: "Due Time",
+                      title: l10n.dueTimeLabel,
                       hint: reminderDueTime == null
-                          ? "Select time"
+                          ? l10n.selectTime
                           : reminderDueTime!.format(context),
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -2930,7 +3026,7 @@ Future<void> showAddReminderPopup(
                         Icon(Icons.loop, color: onSurface),
                         horizontalSpace(width: 2.w),
                         Text(
-                          "Recurring",
+                          l10n.repeatRecurring,
                           style: TextStyle(
                               fontSize: compactTitleSize,
                               fontWeight: FontWeight.w500,
@@ -2948,13 +3044,13 @@ Future<void> showAddReminderPopup(
                       Row(
                         children: [
                           _RecurringCheck(
-                            label: "Daily",
+                            label: l10n.daily,
                             selected: recurringMode == "daily",
                             onTap: () =>
                                 setState(() => recurringMode = "daily"),
                           ),
                           _RecurringCheck(
-                            label: "Weekly",
+                            label: l10n.weekly,
                             selected: recurringMode == "weekly",
                             onTap: () =>
                                 setState(() => recurringMode = "weekly"),
@@ -2965,13 +3061,13 @@ Future<void> showAddReminderPopup(
                       Row(
                         children: [
                           _RecurringCheck(
-                            label: "Monthly",
+                            label: l10n.monthly,
                             selected: recurringMode == "monthly",
                             onTap: () =>
                                 setState(() => recurringMode = "monthly"),
                           ),
                           _RecurringCheck(
-                            label: "Yearly",
+                            label: l10n.yearly,
                             selected: recurringMode == "yearly",
                             onTap: () =>
                                 setState(() => recurringMode = "yearly"),
@@ -2984,8 +3080,8 @@ Future<void> showAddReminderPopup(
 
                     // Optional description
                     MaintenanceField(
-                      title: "Description",
-                      hint: "Optional notes",
+                      title: l10n.description,
+                      hint: l10n.optionalNotes,
                       controller: notesCtrl,
                       height: compactFieldHeight,
                       titleFontSize: compactTitleSize,
@@ -3001,7 +3097,7 @@ Future<void> showAddReminderPopup(
                       children: [
                         Expanded(
                           child: CustomButton(
-                            text: "Cancel",
+                            text: l10n.cancel,
                             backgroundColor: Colors.transparent,
                             textColor: onSurface.withValues(alpha: .82),
                             height: 4.4.h,
@@ -3012,14 +3108,14 @@ Future<void> showAddReminderPopup(
                         Expanded(
                           child: CustomButton(
                             text: existingReminder == null
-                                ? "Add Reminder"
-                                : "Save Changes",
+                                ? l10n.addReminderLabel
+                                : l10n.saveChanges,
                             height: 4.4.h,
                             onPressed: () async {
                               if (titleCtrl.text.trim().isEmpty) {
                                 showValidationErrorDialog(
                                   context,
-                                  message: "Reminder title is required",
+                                  message: l10n.reminderTitleRequired,
                                 );
                                 return;
                               }
@@ -3027,7 +3123,7 @@ Future<void> showAddReminderPopup(
                                 if (!isRecurring || recurringMode != "daily") {
                                   showValidationErrorDialog(
                                     context,
-                                    message: "Please select due date",
+                                    message: l10n.pleaseSelectDueDate,
                                   );
                                   return;
                                 }
@@ -3035,7 +3131,7 @@ Future<void> showAddReminderPopup(
                               if (reminderDueTime == null) {
                                 showValidationErrorDialog(
                                   context,
-                                  message: "Please select due time",
+                                  message: l10n.pleaseSelectDueTime,
                                 );
                                 return;
                               }
@@ -3083,8 +3179,8 @@ Future<void> showAddReminderPopup(
                               Navigator.pop(ctx);
                               AppSnackBar.success(
                                 message: existingReminder == null
-                                    ? "Reminder saved successfully"
-                                    : "Reminder updated successfully",
+                                    ? l10n.reminderSavedSuccessfully
+                                    : l10n.reminderUpdatedSuccessfully,
                               );
                             },
                           ),
@@ -3100,6 +3196,38 @@ Future<void> showAddReminderPopup(
       );
     },
   );
+}
+
+String _localizedReminderType(BuildContext context, String type) {
+  final l10n = context.l10n;
+  switch (type) {
+    case 'Custom':
+      return l10n.custom;
+    case 'Oil Change':
+      return l10n.oilChange;
+    case 'Tire Rotation':
+      return l10n.tireRotation;
+    case 'Brake Inspection':
+      return l10n.brakeInspection;
+    case 'Air Filter Replacement':
+      return l10n.airFilterReplacement;
+    case 'Spark Plugs Replacement':
+      return l10n.sparkPlugsReplacement;
+    case 'Battery Check':
+      return l10n.batteryCheck;
+    case 'Insurance Renewal':
+      return l10n.insuranceRenewal;
+    case 'Registration Renewal':
+      return l10n.registrationRenewal;
+    case 'Emission Test':
+      return l10n.emissionTest;
+    case 'General Service':
+      return l10n.generalService;
+    case 'Coolant Flush':
+      return l10n.coolantFlush;
+    default:
+      return type;
+  }
 }
 
 class _RecurringCheck extends StatelessWidget {
@@ -3155,6 +3283,7 @@ Future<void> showDriverDetailPopup(
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   final onSurface = theme.colorScheme.onSurface;
+  final l10n = context.l10n;
 
   final driverProvider = Provider.of<DriverProvider>(context, listen: false);
   unawaited(driverProvider.getVehicleDriver(deviceId: deviceId));
@@ -3181,7 +3310,7 @@ Future<void> showDriverDetailPopup(
                     SizedBox(
                       width: double.infinity,
                       child: Text(
-                        "Call to Driver",
+                        l10n.callToDriver,
                         style: AppStyles.boldTextStyle(context).copyWith(
                           fontSize: 17.2.sp,
                           fontWeight: FontWeight.w700,
@@ -3193,7 +3322,7 @@ Future<void> showDriverDetailPopup(
                     AppLoadings.circleLoading(),
                     verticalSpace(height: 1.1.h),
                     Text(
-                      "Loading driver details...",
+                      l10n.loadingDriverDetails,
                       style: AppStyles.regularTextStyle(context).copyWith(
                         fontSize: 12.8.sp,
                         color: onSurface.withValues(alpha: .68),
@@ -3239,7 +3368,7 @@ Future<void> showDriverDetailPopup(
                         Align(
                           alignment: Alignment.topLeft,
                           child: Text(
-                            "Call to Driver",
+                            l10n.callToDriver,
                             style: AppStyles.boldTextStyle(context).copyWith(
                               fontSize: 17.2.sp,
                               fontWeight: FontWeight.w700,
@@ -3252,7 +3381,7 @@ Future<void> showDriverDetailPopup(
                   ),
                   verticalSpace(height: .3.h),
                   Text(
-                    "Driver contact and profile details",
+                    l10n.driverContactProfileDetails,
                     style: AppStyles.regularTextStyle(context).copyWith(
                       color: onSurface.withValues(alpha: .62),
                       fontSize: 12.8.sp,
@@ -3282,7 +3411,7 @@ Future<void> showDriverDetailPopup(
                     verticalSpace(height: 1.1.h),
                     Center(
                       child: Text(
-                        "No driver assigned",
+                        l10n.noDriverAssigned,
                         style: AppStyles.semiboldTextStyle(context).copyWith(
                           fontSize: 14.2.sp,
                           color: onSurface.withValues(alpha: .86),
@@ -3292,7 +3421,7 @@ Future<void> showDriverDetailPopup(
                     verticalSpace(height: .4.h),
                     Center(
                       child: Text(
-                        "Assign a driver to this vehicle to\nview contact actions",
+                        l10n.assignDriverToVehicleToViewContactActions,
                         textAlign: TextAlign.center,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 12.6.sp,
@@ -3316,7 +3445,7 @@ Future<void> showDriverDetailPopup(
                       context: context,
                       icon: Icons.phone_rounded,
                       value: matchedDriver.phone.isEmpty
-                          ? "No phone number"
+                          ? l10n.noPhoneNumber
                           : matchedDriver.phone,
                       color: AppColors.green,
                     ),
@@ -3325,13 +3454,13 @@ Future<void> showDriverDetailPopup(
                       context: context,
                       icon: Icons.alternate_email_rounded,
                       value: matchedDriver.email.isEmpty
-                          ? "No email"
+                          ? l10n.noEmail
                           : matchedDriver.email,
                       color: Colors.orange,
                     ),
                     verticalSpace(height: .9.h),
                     Text(
-                      "Description",
+                      l10n.description,
                       style: AppStyles.semiboldTextStyle(context).copyWith(
                         fontSize: 13.6.sp,
                         color: onSurface.withValues(alpha: .86),
@@ -3354,7 +3483,8 @@ Future<void> showDriverDetailPopup(
                         ),
                       ),
                       child: Text(
-                        matchedDriver.description ?? "No description available",
+                        matchedDriver.description ??
+                            l10n.noDescriptionAvailable,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 12.9.sp,
                           color: onSurface.withValues(alpha: .78),
@@ -3368,7 +3498,7 @@ Future<void> showDriverDetailPopup(
                           child: _driverActionChip(
                             context: context,
                             icon: Icons.call_rounded,
-                            label: "Call",
+                            label: l10n.callLabel,
                             color: AppColors.green,
                             onTap: sanitizedPhone.isEmpty
                                 ? null
@@ -3380,7 +3510,7 @@ Future<void> showDriverDetailPopup(
                           child: _driverActionChip(
                             context: context,
                             icon: FontAwesomeIcons.whatsapp,
-                            label: "WhatsApp",
+                            label: l10n.whatsAppLabel,
                             color: AppColors.green,
                             onTap: sanitizedPhone.isEmpty
                                 ? null
@@ -3392,7 +3522,7 @@ Future<void> showDriverDetailPopup(
                           child: _driverActionChip(
                             context: context,
                             icon: Icons.chat_bubble_rounded,
-                            label: "Message",
+                            label: l10n.messageLabel,
                             color: AppColors.blueCyan,
                             onTap: sanitizedPhone.isEmpty
                                 ? null

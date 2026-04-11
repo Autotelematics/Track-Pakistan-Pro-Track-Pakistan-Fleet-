@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/device_expense_model.dart';
 import 'package:trackerapp/data/repositories/device_expense_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
 
 class DeviceExpenseProvider extends ChangeNotifier {
@@ -39,7 +40,7 @@ class DeviceExpenseProvider extends ChangeNotifier {
       _expenses = list.data;
       _total = list.total;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       AppSnackBar.error(message: _errorMessage ?? "Failed to load expenses");
     } finally {
       _isLoading = false;
@@ -58,7 +59,7 @@ class DeviceExpenseProvider extends ChangeNotifier {
       _total = list.total;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       AppSnackBar.error(message: _errorMessage ?? "Failed to load expenses");
     } finally {
       notifyListeners();
@@ -121,7 +122,7 @@ class DeviceExpenseProvider extends ChangeNotifier {
       AppSnackBar.success(message: "Expense added");
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();
@@ -155,7 +156,7 @@ class DeviceExpenseProvider extends ChangeNotifier {
       AppSnackBar.success(message: "Expense updated");
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();
@@ -173,7 +174,7 @@ class DeviceExpenseProvider extends ChangeNotifier {
       AppSnackBar.success(message: "Expense deleted");
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();

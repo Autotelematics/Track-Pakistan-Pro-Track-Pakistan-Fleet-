@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/alert_settings_provider.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
@@ -34,8 +33,9 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
       appBar: AppBar(
         title: const Text("Alert Setting"),
         elevation: 0,
-        backgroundColor:
-            isDark ? theme.scaffoldBackgroundColor : AppColors.blueCyan,
+        backgroundColor: isDark
+            ? theme.scaffoldBackgroundColor
+            : ConstantColor.secondaryColor,
       ),
       body: Consumer<AlertSettingsProvider>(
         builder: (context, provider, child) {
@@ -66,7 +66,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
             );
           }
           return ListView.builder(
-            padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 10.h),
+            padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 2.h),
             itemCount: provider.alertItems.length,
             itemBuilder: (context, index) {
               final item = provider.alertItems[index];
@@ -80,14 +80,19 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
           );
         },
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(4.w, 0, 4.w, 1.2.h),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: EdgeInsets.fromLTRB(4.w, .8.h, 4.w, 1.2.h),
         child: Consumer<AlertSettingsProvider>(
           builder: (context, provider, child) {
             return provider.isSyncing
-                ? const Center(child: CircularProgressIndicator())
+                ? SizedBox(
+                    height: 5.8.h,
+                    child: const Center(child: CircularProgressIndicator()),
+                  )
                 : CustomButton(
                     text: "Save",
+                    height: 5.8.h,
                     onPressed: () async {
                       final ok = await provider.syncUserAlertSettings();
                       if (!mounted) return;

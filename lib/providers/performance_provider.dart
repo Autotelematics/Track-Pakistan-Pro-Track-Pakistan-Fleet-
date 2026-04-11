@@ -5,6 +5,7 @@ import 'package:trackerapp/data/models/get_vehicle_performance_model.dart';
 import 'package:trackerapp/data/models/performance_kpi_model.dart';
 import 'package:trackerapp/data/repositories/performance_repository.dart';
 import 'package:trackerapp/data/repositories/vehicle_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
@@ -117,7 +118,7 @@ class PerformanceProvider with ChangeNotifier {
         _cache.remove(_cache.keys.first);
       }
     } catch (e) {
-      _error = e.toString();
+      _error = AppErrorMessage.normalize(e);
       _vehicleKpis = const [];
       _driverKpis = const [];
     } finally {

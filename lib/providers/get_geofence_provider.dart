@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/geofence_model.dart';
 import 'package:trackerapp/data/repositories/geofence_repository.dart';
-import 'package:trackerapp/utils/shared_preference.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
+import 'package:trackerapp/utils/shared_preference.dart';
 
 class GeofenceProvider with ChangeNotifier {
   final GeofenceRepository _repository = GeofenceRepository();
@@ -54,7 +55,7 @@ class GeofenceProvider with ChangeNotifier {
         _model = result;
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -85,6 +86,7 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -176,11 +178,15 @@ class TripCard extends StatelessWidget {
                       SizedBox(width: 1.5.w),
                       Expanded(
                         child: Text(
-                          trip.endTime,
+                          (trip.isInProgress ?? false)
+                              ? l10n.taskInProgress
+                              : trip.endTime,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 13.8.sp,
                               fontWeight: FontWeight.w600,
-                              color: onSurface),
+                              color: (trip.isInProgress ?? false)
+                                  ? ConstantColor.primaryColor
+                                  : onSurface),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -500,7 +506,9 @@ class DateTimeTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
-    final isPlaceholder = text.contains("Select");
+    final l10n = context.l10n;
+    final isPlaceholder =
+        text.contains(l10n.selectDate) || text.contains(l10n.selectTime);
 
     return GestureDetector(
       onTap: onTap,
@@ -602,6 +610,8 @@ class StatCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
+    final valueColor =
+        isDark ? Color.lerp(color, Colors.white, 0.35) ?? color : color;
 
     return Container(
       width: width,
@@ -628,7 +638,7 @@ class StatCard extends StatelessWidget {
           verticalSpace(height: .25.h),
           Text(value,
               style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 14.0.sp, color: color),
+                  .copyWith(fontSize: 14.0.sp, color: valueColor),
               textAlign: TextAlign.start),
         ],
       ),

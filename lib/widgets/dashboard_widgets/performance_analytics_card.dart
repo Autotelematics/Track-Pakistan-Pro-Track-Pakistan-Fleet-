@@ -66,6 +66,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isCompactPhone = MediaQuery.sizeOf(context).width <= 360;
 
     return Consumer<PerformanceProvider>(
       builder: (context, provider, _) {
@@ -73,18 +74,38 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
         final drivers = provider.driverKpis;
 
         return Container(
-          margin: EdgeInsets.symmetric(horizontal: 5.w),
-          padding: EdgeInsets.symmetric(horizontal: 3.6.w, vertical: 1.4.h),
+          margin: EdgeInsets.symmetric(
+              horizontal: _pW(context, phone: 5, compact: 4)),
+          padding: EdgeInsets.symmetric(
+            horizontal: _pW(context, phone: 3.6, compact: 3.1),
+            vertical: _pH(context, phone: 1.4, compact: 1.2),
+          ),
           decoration: BoxDecoration(
-            color: theme.cardColor,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? <Color>[
+                      theme.cardColor.withValues(alpha: .98),
+                      theme.cardColor.withValues(alpha: .92),
+                    ]
+                  : <Color>[
+                      Colors.white,
+                      const Color(0xFFF6FBFF),
+                    ],
+            ),
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color:
+                  const Color(0xFF0EA5E9).withValues(alpha: isDark ? .24 : .14),
+            ),
             boxShadow: [
               BoxShadow(
                 color: isDark
                     ? Colors.black.withValues(alpha: 0.5)
-                    : Colors.black.withValues(alpha: 0.12),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                    : const Color(0xFF0284C7).withValues(alpha: 0.10),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -93,11 +114,36 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
             children: [
               Row(
                 children: [
+                  Container(
+                    width: _pW(context, phone: 5.8, compact: 6.6),
+                    height: _pW(context, phone: 5.8, compact: 6.6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: <Color>[
+                          Color(0xFF22D3EE),
+                          Color(0xFF0284C7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(
+                      Icons.query_stats_rounded,
+                      color: Colors.white,
+                      size: _pSp(context, phone: 15.0),
+                    ),
+                  ),
+                  horizontalSpace(width: 2.w),
                   Expanded(
                     child: Text(
                       context.l10n.performanceAnalytics,
-                      style: AppStyles.semiboldTextStyle(context)
-                          .copyWith(fontSize: 15.0.sp),
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: _pSp(context, phone: 12.8),
+                        fontWeight: FontWeight.w900,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: .92),
+                      ),
                     ),
                   ),
                   IconButton(
@@ -156,34 +202,49 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                 )
               else if (vehicles.isEmpty)
                 _EmptyBlock(
-                  message:
-                      context.l10n.noAlertsForDateRange,
+                  message: context.l10n.noAlertsForDateRange,
                 )
               else ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: _KpiTile(
-                        title: context.l10n.vehicles,
-                        value: "${vehicles.length}",
-                        subtitle: context.l10n.scoredFromAlerts,
-                        color: const Color(0xFF2563EB),
+                if (isCompactPhone) ...[
+                  _KpiTile(
+                    title: context.l10n.vehicles,
+                    value: "${vehicles.length}",
+                    subtitle: context.l10n.scoredFromAlerts,
+                    color: const Color(0xFF2563EB),
+                  ),
+                  verticalSpace(height: .7.h),
+                  _KpiTile(
+                    title: context.l10n.drivers,
+                    value: "${drivers.length}",
+                    subtitle: context.l10n.mappedFromAssignment,
+                    color: const Color(0xFF16A34A),
+                  ),
+                ] else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KpiTile(
+                          title: context.l10n.vehicles,
+                          value: "${vehicles.length}",
+                          subtitle: context.l10n.scoredFromAlerts,
+                          color: const Color(0xFF2563EB),
+                        ),
                       ),
-                    ),
-                    horizontalSpace(width: 2.w),
-                    Expanded(
-                      child: _KpiTile(
-                        title: context.l10n.drivers,
-                        value: "${drivers.length}",
-                        subtitle: context.l10n.mappedFromAssignment,
-                        color: const Color(0xFF16A34A),
+                      horizontalSpace(width: 2.w),
+                      Expanded(
+                        child: _KpiTile(
+                          title: context.l10n.drivers,
+                          value: "${drivers.length}",
+                          subtitle: context.l10n.mappedFromAssignment,
+                          color: const Color(0xFF16A34A),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 verticalSpace(height: 1.h),
                 _SectionCard(
                   title: context.l10n.topVehicles,
+                  icon: Icons.local_shipping_rounded,
                   child: _VehicleList(
                     items: provider.topVehiclePerformance,
                     onShowMore: () =>
@@ -193,6 +254,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                 verticalSpace(height: .9.h),
                 _SectionCard(
                   title: context.l10n.topDrivers,
+                  icon: Icons.person_rounded,
                   child: _DriverList(
                     items: provider.topDriverPerformance,
                     onShowMore: () =>
@@ -214,6 +276,8 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
       backgroundColor: Colors.transparent,
       builder: (_) => _AllPerformanceSheet(
         title: context.l10n.allVehiclePerformance,
+        icon: Icons.local_shipping_rounded,
+        totalCount: items.length,
         child: ListView.separated(
           itemCount: items.length,
           separatorBuilder: (_, __) => SizedBox(height: .55.h),
@@ -226,6 +290,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
               score: v.score,
               isLast: index == items.length - 1,
               redGreenOnly: true,
+              inSheet: true,
             );
           },
         ),
@@ -240,6 +305,8 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
       backgroundColor: Colors.transparent,
       builder: (_) => _AllPerformanceSheet(
         title: context.l10n.allDriverPerformance,
+        icon: Icons.person_rounded,
+        totalCount: items.length,
         child: ListView.separated(
           itemCount: items.length,
           separatorBuilder: (_, __) => SizedBox(height: .55.h),
@@ -253,6 +320,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
               score: d.score,
               isLast: index == items.length - 1,
               redGreenOnly: true,
+              inSheet: true,
             );
           },
         ),
@@ -371,8 +439,14 @@ class _PresetChip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         alignment: Alignment.center,
-        constraints: BoxConstraints(minHeight: 4.4.h, minWidth: 15.w),
-        padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .7.h),
+        constraints: BoxConstraints(
+          minHeight: _pH(context, phone: 4.2, compact: 4.0, min: 36),
+          minWidth: _pW(context, phone: 15, compact: 16),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: _pW(context, phone: 2.2, compact: 2.0),
+          vertical: _pH(context, phone: .7, compact: .65),
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? softYellowBg
@@ -390,7 +464,7 @@ class _PresetChip extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.3.sp,
+            fontSize: _pSp(context, phone: 11.4),
             fontWeight: FontWeight.w600,
             color: isSelected
                 ? softYellowText
@@ -418,25 +492,43 @@ class _KpiTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.1.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _pW(context, phone: 3.0, compact: 2.4),
+        vertical: _pH(context, phone: 1.0, compact: .85),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: .28)),
-        color: color.withValues(alpha: .08),
+        gradient: LinearGradient(
+          colors: <Color>[
+            color.withValues(alpha: .17),
+            color.withValues(alpha: .08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: AppStyles.regularTextStyle(context)
-                .copyWith(fontSize: 12.sp, fontWeight: FontWeight.w600),
+            style: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: _pSp(context, phone: 11.2),
+                fontWeight: FontWeight.w600),
           ),
           verticalSpace(height: .5.h),
           Text(
             value,
             style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 16.sp,
+              fontSize: _pSp(context, phone: 14.3),
               color: color,
             ),
           ),
@@ -446,7 +538,7 @@ class _KpiTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 10.4.sp,
+              fontSize: _pSp(context, phone: 9.9),
               color:
                   Theme.of(context).colorScheme.onSurface.withValues(alpha: .7),
             ),
@@ -459,20 +551,39 @@ class _KpiTile extends StatelessWidget {
 
 class _SectionCard extends StatelessWidget {
   final String title;
+  final IconData icon;
   final Widget child;
 
   const _SectionCard({
     required this.title,
+    required this.icon,
     required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _pW(context, phone: 3.0, compact: 2.4),
+        vertical: _pH(context, phone: 1.0, compact: .9),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  Colors.white.withValues(alpha: .06),
+                  Colors.white.withValues(alpha: .03),
+                ]
+              : <Color>[
+                  const Color(0xFFF9FBFE),
+                  Colors.white,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         border: Border.all(
           color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08),
         ),
@@ -480,10 +591,37 @@ class _SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style:
-                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 13.sp),
+          Row(
+            children: [
+              Container(
+                width: _pW(context, phone: 5.8, compact: 6.5),
+                height: _pW(context, phone: 5.8, compact: 6.5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  icon,
+                  size: _pSp(context, phone: 10.6),
+                  color: Colors.white,
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _pSp(context, phone: 12.3),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: .6.h),
           child,
@@ -533,7 +671,7 @@ class _VehicleList extends StatelessWidget {
                 child: Text(
                   "+$moreCount more • Show more",
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 11.8.sp,
+                    fontSize: _pSp(context, phone: 11.0),
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0284C7),
                   ),
@@ -587,7 +725,7 @@ class _DriverList extends StatelessWidget {
                 child: Text(
                   "+$moreCount more • Show more",
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 11.8.sp,
+                    fontSize: _pSp(context, phone: 11.0),
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0284C7),
                   ),
@@ -606,6 +744,7 @@ class _ScoreRow extends StatelessWidget {
   final double score;
   final bool isLast;
   final bool redGreenOnly;
+  final bool inSheet;
 
   const _ScoreRow({
     required this.title,
@@ -613,6 +752,7 @@ class _ScoreRow extends StatelessWidget {
     required this.score,
     required this.isLast,
     this.redGreenOnly = false,
+    this.inSheet = false,
   });
 
   @override
@@ -624,13 +764,28 @@ class _ScoreRow extends StatelessWidget {
             : score >= 65
                 ? const Color(0xFFF59E0B)
                 : const Color(0xFFDC2626);
+    final titleSize = _pSp(context, phone: inSheet ? 14.3 : 11.7);
+    final subtitleSize = _pSp(context, phone: inSheet ? 13.3 : 10.8);
+    final scoreSize = _pSp(context, phone: inSheet ? 13.9 : 11.4);
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : .55.h),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.3.w, vertical: .65.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: _pW(context,
+              phone: inSheet ? 2.6 : 2.3, compact: inSheet ? 2.2 : 2.0),
+          vertical: _pH(context,
+              phone: inSheet ? .78 : .65, compact: inSheet ? .68 : .58),
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: tone.withValues(alpha: .08),
+          gradient: LinearGradient(
+            colors: <Color>[
+              tone.withValues(alpha: .14),
+              tone.withValues(alpha: .07),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Row(
           children: [
@@ -643,7 +798,7 @@ class _ScoreRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context)
-                        .copyWith(fontSize: 12.5.sp),
+                        .copyWith(fontSize: titleSize),
                   ),
                   verticalSpace(height: .15.h),
                   Text(
@@ -651,7 +806,7 @@ class _ScoreRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.regularTextStyle(context)
-                        .copyWith(fontSize: 11.5.sp),
+                        .copyWith(fontSize: subtitleSize),
                   ),
                 ],
               ),
@@ -667,7 +822,7 @@ class _ScoreRow extends StatelessWidget {
               child: Text(
                 score.toStringAsFixed(1),
                 style: AppStyles.semiboldTextStyle(context).copyWith(
-                  fontSize: 12.2.sp,
+                  fontSize: scoreSize,
                   color: tone,
                 ),
               ),
@@ -681,46 +836,182 @@ class _ScoreRow extends StatelessWidget {
 
 class _AllPerformanceSheet extends StatelessWidget {
   final String title;
+  final IconData icon;
+  final int totalCount;
   final Widget child;
 
   const _AllPerformanceSheet({
-    required this.title,
-    required this.child,
+    this.title = '',
+    this.icon = Icons.list_alt_rounded,
+    this.totalCount = 0,
+    this.child = const SizedBox.shrink(),
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(minHeight: 74.h, maxHeight: 74.h),
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? <Color>[
+                  theme.cardColor.withValues(alpha: .98),
+                  theme.cardColor.withValues(alpha: .93),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFF7FBFF),
+                ],
+        ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border.all(
+          color: const Color(0xFF0EA5E9).withValues(alpha: isDark ? .24 : .14),
+        ),
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(4.w, 1.2.h, 4.w, 1.5.h),
+        padding: EdgeInsets.fromLTRB(
+          _pW(context, phone: 4, compact: 3.6),
+          _pH(context, phone: 1.2, compact: 1.0),
+          _pW(context, phone: 4, compact: 3.6),
+          _pH(context, phone: 1.5, compact: 1.3),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(
-                width: 11.w,
-                height: .5.h,
-                margin: EdgeInsets.only(bottom: 1.2.h),
+                width: _pW(context, phone: 11, compact: 13),
+                height: _pH(context, phone: .5, compact: .46),
+                margin: EdgeInsets.only(
+                    bottom: _pH(context, phone: 1.2, compact: 1.0)),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: .35),
+                  color: onSurface.withValues(alpha: .24),
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
             ),
-            Text(
-              title,
-              style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 14.sp),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: _pW(context, phone: 2.4, compact: 2.1),
+                vertical: _pH(context, phone: .8, compact: .7),
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? <Color>[
+                          Colors.white.withValues(alpha: .08),
+                          Colors.white.withValues(alpha: .04),
+                        ]
+                      : <Color>[
+                          const Color(0xFFF2F8FF),
+                          Colors.white,
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: onSurface.withValues(alpha: .10),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: _pW(context, phone: 6.2, compact: 7.2),
+                    height: _pW(context, phone: 6.2, compact: 7.2),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: <Color>[
+                          Color(0xFF22D3EE),
+                          Color(0xFF0284C7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: _pSp(context, phone: 11.2),
+                      color: Colors.white,
+                    ),
+                  ),
+                  horizontalSpace(width: 2.w),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: _pSp(context, phone: 15.4),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _pW(context, phone: 2.0, compact: 1.8),
+                      vertical: _pH(context, phone: .35, compact: .32),
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2FE),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: const Color(0xFF7DD3FC),
+                      ),
+                    ),
+                    child: Text(
+                      '$totalCount',
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: _pSp(context, phone: 12.3),
+                        color: const Color(0xFF075985),
+                      ),
+                    ),
+                  ),
+                  horizontalSpace(width: 1.2.w),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(999),
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      padding: EdgeInsets.all(
+                          _pW(context, phone: 1.4, compact: 1.6)),
+                      decoration: BoxDecoration(
+                        color: onSurface.withValues(alpha: .08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: _pSp(context, phone: 10.5),
+                        color: onSurface.withValues(alpha: .75),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             verticalSpace(height: 1.h),
-            Expanded(child: child),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _pW(context, phone: 1.4, compact: 1.2),
+                  vertical: _pH(context, phone: .25, compact: .2),
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: .03)
+                      : Colors.white.withValues(alpha: .90),
+                  border: Border.all(
+                    color: onSurface.withValues(alpha: .10),
+                  ),
+                ),
+                child: child,
+              ),
+            ),
           ],
         ),
       ),
@@ -747,7 +1038,7 @@ class _ErrorBlock extends StatelessWidget {
             error,
             textAlign: TextAlign.center,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.5.sp,
+              fontSize: _pSp(context, phone: 11.5),
               color: Theme.of(context).colorScheme.error,
             ),
           ),
@@ -778,7 +1069,7 @@ class _EmptyBlock extends StatelessWidget {
           message,
           textAlign: TextAlign.center,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.8.sp,
+            fontSize: _pSp(context, phone: 11.8),
             color:
                 Theme.of(context).colorScheme.onSurface.withValues(alpha: .7),
           ),
@@ -786,4 +1077,37 @@ class _EmptyBlock extends StatelessWidget {
       ),
     );
   }
+}
+
+double _pSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
+}
+
+double _pW(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360 && compact != null) return compact.w;
+  return phone.w;
+}
+
+double _pH(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+  double min = 0,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  final value = (width <= 360 && compact != null ? compact : phone).h;
+  if (min <= 0) return value;
+  return value < min ? min : value;
 }

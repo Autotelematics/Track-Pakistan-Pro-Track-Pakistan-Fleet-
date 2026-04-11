@@ -6,6 +6,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
+import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class DistanceTravelledCard extends StatefulWidget {
@@ -89,10 +90,38 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.distanceTravelled,
-            style:
-                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+          Row(
+            children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.route_rounded,
+                  color: Colors.white,
+                  size: _dSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  context.l10n.distanceTravelled,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _dSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: 1.1.h),
           _buildStatRow(context),
@@ -170,13 +199,13 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
         children: [
           Text(
             label,
-            style:
-                AppStyles.regularTextStyle(context).copyWith(fontSize: 14.sp),
+            style: AppStyles.regularTextStyle(context)
+                .copyWith(fontSize: _dSp(context, phone: 14.0)),
           ),
           Text(
             value,
             style: AppStyles.lightTextStyle(context).copyWith(
-              fontSize: 14.sp,
+              fontSize: _dSp(context, phone: 14.0),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -201,7 +230,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
               child: Text(
                 _shortenLabel(_barLabels[index]),
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.sp,
+                  fontSize: _dSp(context, phone: 12.0),
                 ),
               ),
             );
@@ -216,7 +245,7 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
           getTitlesWidget: (value, meta) => Text(
             '${value.toInt()}',
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.sp,
+              fontSize: _dSp(context, phone: 12.0),
             ),
           ),
         ),
@@ -247,14 +276,14 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
             '${_shortenLabel(label)}\n',
             AppStyles.semiboldTextStyle(context).copyWith(
               color: Colors.white,
-              fontSize: 12.sp,
+              fontSize: _dSp(context, phone: 12.0),
             ),
             children: [
               TextSpan(
                 text: '${rod.toY.toStringAsFixed(1)} km',
                 style: AppStyles.regularTextStyle(context).copyWith(
                   color: Colors.white.withValues(alpha: 0.92),
-                  fontSize: 11.5.sp,
+                  fontSize: _dSp(context, phone: 11.5),
                 ),
               ),
             ],
@@ -304,4 +333,15 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
           ],
         ),
       );
+}
+
+double _dSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

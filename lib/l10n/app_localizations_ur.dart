@@ -33,13 +33,135 @@ class AppLocalizationsUr extends AppLocalizations {
   String get logoutConfirmation => 'کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟';
 
   @override
+  String get myAccount => 'میرا اکاؤنٹ';
+
+  @override
   String get support => 'سپورٹ';
+
+  @override
+  String get driverOptions => 'ڈرائیور آپشنز';
+
+  @override
+  String get manageDriversSubtitle =>
+      'ڈرائیور شامل کریں، اپ ڈیٹ کریں یا حذف کریں';
+
+  @override
+  String get addNewDriver => 'نیا ڈرائیور شامل کریں';
+
+  @override
+  String get createNewDriver => 'نیا ڈرائیور بنائیں';
+
+  @override
+  String get editDriverLabel => 'ڈرائیور میں ترمیم کریں';
+
+  @override
+  String get updateDriverInfo => 'ڈرائیور کی معلومات اپ ڈیٹ کریں';
+
+  @override
+  String get deleteDriverLabel => 'ڈرائیور حذف کریں';
+
+  @override
+  String get permanentDeleteDriver => 'ڈرائیور کو مستقل حذف کریں';
+
+  @override
+  String get addDriverLabel => 'ڈرائیور شامل کریں';
+
+  @override
+  String get assignDriverLabel => 'ڈرائیور اسائن کریں';
+
+  @override
+  String get driverNameLabel => 'ڈرائیور کا نام';
+
+  @override
+  String get enterDriverName => 'ڈرائیور کا نام درج کریں';
+
+  @override
+  String get rfidLabel => 'آر ایف آئی ڈی';
+
+  @override
+  String get enterDriverRfid => 'ڈرائیور کی آر ایف آئی ڈی درج کریں';
+
+  @override
+  String get selectDriverLabel => 'ڈرائیور منتخب کریں';
+
+  @override
+  String get searchAndSelectDriver => 'ڈرائیور تلاش کریں اور منتخب کریں';
+
+  @override
+  String get pleaseSelectDriver => 'براہ کرم ایک ڈرائیور منتخب کریں';
+
+  @override
+  String get driverNameRequired => 'ڈرائیور کا نام ضروری ہے';
+
+  @override
+  String get pleaseEnterValidEmail => 'براہ کرم درست ای میل درج کریں';
+
+  @override
+  String get selectDrivers => 'ڈرائیور منتخب کریں';
+
+  @override
+  String get useCheckboxToSelectDrivers =>
+      'متعدد ڈرائیور منتخب کرنے کے لیے چیک باکس استعمال کریں';
+
+  @override
+  String get searchDriverName => 'ڈرائیور کا نام تلاش کریں';
+
+  @override
+  String get noDriversFound => 'کوئی ڈرائیور نہیں ملا';
+
+  @override
+  String driversSelectedCount(Object count) {
+    return '$count ڈرائیور منتخب کیے گئے';
+  }
+
+  @override
+  String get noDriverLabel => 'کوئی ڈرائیور نہیں';
+
+  @override
+  String get pleaseSelectAtLeastOneDriver =>
+      'براہ کرم کم از کم ایک ڈرائیور منتخب کریں';
 
   @override
   String get password => 'پاس ورڈ';
 
   @override
   String get drivers => 'ڈرائیورز';
+
+  @override
+  String get addExpenseLabel => 'خرچ شامل کریں';
+
+  @override
+  String get editExpenseLabel => 'خرچ میں ترمیم کریں';
+
+  @override
+  String get selectExpenseType => 'خرچ کی قسم منتخب کریں';
+
+  @override
+  String get expenseNameHint => 'خرچ کا نام';
+
+  @override
+  String get quantityLabel => 'مقدار';
+
+  @override
+  String get unitCostLabel => 'یونٹ لاگت';
+
+  @override
+  String get supplierLabel => 'سپلائر';
+
+  @override
+  String get descriptionLabel => 'تفصیل';
+
+  @override
+  String get enterValidQuantity => 'درست مقدار درج کریں';
+
+  @override
+  String get enterValidUnitCost => 'درست یونٹ لاگت درج کریں';
+
+  @override
+  String get optionalSupplier => 'اختیاری سپلائر';
+
+  @override
+  String get optionalNotes => 'اختیاری نوٹس';
 
   @override
   String get alertSetting => 'الرٹ سیٹنگ';
@@ -67,10 +189,110 @@ class AppLocalizationsUr extends AppLocalizations {
   String get delete => 'حذف کریں';
 
   @override
+  String get loginEmail => 'لاگ اِن ای میل';
+
+  @override
+  String get phoneNumberLabel => 'فون نمبر';
+
+  @override
+  String get deviceLimit => 'ڈیوائس حد';
+
+  @override
+  String get accountExpiry => 'اکاؤنٹ کی میعاد';
+
+  @override
+  String get unlimited => 'لامحدود';
+
+  @override
   String get selectLanguage => 'زبان منتخب کریں';
 
   @override
   String get languageUpdated => 'زبان اپ ڈیٹ ہو گئی';
+
+  @override
+  String get companySupport => 'کمپنی سپورٹ';
+
+  @override
+  String get contactCompanyDetails => 'رابطہ اور کمپنی کی تفصیلات';
+
+  @override
+  String get liveChat => 'لائیو چیٹ';
+
+  @override
+  String get wereHereToHelp => 'ہم آپ کی مدد کے لیے حاضر ہیں';
+
+  @override
+  String get callLabel => 'کال';
+
+  @override
+  String get messageLabel => 'پیغام';
+
+  @override
+  String get emailLabel => 'ای میل';
+
+  @override
+  String get websiteLabel => 'ویب سائٹ';
+
+  @override
+  String get whatsAppLabel => 'واٹس ایپ';
+
+  @override
+  String get facebookLabel => 'فیس بک';
+
+  @override
+  String get instagramLabel => 'انسٹاگرام';
+
+  @override
+  String get loadingDriverDetails => 'ڈرائیور کی تفصیلات لوڈ ہو رہی ہیں...';
+
+  @override
+  String get driverContactProfileDetails =>
+      'ڈرائیور کے رابطے اور پروفائل کی تفصیلات';
+
+  @override
+  String get noDriverAssigned => 'کوئی ڈرائیور اسائن نہیں';
+
+  @override
+  String get assignDriverToVehicleToViewContactActions =>
+      'رابطے کے آپشنز دیکھنے کے لیے\nاس گاڑی کے ساتھ ایک ڈرائیور اسائن کریں';
+
+  @override
+  String get noPhoneNumber => 'فون نمبر موجود نہیں';
+
+  @override
+  String get noEmail => 'ای میل موجود نہیں';
+
+  @override
+  String get noDescriptionAvailable => 'کوئی تفصیل دستیاب نہیں';
+
+  @override
+  String get noContactInformationAvailable =>
+      'رابطے کی کوئی معلومات دستیاب نہیں';
+
+  @override
+  String get officeAddress => 'دفتر کا پتہ';
+
+  @override
+  String get exploreLabel => 'مزید دیکھیں';
+
+  @override
+  String get termsAndConditions => 'شرائط و ضوابط';
+
+  @override
+  String get legalPoliciesAndUserAgreement =>
+      'قانونی پالیسیاں اور صارف کا معاہدہ';
+
+  @override
+  String get privacyPolicyLabel => 'پرائیویسی پالیسی';
+
+  @override
+  String get howWeProtectYourData => 'ہم آپ کے ڈیٹا کی حفاظت کیسے کرتے ہیں';
+
+  @override
+  String get companyNews => 'کمپنی کی خبریں';
+
+  @override
+  String get latestUpdatesAndAnnouncements => 'تازہ ترین اپ ڈیٹس اور اعلانات';
 
   @override
   String get galleryPermissionRequired => 'گیلری کی اجازت درکار ہے';
@@ -85,11 +307,11 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String hiUser(Object email) {
-    return 'ہیلو، $email';
+    return 'السلام علیکم، $email';
   }
 
   @override
-  String get hi => 'ہیلو';
+  String get hi => 'السلام علیکم';
 
   @override
   String get statusTab => 'اسٹیٹس';
@@ -126,6 +348,18 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get reset => 'ری سیٹ';
+
+  @override
+  String get notificationFilters => 'نوٹیفکیشن فلٹرز';
+
+  @override
+  String get searchByVehicleAndType => 'گاڑی اور قسم کے مطابق تلاش کریں';
+
+  @override
+  String get searchByDateRange => 'تاریخ کے مطابق تلاش کریں';
+
+  @override
+  String get vehicleLabel => 'گاڑی';
 
   @override
   String get dashboardCustomizeHint =>
@@ -276,6 +510,85 @@ class AppLocalizationsUr extends AppLocalizations {
   String get noDescription => 'کوئی تفصیل نہیں';
 
   @override
+  String get addReminderLabel => 'یاددہانی شامل کریں';
+
+  @override
+  String get editReminderLabel => 'یاددہانی میں ترمیم کریں';
+
+  @override
+  String get selectType => 'قسم منتخب کریں';
+
+  @override
+  String get titleLabel => 'عنوان';
+
+  @override
+  String get reminderTitleHint => 'یاددہانی کا عنوان';
+
+  @override
+  String get dueDateLabel => 'واجب تاریخ';
+
+  @override
+  String get dueTimeLabel => 'واجب وقت';
+
+  @override
+  String get dateIgnoredForDailyRepeat =>
+      'روزانہ تکرار کے لیے تاریخ نظر انداز کی جاتی ہے';
+
+  @override
+  String get saveChanges => 'تبدیلیاں محفوظ کریں';
+
+  @override
+  String get reminderTitleRequired => 'یاددہانی کا عنوان ضروری ہے';
+
+  @override
+  String get pleaseSelectDueDate => 'براہ کرم واجب تاریخ منتخب کریں';
+
+  @override
+  String get pleaseSelectDueTime => 'براہ کرم واجب وقت منتخب کریں';
+
+  @override
+  String get reminderSavedSuccessfully => 'یاددہانی کامیابی سے محفوظ ہو گئی';
+
+  @override
+  String get reminderUpdatedSuccessfully => 'یاددہانی کامیابی سے اپ ڈیٹ ہو گئی';
+
+  @override
+  String get oilChange => 'آئل چینج';
+
+  @override
+  String get tireRotation => 'ٹائر روٹیشن';
+
+  @override
+  String get brakeInspection => 'بریک معائنہ';
+
+  @override
+  String get airFilterReplacement => 'ایئر فلٹر کی تبدیلی';
+
+  @override
+  String get sparkPlugsReplacement => 'اسپارک پلگز کی تبدیلی';
+
+  @override
+  String get batteryCheck => 'بیٹری چیک';
+
+  @override
+  String get charging => 'چارج ہو رہی ہے';
+
+  @override
+  String get insuranceRenewal => 'انشورنس کی تجدید';
+
+  @override
+  String get registrationRenewal => 'رجسٹریشن کی تجدید';
+
+  @override
+  String get emissionTest => 'ایمیشن ٹیسٹ';
+
+  @override
+  String get generalService => 'جنرل سروس';
+
+  @override
+  String get coolantFlush => 'کولنٹ فلش';
+
+  @override
   String get repeatOneTime => 'ایک بار';
 
   @override
@@ -289,6 +602,31 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get noTasksAvailable => 'کوئی ٹاسک دستیاب نہیں';
+
+  @override
+  String get allTasks => 'تمام ٹاسکس';
+
+  @override
+  String get addTask => 'ٹاسک شامل کریں';
+
+  @override
+  String get noTasksFound => 'کوئی ٹاسک نہیں ملا';
+
+  @override
+  String get searchTasksByTitleOrVehicle => 'عنوان یا گاڑی سے تلاش کریں';
+
+  @override
+  String showingTasksCount(Object count) {
+    return '$count ٹاسکس دکھائے جا رہے ہیں';
+  }
+
+  @override
+  String showingTasksCountOfTotal(Object count, Object total) {
+    return '$total میں سے $count ٹاسکس دکھائے جا رہے ہیں';
+  }
+
+  @override
+  String get loadMore => 'مزید لوڈ کریں';
 
   @override
   String get latestTasks => 'تازہ ترین ٹاسکس';
@@ -307,6 +645,54 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get taskFailed => 'ناکام';
+
+  @override
+  String get hasStops => 'کیا اسٹاپس ہیں';
+
+  @override
+  String get yes => 'ہاں';
+
+  @override
+  String get no => 'نہیں';
+
+  @override
+  String get routePlayback => 'روٹ پلے بیک';
+
+  @override
+  String get deleteTask => 'ٹاسک حذف کریں';
+
+  @override
+  String get deleteTaskConfirmation =>
+      'کیا آپ واقعی اس ٹاسک کو حذف کرنا چاہتے ہیں؟';
+
+  @override
+  String get assignTask => 'ٹاسک اسائن کریں';
+
+  @override
+  String recreateTaskForVehicle(Object vehicleName) {
+    return 'کیا آپ واقعی \"$vehicleName\" کے لیے یہ ٹاسک دوبارہ بنانا چاہتے ہیں؟';
+  }
+
+  @override
+  String get selectVehicleToRecreateTask =>
+      'اس ٹاسک کو دوبارہ بنانے کے لیے ایک گاڑی منتخب کریں۔';
+
+  @override
+  String get pickup => 'پک اپ';
+
+  @override
+  String get reachedAt => 'پہنچا';
+
+  @override
+  String get leftAt => 'روانہ ہوا';
+
+  @override
+  String taskStop(Object index) {
+    return 'اسٹاپ $index';
+  }
+
+  @override
+  String get delivery => 'ڈیلیوری';
 
   @override
   String get completionRate => 'تکمیل کی شرح';
@@ -328,6 +714,71 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get tasksNotCompletedWithin10Days =>
       '10 دن میں مکمل نہ ہونے والے ٹاسکس';
+
+  @override
+  String vehicleTasksTitle(Object vehicleName) {
+    return '$vehicleName ٹاسکس';
+  }
+
+  @override
+  String get successRate => 'کامیابی کی شرح';
+
+  @override
+  String get avgCompletion => 'اوسط تکمیل';
+
+  @override
+  String get createdToDeliveryLeft => 'بنانے سے ڈیلیوری روانہ ہونے تک';
+
+  @override
+  String get pickupResponse => 'پک اپ رسپانس';
+
+  @override
+  String get createdToPickupReached => 'بنانے سے پک اپ پہنچنے تک';
+
+  @override
+  String get pickupDwell => 'پک اپ قیام';
+
+  @override
+  String get pickupLeftMinusReached => 'پک اپ روانگی منفی پہنچنا';
+
+  @override
+  String get stopDwell => 'اسٹاپ قیام';
+
+  @override
+  String get averageAcrossAllStops => 'تمام اسٹاپس کا اوسط';
+
+  @override
+  String get deliveryDwell => 'ڈیلیوری قیام';
+
+  @override
+  String get deliveryLeftMinusReached => 'ڈیلیوری روانگی منفی پہنچنا';
+
+  @override
+  String get stopComplexityTrend => 'اسٹاپ پیچیدگی کا رجحان';
+
+  @override
+  String get directJobs => 'براہ راست جابز';
+
+  @override
+  String get noStops => 'کوئی اسٹاپ نہیں';
+
+  @override
+  String get multiStopJobs => 'ملٹی اسٹاپ جابز';
+
+  @override
+  String get oneOrMoreStops => 'ایک یا زیادہ اسٹاپس';
+
+  @override
+  String get recentFailedTasks => 'حالیہ ناکام ٹاسکس';
+
+  @override
+  String get noRecentFailedTasksForVehicle =>
+      'اس گاڑی کے لیے کوئی حالیہ ناکام ٹاسک نہیں';
+
+  @override
+  String taskNumber(Object id) {
+    return 'ٹاسک #$id';
+  }
 
   @override
   String get vehicleWorkloadDistribution => 'گاڑیوں کے کام کا بوجھ';
@@ -647,6 +1098,152 @@ class AppLocalizationsUr extends AppLocalizations {
   String get reportTab => 'رپورٹ';
 
   @override
+  String get formatLabel => 'فارمیٹ';
+
+  @override
+  String get speedLimitKmh => 'اسپیڈ لمٹ (کلومیٹر/گھنٹہ)';
+
+  @override
+  String get ignitionOffDurationMin => 'اگنیشن آف دورانیہ (منٹ)';
+
+  @override
+  String get stopsMinutes => 'اسٹاپس (منٹ)';
+
+  @override
+  String get geofenceIdsCommaSeparated => 'جیو فینس آئی ڈیز (کاما سے الگ)';
+
+  @override
+  String get showAddresses => 'ایڈریس دکھائیں';
+
+  @override
+  String get zonesInstead => 'اس کے بجائے زونز';
+
+  @override
+  String get noGeofencesFound => 'کوئی جیو فینس نہیں ملا';
+
+  @override
+  String get reloadGeofences => 'جیو فینس دوبارہ لوڈ کریں';
+
+  @override
+  String geofencesSelectedCount(Object count) {
+    return '$count جیو فینس منتخب ہوئے';
+  }
+
+  @override
+  String reportFieldsLabel(Object fields) {
+    return 'فیلڈز: $fields';
+  }
+
+  @override
+  String get generateLabel => 'جنریٹ کریں';
+
+  @override
+  String get pleaseSelectBothDates => 'براہ کرم دونوں تاریخیں منتخب کریں';
+
+  @override
+  String get noReportsAvailable => 'کوئی رپورٹ دستیاب نہیں';
+
+  @override
+  String get reportTypesLabel => 'رپورٹ کی اقسام';
+
+  @override
+  String get showLess => 'کم دکھائیں';
+
+  @override
+  String get moreReports => 'مزید رپورٹس';
+
+  @override
+  String get dailyTravelReport => 'ڈیلی ٹریول رپورٹ';
+
+  @override
+  String get travelSummaryWithPlaybackImage => 'ٹریول سمری بمعہ پلے بیک امیج';
+
+  @override
+  String get travelSummary => 'ٹریول سمری';
+
+  @override
+  String get stopsMoveSummary => 'اسٹاپس موو سمری';
+
+  @override
+  String get eventsReport => 'ایونٹس';
+
+  @override
+  String get alertsReport => 'الرٹس رپورٹ';
+
+  @override
+  String get tripReport => 'ٹرپ رپورٹ';
+
+  @override
+  String get playbackLabel => 'پلے بیک';
+
+  @override
+  String tripsCountLabel(Object count) {
+    return 'ٹرپس ($count)';
+  }
+
+  @override
+  String parkedCountLabel(Object count) {
+    return 'پارکڈ ($count)';
+  }
+
+  @override
+  String alertsCountLabel(Object count) {
+    return 'الرٹس ($count)';
+  }
+
+  @override
+  String get noTripsFound => 'کوئی ٹرپ نہیں ملا';
+
+  @override
+  String get noParkedIntervals => 'کوئی پارکڈ وقفہ نہیں';
+
+  @override
+  String get noHistoryAlertsFound => 'کوئی الرٹ نہیں ملا';
+
+  @override
+  String get playingRouteHighlightedGreen =>
+      'چل رہا ہے - روٹ سبز رنگ میں نمایاں ہے';
+
+  @override
+  String get pausedLabel => 'روکا گیا';
+
+  @override
+  String get totalTrips => 'کل ٹرپس';
+
+  @override
+  String get moveTime => 'موو ٹائم';
+
+  @override
+  String get fuelLtr => 'فیول (LTR)';
+
+  @override
+  String get totalSpent => 'کل خرچ';
+
+  @override
+  String get topSpeed => 'زیادہ سے زیادہ رفتار';
+
+  @override
+  String rsAmount(Object amount) {
+    return 'روپے $amount';
+  }
+
+  @override
+  String get taskPlayback => 'ٹاسک پلے بیک';
+
+  @override
+  String get currentLocation => 'موجودہ لوکیشن';
+
+  @override
+  String get currentVehicleLocationHistoryHint =>
+      'یہ گاڑی کی موجودہ لوکیشن ہے۔ ہسٹری دیکھنے کے لیے فلٹر منتخب کریں یا تاریخ کی حد دیں';
+
+  @override
+  String get loadingHistory => 'ہسٹری لوڈ ہو رہی ہے...';
+
+  @override
+  String get currentLiveLocation => 'موجودہ لائیو لوکیشن';
+
+  @override
   String get historyTab => 'ہسٹری';
 
   @override
@@ -718,6 +1315,89 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get maintenance => 'مینٹیننس';
+
+  @override
+  String get addServiceLabel => 'سروس شامل کریں';
+
+  @override
+  String get enterServiceName => 'سروس کا نام درج کریں';
+
+  @override
+  String get expirationByLabel => 'اختتام کی بنیاد';
+
+  @override
+  String get selectExpirationType => 'اختتام کی قسم منتخب کریں';
+
+  @override
+  String get enterInterval => 'وقفہ درج کریں';
+
+  @override
+  String get enterLastValueDate => 'آخری ویلیو/تاریخ درج کریں';
+
+  @override
+  String get triggerEventWhenLeftLabel => 'باقی رہنے پر ایونٹ چلائیں';
+
+  @override
+  String get triggerEventWhenLeftHint => 'مثلاً 1000 کلومیٹر';
+
+  @override
+  String get renewAfterExpirationLabel => 'اختتام کے بعد تجدید کریں';
+
+  @override
+  String get odometerLabel => 'اوڈومیٹر';
+
+  @override
+  String get engineHoursLabel => 'انجن آورز';
+
+  @override
+  String get notificationEmailHint => 'notification@email.com';
+
+  @override
+  String get dateLabel => 'تاریخ';
+
+  @override
+  String get searchVehicleByName => 'نام سے گاڑی تلاش کریں';
+
+  @override
+  String get noVehiclesFoundForSearch => 'کوئی گاڑی نہیں ملی';
+
+  @override
+  String get defaultMapStyle => 'ڈیفالٹ';
+
+  @override
+  String get satelliteMapStyle => 'سیٹلائٹ';
+
+  @override
+  String get loadingDevices => 'ڈیوائسز لوڈ ہو رہی ہیں...';
+
+  @override
+  String get noDevicesFound => 'کوئی ڈیوائس نہیں ملی۔';
+
+  @override
+  String get noVehiclesFound => 'کوئی گاڑی نہیں ملی۔';
+
+  @override
+  String noVehiclesFoundForStatus(Object status) {
+    return '$status گاڑیاں نہیں ملیں۔';
+  }
+
+  @override
+  String updatedSecondsAgo(Object seconds) {
+    return 'اپ ڈیٹ • $seconds سیکنڈ پہلے';
+  }
+
+  @override
+  String speedKmhValue(Object speed) {
+    return 'رفتار: $speed کلومیٹر/گھنٹہ';
+  }
+
+  @override
+  String updateValue(Object value) {
+    return 'اپ ڈیٹ: $value';
+  }
+
+  @override
+  String get openDetails => 'تفصیلات کھولیں';
 
   @override
   String get expenses => 'اخراجات';

@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+
+const String notificationPresetToday = 'Today';
+const String notificationPresetYesterday = 'Yesterday';
+const String notificationPresetLast7Days = '7 Days';
+const String notificationPresetLast30Days = '30 Days';
 
 class SearchAndFilterBar extends StatefulWidget {
   final List<String> alertTypes;
@@ -76,6 +82,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final isDark = theme.brightness == Brightness.dark;
     final backgroundColor = isDark
         ? Colors.grey.shade900.withValues(alpha: 0.9)
@@ -124,7 +131,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                   ),
                   horizontalSpace(width: 1.6.w),
                   Text(
-                    'Notification Filters',
+                    l10n.notificationFilters,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       fontSize: 14.sp,
                       color: Colors.white.withValues(alpha: .96),
@@ -156,7 +163,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                             ),
                             horizontalSpace(width: .7.w),
                             Text(
-                              'Reset',
+                              l10n.reset,
                               style:
                                   AppStyles.semiboldTextStyle(context).copyWith(
                                 fontSize: 13.5.sp,
@@ -183,7 +190,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                       verticalSpace(height: 1.1.h),
                       if (widget.compactMode) verticalSpace(height: .2.h),
                       Text(
-                        'Search By Vehicle And Type',
+                        l10n.searchByVehicleAndType,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 12.sp,
                           color: Colors.white.withValues(alpha: .82),
@@ -194,7 +201,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                         children: [
                           Expanded(
                             child: _DropdownBox(
-                              hint: "Vehicle",
+                              hint: l10n.vehicleLabel,
                               items: widget.vehicles,
                               selectedValue: widget.selectedVehicle,
                               icon: Icons.directions_car_rounded,
@@ -206,7 +213,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                           SizedBox(width: 1.8.w),
                           Expanded(
                             child: _DropdownBoxWithCount(
-                              hint: "Type",
+                              hint: l10n.typeLabel,
                               items: widget.alertTypes,
                               counts: widget.alertCounts,
                               selectedValue: widget.selectedAlertType,
@@ -220,7 +227,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                       ),
                       verticalSpace(height: widget.compactMode ? .75.h : 1.0.h),
                       Text(
-                        'Search By Date Range',
+                        l10n.searchByDateRange,
                         style: AppStyles.regularTextStyle(context).copyWith(
                           fontSize: 12.sp,
                           color: Colors.white.withValues(alpha: .82),
@@ -283,11 +290,23 @@ class _QuickFilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
       onSelected: (value) => onPresetSelected?.call(value),
-      itemBuilder: (context) => const [
-        PopupMenuItem<String>(value: 'Today', child: Text('Today')),
-        PopupMenuItem<String>(value: 'Yesterday', child: Text('Yesterday')),
-        PopupMenuItem<String>(value: '7 Days', child: Text('7 Days')),
-        PopupMenuItem<String>(value: '30 Days', child: Text('30 Days')),
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: notificationPresetToday,
+          child: Text(context.l10n.today),
+        ),
+        PopupMenuItem<String>(
+          value: notificationPresetYesterday,
+          child: Text(context.l10n.yesterday),
+        ),
+        PopupMenuItem<String>(
+          value: notificationPresetLast7Days,
+          child: Text(context.l10n.last7Days),
+        ),
+        PopupMenuItem<String>(
+          value: notificationPresetLast30Days,
+          child: Text(context.l10n.last30Days),
+        ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.px)),
       child: Container(
@@ -521,6 +540,7 @@ class _DropdownBoxWithCount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final allLabel = context.l10n.vehicleStatusAll;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -568,7 +588,8 @@ class _DropdownBoxWithCount extends StatelessWidget {
                           TextSpan(
                             text: " (${counts[item] ?? 0})",
                             style: AppStyles.lightTextStyle(context).copyWith(
-                              color: item == 'All' ? Colors.blue : Colors.green,
+                              color:
+                                  item == allLabel ? Colors.blue : Colors.green,
                               fontSize: 14.sp,
                             ),
                           ),
@@ -595,7 +616,8 @@ class _DropdownBoxWithCount extends StatelessWidget {
                         TextSpan(
                           text: " (${counts[item] ?? 0})",
                           style: AppStyles.lightTextStyle(context).copyWith(
-                            color: item == 'All' ? Colors.blue : Colors.green,
+                            color:
+                                item == allLabel ? Colors.blue : Colors.green,
                             fontSize: 14.sp,
                           ),
                         ),

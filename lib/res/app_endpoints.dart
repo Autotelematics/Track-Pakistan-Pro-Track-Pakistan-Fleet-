@@ -29,12 +29,14 @@ class AppUrl {
       "/change_active_geofence?user_api_hash=";
   static String addDriverUserEp = "/add_user_driver?user_api_hash=";
   static String editDriverUserEp = "/edit_user_driver?user_api_hash=";
+  static String deleteDriverUserEp = "/destroy_user_driver?user_api_hash=";
   static String getDriverUserEp = "/get_user_drivers?user_api_hash=";
   static String addDeviceToDriverEp = "/Adddevicetodriver?user_api_hash=";
   static String setDeviceDriverEp = "/set_device_driver?user_api_hash=";
   static String getVehicleDriverEp = "/get_vehicle_driver?user_api_hash=";
   static String getDeviceCommandsEp = "/get_device_commands?user_api_hash=";
   static String sendDeviceCommandsEp = "/send_gprs_command?user_api_hash=";
+  static String getCompanyDetailsEp = "/get_company_details?user_api_hash=";
   static String updateDeviceDataEp = "/device/update-data";
   static String deviceExpensesListEp = "/device-expenses/list";
   static String deviceExpensesCreateEp = "/device-expenses/create";

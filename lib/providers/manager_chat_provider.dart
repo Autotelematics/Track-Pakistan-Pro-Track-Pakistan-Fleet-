@@ -1,23 +1,26 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/data/models/manager_chat_model.dart';
-import 'package:trackerapp/data/repositories/fcm_token_repository.dart';
 import 'package:trackerapp/data/repositories/manager_chat_repository.dart';
-import 'package:trackerapp/main.dart';
+import 'package:trackerapp/data/repositories/vehicle_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
-import 'package:trackerapp/utils/local_notification_service.dart';
-import 'package:trackerapp/utils/shared_preference.dart';
-import 'package:trackerapp/view/auth_screens/login_screen.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 
 class ManagerChatProvider extends ChangeNotifier {
   final ManagerChatRepository _repository = ManagerChatRepository();
+  final VehicleRepository _vehicleRepository = VehicleRepository();
   final int? linkedDeviceId;
   final String? linkedDeviceName;
 
   bool _isInitializing = false;
   bool _isLoadingMessages = false;
   bool _isSending = false;
+  bool _isSendingLocation = false;
+  bool _isSendingPreAlert = false;
   bool _isStartingChat = false;
   String? _errorMessage;
   ManagerChatThread? _thread;
@@ -28,6 +31,8 @@ class ManagerChatProvider extends ChangeNotifier {
   bool get isInitializing => _isInitializing;
   bool get isLoadingMessages => _isLoadingMessages;
   bool get isSending => _isSending;
+  bool get isSendingLocation => _isSendingLocation;
+  bool get isSendingPreAlert => _isSendingPreAlert;
   bool get isStartingChat => _isStartingChat;
   String? get errorMessage => _errorMessage;
   ManagerChatThread? get thread => _thread;
@@ -128,7 +133,10 @@ class ManagerChatProvider extends ChangeNotifier {
       if (_thread == null || _thread!.id != threadId) return;
       _thread = _thread!.copyWithUnreadCount();
     } catch (e) {
-      await _handleThreadError(e);
+      await _handleThreadError(
+        e,
+        notify: !silent,
+      );
     } finally {
       if (!_isDisposed && !silent) {
         _isLoadingMessages = false;
@@ -181,6 +189,129 @@ class ManagerChatProvider extends ChangeNotifier {
     }
   }
 
+  Future<List<Item>> fetchDeviceOptions() async {
+    final data = await _vehicleRepository.fetchVehicleData();
+    final items = data?.items ?? <Item>[];
+    return items.where((item) => item.id != null).toList();
+  }
+
+  Future<bool> sendLocationAttachment({
+    required int deviceId,
+    required String deviceName,
+    required double lat,
+    required double lng,
+  }) async {
+    if (_isSendingLocation) return false;
+    _isSendingLocation = true;
+    _notifySafely();
+
+    final payload = ManagerChatSendPayload(
+      message: 'Shared location for ${deviceName.trim().isEmpty ? "selected vehicle" : deviceName.trim()}',
+      deviceId: deviceId,
+      subject: 'Location Share',
+      category: hasLinkedVehicle ? 'Complaint' : 'Support',
+      attachment: <String, dynamic>{
+        'type': 'location',
+        'location': <String, dynamic>{
+          'lat': lat,
+          'lng': lng,
+          'device_id': deviceId,
+        },
+      },
+    );
+
+    try {
+      _thread ??= await _repository.createThread(
+        payload: ManagerChatCreatePayload(
+          subject: hasLinkedVehicle ? 'Complaint' : 'Support Chat',
+          category: hasLinkedVehicle ? 'Complaint' : 'Support',
+          deviceId: hasLinkedVehicle ? linkedDeviceId : deviceId,
+        ),
+      );
+      if (_isDisposed || _thread == null) return false;
+
+      await _repository.sendMessage(
+        threadId: _thread!.id,
+        payload: payload,
+      );
+      if (_isDisposed) return false;
+      await refreshMessages(silent: true);
+      if (_isDisposed) return false;
+      startPolling();
+      AppSnackBar.success(message: 'Location sent successfully');
+      return true;
+    } catch (e) {
+      await _handleThreadError(e);
+      return false;
+    } finally {
+      if (!_isDisposed) {
+        _isSendingLocation = false;
+        _notifySafely();
+      }
+    }
+  }
+
+  Future<bool> sendPreAlertAttachment({
+    required int deviceId,
+    required DateTime fromDate,
+    required DateTime toDate,
+    required String userMessage,
+  }) async {
+    if (_isSendingPreAlert) return false;
+    _isSendingPreAlert = true;
+    _notifySafely();
+
+    final dateFormat = DateTime(fromDate.year, fromDate.month, fromDate.day);
+    final toDateFormat = DateTime(toDate.year, toDate.month, toDate.day);
+    final from = '${dateFormat.year.toString().padLeft(4, '0')}-${dateFormat.month.toString().padLeft(2, '0')}-${dateFormat.day.toString().padLeft(2, '0')}';
+    final to = '${toDateFormat.year.toString().padLeft(4, '0')}-${toDateFormat.month.toString().padLeft(2, '0')}-${toDateFormat.day.toString().padLeft(2, '0')}';
+
+    final payload = ManagerChatSendPayload(
+      message: 'Pre alert for vehicle',
+      deviceId: deviceId,
+      subject: 'Pre Alert',
+      attachment: <String, dynamic>{
+        'type': 'pre_alert',
+        'pre_alert': <String, dynamic>{
+          'device_id': deviceId,
+          'from_date': from,
+          'to_date': to,
+          'message': userMessage.trim(),
+        },
+      },
+    );
+
+    try {
+      _thread ??= await _repository.createThread(
+        payload: ManagerChatCreatePayload(
+          subject: hasLinkedVehicle ? 'Complaint' : 'Support Chat',
+          category: hasLinkedVehicle ? 'Complaint' : 'Support',
+          deviceId: hasLinkedVehicle ? linkedDeviceId : deviceId,
+        ),
+      );
+      if (_isDisposed || _thread == null) return false;
+
+      await _repository.sendMessage(
+        threadId: _thread!.id,
+        payload: payload,
+      );
+      if (_isDisposed) return false;
+      await refreshMessages(silent: true);
+      if (_isDisposed) return false;
+      startPolling();
+      AppSnackBar.success(message: 'Pre alert sent successfully');
+      return true;
+    } catch (e) {
+      await _handleThreadError(e);
+      return false;
+    } finally {
+      if (!_isDisposed) {
+        _isSendingPreAlert = false;
+        _notifySafely();
+      }
+    }
+  }
+
   void startPolling() {
     _pollTimer?.cancel();
     if (_thread == null) return;
@@ -201,7 +332,10 @@ class ManagerChatProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleThreadError(Object error) async {
+  Future<void> _handleThreadError(
+    Object error, {
+    bool notify = true,
+  }) async {
     if (error is ManagerChatApiException && error.statusCode == 404) {
       try {
         await _fetchThread();
@@ -216,7 +350,10 @@ class ManagerChatProvider extends ChangeNotifier {
         }
       } catch (_) {}
     }
-    await _handleError(error);
+    await _handleError(
+      error,
+      notify: notify,
+    );
   }
 
   Future<void> _handleError(
@@ -224,14 +361,17 @@ class ManagerChatProvider extends ChangeNotifier {
     bool notify = true,
   }) async {
     final message = _normalizeError(error);
-    _errorMessage = message;
-    if (notify) _notifySafely();
+    if (notify) {
+      _errorMessage = message;
+      _notifySafely();
+    }
 
     if (_isDisposed) return;
 
     if (error is ManagerChatApiException && error.statusCode == 401) {
-      AppSnackBar.error(message: 'Session expired. Please login again.');
-      await _forceLogout();
+      await SessionGuard.forceLogout(
+        message: 'Session expired. Please login again.',
+      );
       return;
     }
 
@@ -244,29 +384,30 @@ class ManagerChatProvider extends ChangeNotifier {
     if (error is ManagerChatApiException) {
       return error.message;
     }
+    if (error is SocketException) {
+      return 'Network unavailable. Please check your internet connection.';
+    }
+    if (error is TimeoutException) {
+      return 'Request timed out. Please try again.';
+    }
+    if (error is http.ClientException) {
+      final msg = error.message.toLowerCase();
+      if (msg.contains('failed host lookup') || msg.contains('socketexception')) {
+        return 'Network unavailable. Please check your internet connection.';
+      }
+      return 'Unable to connect to server. Please try again.';
+    }
     final raw = error.toString().trim();
+    final lowerRaw = raw.toLowerCase();
+    if (lowerRaw.contains('failed host lookup') ||
+        lowerRaw.contains('socketexception')) {
+      return 'Network unavailable. Please check your internet connection.';
+    }
     if (raw.startsWith('Exception:')) {
       return raw.replaceFirst('Exception:', '').trim();
     }
     return raw.isEmpty ? 'Request failed' : raw;
   }
-
-  Future<void> _forceLogout() async {
-    try {
-      await LocalNotificationService.instance.cancelAllReminderNotifications();
-      await FcmTokenRepository().deleteLatestTokenForCurrentUser();
-    } catch (_) {}
-
-    await MySharedPreferences.logout();
-    final navigator = rootNavigatorKey.currentState;
-    final navContext = rootNavigatorKey.currentContext;
-    if (navigator == null || navContext == null) return;
-    navigator.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
-  }
-
   @override
   void dispose() {
     _isDisposed = true;

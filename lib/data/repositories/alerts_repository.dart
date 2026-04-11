@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 
 class AlertsRepository {
   final String _baseUrl = AppUrl.baseURL;
@@ -18,6 +19,10 @@ class AlertsRepository {
     String? to,
   }) async {
     try {
+      if (userApiHashKey.trim().isEmpty) {
+        throw const SessionExpiredException();
+      }
+
       final query = <String, String>{
         'user_api_hash': userApiHashKey,
         'page': '$page',
@@ -58,7 +63,24 @@ class AlertsRepository {
         return GetAlertsModel.fromJson(jsonData);
       }
 
+      final decoded =
+          json.decode(response.body) as Map<String, dynamic>? ?? <String, dynamic>{};
+      final message = (decoded['message'] ?? decoded['error'] ?? '')
+          .toString()
+          .trim();
+      if (response.statusCode == 401 ||
+          response.statusCode == 403 ||
+          SessionGuard.looksLikeSessionExpiredMessage(message)) {
+        throw SessionExpiredException(
+          message.isEmpty
+              ? 'Session expired. Please login again.'
+              : message,
+        );
+      }
+
       return null;
+    } on SessionExpiredException {
+      rethrow;
     } catch (e) {
       log('ERROR GETTING ALERTS: $e');
       return null;
@@ -71,6 +93,10 @@ class AlertsRepository {
     required String userApiHashKey,
   }) async {
     try {
+      if (userApiHashKey.trim().isEmpty) {
+        throw const SessionExpiredException();
+      }
+
       final uri = Uri.parse('$_baseUrl/get_alert_list').replace(
         queryParameters: <String, String>{
           'user_api_hash': userApiHashKey,
@@ -92,13 +118,31 @@ class AlertsRepository {
       log('GET ALERT BY ID STATUS CODE: ${response.statusCode}');
       log('GET ALERT BY ID RESPONSE BODY: ${response.body}');
 
-      if (response.statusCode != 200) return null;
+      if (response.statusCode != 200) {
+        final decoded =
+            json.decode(response.body) as Map<String, dynamic>? ?? <String, dynamic>{};
+        final message = (decoded['message'] ?? decoded['error'] ?? '')
+            .toString()
+            .trim();
+        if (response.statusCode == 401 ||
+            response.statusCode == 403 ||
+            SessionGuard.looksLikeSessionExpiredMessage(message)) {
+          throw SessionExpiredException(
+            message.isEmpty
+                ? 'Session expired. Please login again.'
+                : message,
+          );
+        }
+        return null;
+      }
 
       final decoded = json.decode(response.body);
       if (decoded is Map<String, dynamic>) {
         return _extractItemFromMap(decoded);
       }
       return null;
+    } on SessionExpiredException {
+      rethrow;
     } catch (e) {
       log('ERROR GETTING ALERT BY ID: $e');
       return null;
@@ -141,6 +185,10 @@ class AlertsRepository {
     required String userApiHashKey,
   }) async {
     try {
+      if (userApiHashKey.trim().isEmpty) {
+        throw const SessionExpiredException();
+      }
+
       final ids = alertIds.join(',');
       final endpointPath = AppUrl.deleteEp.split('?').first;
       final uri = Uri.parse('$_baseUrl$endpointPath').replace(
@@ -167,7 +215,24 @@ class AlertsRepository {
         return data['status'] == 1 || data['success'] == true;
       }
 
+      final decoded =
+          json.decode(response.body) as Map<String, dynamic>? ?? <String, dynamic>{};
+      final message = (decoded['message'] ?? decoded['error'] ?? '')
+          .toString()
+          .trim();
+      if (response.statusCode == 401 ||
+          response.statusCode == 403 ||
+          SessionGuard.looksLikeSessionExpiredMessage(message)) {
+        throw SessionExpiredException(
+          message.isEmpty
+              ? 'Session expired. Please login again.'
+              : message,
+        );
+      }
+
       return false;
+    } on SessionExpiredException {
+      rethrow;
     } catch (e) {
       log('ERROR DELETING ALERTS: $e');
       return false;

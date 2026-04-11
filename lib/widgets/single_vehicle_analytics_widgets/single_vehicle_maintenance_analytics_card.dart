@@ -188,10 +188,23 @@ class _SingleVehicleMaintenanceAnalyticsCardState
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.05.h),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF101A2A) : Colors.white,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? <Color>[
+                        const Color(0xFF101A2A).withValues(alpha: .98),
+                        const Color(0xFF101A2A).withValues(alpha: .90),
+                      ]
+                    : <Color>[
+                        Colors.white,
+                        const Color(0xFFF6FBFF),
+                      ],
+              ),
               borderRadius: BorderRadius.circular(14.sp),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black12,
+                color: const Color(0xFF0EA5E9)
+                    .withValues(alpha: isDark ? .24 : .14),
               ),
               boxShadow: [
                 BoxShadow(
@@ -206,11 +219,32 @@ class _SingleVehicleMaintenanceAnalyticsCardState
               children: [
                 Row(
                   children: [
+                    Container(
+                      width: 5.8.w,
+                      height: 5.8.w,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: <Color>[
+                            Color(0xFF22D3EE),
+                            Color(0xFF0284C7),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Icon(
+                        Icons.build_circle_rounded,
+                        color: Colors.white,
+                        size: _svmSp(context, phone: 15.0),
+                      ),
+                    ),
+                    horizontalSpace(width: 2.w),
                     Expanded(
                       child: Text(
                         l10n.maintenanceAnalytics,
-                        style: AppStyles.boldTextStyle(context)
-                            .copyWith(fontSize: 14.6.sp),
+                        style: AppStyles.boldTextStyle(context).copyWith(
+                          fontSize: _svmSp(context, phone: 12.8),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -412,8 +446,8 @@ class _SingleVehicleMaintenanceAnalyticsCardState
         children: [
           Text(
             error,
-            style:
-                AppStyles.regularTextStyle(context).copyWith(fontSize: 12.8.sp),
+            style: AppStyles.regularTextStyle(context)
+                .copyWith(fontSize: _svmSp(context, phone: 12.8)),
             textAlign: TextAlign.center,
           ),
           verticalSpace(height: .6.h),
@@ -449,7 +483,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
           Text(
             title,
             style: AppStyles.semiboldTextStyle(context)
-                .copyWith(fontSize: 12.4.sp),
+                .copyWith(fontSize: _svmSp(context, phone: 12.4)),
           ),
           verticalSpace(height: .45.h),
           child,
@@ -478,14 +512,15 @@ class _SingleVehicleMaintenanceAnalyticsCardState
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.4.sp,
+              fontSize: _svmSp(context, phone: 12.4),
               fontWeight: FontWeight.w600,
             ),
           ),
           verticalSpace(height: .15.h),
           Text(
             value,
-            style: AppStyles.boldTextStyle(context).copyWith(fontSize: 15.sp),
+            style: AppStyles.boldTextStyle(context)
+                .copyWith(fontSize: _svmSp(context, phone: 15.0)),
           ),
           verticalSpace(height: .1.h),
           Text(
@@ -493,7 +528,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.5.sp,
+              fontSize: _svmSp(context, phone: 11.5),
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
@@ -530,7 +565,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 11.8.sp,
+                fontSize: _svmSp(context, phone: 11.8),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -538,7 +573,7 @@ class _SingleVehicleMaintenanceAnalyticsCardState
             Text(
               value,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 12.6.sp,
+                fontSize: _svmSp(context, phone: 12.6),
               ),
             ),
           ],
@@ -582,13 +617,13 @@ class _SingleVehicleMaintenanceAnalyticsCardState
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 11.8.sp),
+                  .copyWith(fontSize: _svmSp(context, phone: 11.8)),
             ),
             verticalSpace(height: .15.h),
             Text(
               '$value ($percent%)',
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 10.6.sp,
+                fontSize: _svmSp(context, phone: 10.6),
                 fontWeight: FontWeight.w700,
                 color: onSurface.withValues(alpha: .88),
               ),
@@ -617,7 +652,8 @@ class _SingleVehicleMaintenanceAnalyticsCardState
     if (rows.isEmpty) {
       return Text(
         emptyTitle,
-        style: AppStyles.regularTextStyle(context).copyWith(fontSize: 11.4.sp),
+        style: AppStyles.regularTextStyle(context)
+            .copyWith(fontSize: _svmSp(context, phone: 11.4)),
       );
     }
     return Column(
@@ -633,14 +669,14 @@ class _SingleVehicleMaintenanceAnalyticsCardState
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyles.regularTextStyle(context)
-                          .copyWith(fontSize: 11.4.sp),
+                          .copyWith(fontSize: _svmSp(context, phone: 11.4)),
                     ),
                   ),
                   horizontalSpace(width: 2.w),
                   Text(
                     e.$2,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 11.2.sp,
+                      fontSize: _svmSp(context, phone: 11.2),
                       color: e.$3
                           ? const Color(0xFFDC2626)
                           : Theme.of(context).colorScheme.onSurface,
@@ -856,6 +892,17 @@ class _SingleVehicleMaintenanceAnalyticsCardState
       },
     );
   }
+}
+
+double _svmSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }
 
 class _MaintenanceEntry {

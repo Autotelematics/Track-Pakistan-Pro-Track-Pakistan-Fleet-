@@ -47,11 +47,33 @@ class OfflineOver24hCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.wifi_off_rounded,
+                  color: Colors.white,
+                  size: _oSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
               Expanded(
                 child: Text(
                   context.l10n.offlineOver24Hours,
-                  style: AppStyles.semiboldTextStyle(context)
-                      .copyWith(fontSize: 15.sp),
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _oSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
                 ),
               ),
               IconButton(
@@ -109,8 +131,8 @@ class OfflineOver24hCard extends StatelessWidget {
                           height: 3.3.h,
                           width: 3.3.h,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF16A34A)
-                                .withValues(alpha: 0.12),
+                            color:
+                                const Color(0xFF16A34A).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -124,7 +146,7 @@ class OfflineOver24hCard extends StatelessWidget {
                           child: Text(
                             context.l10n.noVehiclesOffline24h,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 13.sp,
+                              fontSize: _oSp(context, phone: 13.0),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -162,9 +184,9 @@ class OfflineOver24hCard extends StatelessWidget {
                                   horizontal: 1.2.w, vertical: .2.h),
                               child: Text(
                                 "+${total - shown.length} more",
-                                style:
-                                    AppStyles.regularTextStyle(context).copyWith(
-                                  fontSize: 11.8.sp,
+                                style: AppStyles.regularTextStyle(context)
+                                    .copyWith(
+                                  fontSize: _oSp(context, phone: 11.8),
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF0284C7),
                                 ),
@@ -211,16 +233,16 @@ class OfflineOver24hCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 13.4.sp,
-                  fontWeight: FontWeight.w700,
+                  fontSize: _oSp(context, phone: 13.5),
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               verticalSpace(height: .15.h),
               Text(
                 "Offline since ${_formatDuration(vehicle.duration)}",
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 11.5.sp,
-                  color: onSurface.withValues(alpha: 0.68),
+                  fontSize: _oSp(context, phone: 11.7),
+                  color: onSurface.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -275,21 +297,41 @@ class OfflineOver24hCard extends StatelessWidget {
   }
 
   void _showAllVehiclesSheet(BuildContext context) {
-    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final isDark = theme.brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(4.w, 1.2.h, 4.w, 1.5.h),
-            child: SizedBox(
-              height: 65.h,
+        return Container(
+          width: double.infinity,
+          constraints: BoxConstraints(minHeight: 74.h, maxHeight: 74.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? <Color>[
+                      theme.cardColor.withValues(alpha: .98),
+                      theme.cardColor.withValues(alpha: .93),
+                    ]
+                  : <Color>[
+                      Colors.white,
+                      const Color(0xFFF7FBFF),
+                    ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(
+              color:
+                  const Color(0xFF0EA5E9).withValues(alpha: isDark ? .24 : .14),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(4.w, 1.2.h, 4.w, 1.5.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -299,28 +341,131 @@ class OfflineOver24hCard extends StatelessWidget {
                       height: .5.h,
                       margin: EdgeInsets.only(bottom: 1.2.h),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: .35),
+                        color: onSurface.withValues(alpha: .24),
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                   ),
-                  Text(
-                    context.l10n.offlineOver24HoursWithCount(vehicles.length),
-                    style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 15.sp,
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .8.h),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? <Color>[
+                                Colors.white.withValues(alpha: .08),
+                                Colors.white.withValues(alpha: .04),
+                              ]
+                            : <Color>[
+                                const Color(0xFFF2F8FF),
+                                Colors.white,
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: onSurface.withValues(alpha: .10),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 6.2.w,
+                          height: 6.2.w,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: <Color>[
+                                Color(0xFF22D3EE),
+                                Color(0xFF0284C7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.wifi_off_rounded,
+                            size: 11.2.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                        horizontalSpace(width: 2.w),
+                        Expanded(
+                          child: Text(
+                            context.l10n.offlineOver24Hours,
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 14.0.sp,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 2.0.w,
+                            vertical: .32.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: const Color(0xFF7DD3FC),
+                            ),
+                          ),
+                          child: Text(
+                            '${vehicles.length}',
+                            style:
+                                AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 11.2.sp,
+                              color: const Color(0xFF075985),
+                            ),
+                          ),
+                        ),
+                        horizontalSpace(width: 1.2.w),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(999),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            padding: EdgeInsets.all(1.4.w),
+                            decoration: BoxDecoration(
+                              color: onSurface.withValues(alpha: .08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 10.5.sp,
+                              color: onSurface.withValues(alpha: .75),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   verticalSpace(height: 1.0.h),
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: vehicles.length,
-                      separatorBuilder: (_, __) => Divider(
-                        height: 1.5.h,
-                        color: onSurface.withValues(alpha: 0.12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 1.4.w, vertical: .25.h),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: .03)
+                            : Colors.white.withValues(alpha: .90),
+                        border: Border.all(
+                          color: onSurface.withValues(alpha: .10),
+                        ),
                       ),
-                      itemBuilder: (_, index) => _vehicleRow(
-                        context,
-                        vehicles[index],
+                      child: ListView.separated(
+                        itemCount: vehicles.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1.5.h,
+                          color: onSurface.withValues(alpha: 0.12),
+                        ),
+                        itemBuilder: (_, index) => _vehicleRow(
+                          context,
+                          vehicles[index],
+                        ),
                       ),
                     ),
                   ),
@@ -332,4 +477,15 @@ class OfflineOver24hCard extends StatelessWidget {
       },
     );
   }
+}
+
+double _oSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

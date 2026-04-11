@@ -18,6 +18,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isCompactPhone = MediaQuery.sizeOf(context).width <= 360;
 
     final entries = data.maintenance.map(_MaintenanceEntry.fromItem).toList();
     final total = entries.length;
@@ -109,18 +110,38 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
         .toList();
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
-      margin: EdgeInsets.symmetric(horizontal: 5.w),
+      padding: EdgeInsets.symmetric(
+        vertical: _mH(context, phone: 1.2, compact: 1.0),
+        horizontal: _mW(context, phone: 3.5, compact: 3.0),
+      ),
+      margin: EdgeInsets.symmetric(
+        horizontal: _mW(context, phone: 5.0, compact: 4.0),
+      ),
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? <Color>[
+                  theme.cardColor.withValues(alpha: .98),
+                  theme.cardColor.withValues(alpha: .92),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFF6FBFF),
+                ],
+        ),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF0EA5E9).withValues(alpha: isDark ? .24 : .14),
+        ),
         boxShadow: [
           BoxShadow(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.55)
-                : Colors.black.withValues(alpha: 0.12),
-            blurRadius: isDark ? 14 : 10,
-            offset: const Offset(0, 4),
+                : const Color(0xFF0284C7).withValues(alpha: 0.10),
+            blurRadius: isDark ? 16 : 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -129,11 +150,36 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              Container(
+                width: _mW(context, phone: 5.8, compact: 6.6),
+                height: _mW(context, phone: 5.8, compact: 6.6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.build_circle_rounded,
+                  color: Colors.white,
+                  size: _mSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
               Expanded(
                 child: Text(
                   context.l10n.maintenanceAnalytics,
-                  style: AppStyles.semiboldTextStyle(context)
-                      .copyWith(fontSize: 15.sp),
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _mSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: .92),
+                  ),
                 ),
               ),
               IconButton(
@@ -166,88 +212,152 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
               ),
             ],
           ),
-          verticalSpace(height: 0.h),
-          Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _kpiTile(
-                      context,
-                      title: context.l10n.healthScore,
-                      value: '${healthPct.toStringAsFixed(1)}%',
-                      subtitle: '${ok.length}/$total in healthy state',
-                      color: const Color(0xFF16A34A),
-                    ),
-                  ),
-                  horizontalSpace(width: 2.w),
-                  Expanded(
-                    child: _kpiTile(
-                      context,
-                      title: context.l10n.dueSoon,
-                      value: due.toString(),
-                      subtitle: context.l10n.overdueCountLabel(overdue.length),
-                      color: const Color(0xFFF59E0B),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          verticalSpace(height: 1.h),
-          _innerCard(
-            context,
-            title: context.l10n.dueSoonWindows,
-            child: Row(
+          verticalSpace(height: .2.h),
+          if (isCompactPhone) ...[
+            _kpiTile(
+              context,
+              title: context.l10n.healthScore,
+              value: '${healthPct.toStringAsFixed(1)}%',
+              subtitle: '${ok.length}/$total in healthy state',
+              color: const Color(0xFF16A34A),
+            ),
+            verticalSpace(height: .7.h),
+            _kpiTile(
+              context,
+              title: context.l10n.dueSoon,
+              value: due.toString(),
+              subtitle: context.l10n.overdueCountLabel(overdue.length),
+              color: const Color(0xFFF59E0B),
+            ),
+          ] else
+            Row(
               children: [
                 Expanded(
-                  child: _chip(
+                  child: _kpiTile(
                     context,
-                    '7 days',
-                    '$due7',
-                    const Color(0xFFF59E0B),
-                    onTap: () => _showDueSoonWindowSheet(
-                      context,
-                      title: 'Due in Next 7 Days',
-                      rows: _dueSoonRows(entries, 7),
-                    ),
+                    title: context.l10n.healthScore,
+                    value: '${healthPct.toStringAsFixed(1)}%',
+                    subtitle: '${ok.length}/$total in healthy state',
+                    color: const Color(0xFF16A34A),
                   ),
                 ),
                 horizontalSpace(width: 2.w),
                 Expanded(
-                  child: _chip(
+                  child: _kpiTile(
                     context,
-                    '14 days',
-                    '$due14',
-                    const Color(0xFFD97706),
-                    onTap: () => _showDueSoonWindowSheet(
-                      context,
-                      title: 'Due in Next 14 Days',
-                      rows: _dueSoonRows(entries, 14),
-                    ),
-                  ),
-                ),
-                horizontalSpace(width: 2.w),
-                Expanded(
-                  child: _chip(
-                    context,
-                    '30 days',
-                    '$due30',
-                    const Color(0xFFB45309),
-                    onTap: () => _showDueSoonWindowSheet(
-                      context,
-                      title: 'Due in Next 30 Days',
-                      rows: _dueSoonRows(entries, 30),
-                    ),
+                    title: context.l10n.dueSoon,
+                    value: due.toString(),
+                    subtitle: context.l10n.overdueCountLabel(overdue.length),
+                    color: const Color(0xFFF59E0B),
                   ),
                 ),
               ],
             ),
+          verticalSpace(height: 1.h),
+          _innerCard(
+            context,
+            title: context.l10n.dueSoonWindows,
+            icon: Icons.date_range_rounded,
+            child: isCompactPhone
+                ? Wrap(
+                    spacing: 2.w,
+                    runSpacing: .6.h,
+                    children: [
+                      SizedBox(
+                        width: 27.w,
+                        child: _chip(
+                          context,
+                          '7 days',
+                          '$due7',
+                          const Color(0xFFF59E0B),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 7 Days',
+                            rows: _dueSoonRows(entries, 7),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 27.w,
+                        child: _chip(
+                          context,
+                          '14 days',
+                          '$due14',
+                          const Color(0xFFD97706),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 14 Days',
+                            rows: _dueSoonRows(entries, 14),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 27.w,
+                        child: _chip(
+                          context,
+                          '30 days',
+                          '$due30',
+                          const Color(0xFFB45309),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 30 Days',
+                            rows: _dueSoonRows(entries, 30),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: _chip(
+                          context,
+                          '7 days',
+                          '$due7',
+                          const Color(0xFFF59E0B),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 7 Days',
+                            rows: _dueSoonRows(entries, 7),
+                          ),
+                        ),
+                      ),
+                      horizontalSpace(width: 2.w),
+                      Expanded(
+                        child: _chip(
+                          context,
+                          '14 days',
+                          '$due14',
+                          const Color(0xFFD97706),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 14 Days',
+                            rows: _dueSoonRows(entries, 14),
+                          ),
+                        ),
+                      ),
+                      horizontalSpace(width: 2.w),
+                      Expanded(
+                        child: _chip(
+                          context,
+                          '30 days',
+                          '$due30',
+                          const Color(0xFFB45309),
+                          onTap: () => _showDueSoonWindowSheet(
+                            context,
+                            title: 'Due in Next 30 Days',
+                            rows: _dueSoonRows(entries, 30),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
           verticalSpace(height: .8.h),
           _innerCard(
             context,
             title: 'Overdue by Type',
+            icon: Icons.warning_amber_rounded,
             child: Row(
               children:
                   overdueByType.entries.toList().asMap().entries.map((entry) {
@@ -277,6 +387,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           _innerCard(
             context,
             title: context.l10n.topVehiclesByOverdue,
+            icon: Icons.local_shipping_rounded,
             child: _listBlock(
               context,
               topVehiclesRows,
@@ -287,6 +398,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           _innerCard(
             context,
             title: context.l10n.nextDueByLeftValue,
+            icon: Icons.av_timer_rounded,
             child: _listBlock(
               context,
               nextDueRows,
@@ -297,6 +409,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           _innerCard(
             context,
             title: context.l10n.upcomingCalendar,
+            icon: Icons.event_available_rounded,
             child: _listBlock(
               context,
               upcomingDateRows,
@@ -307,6 +420,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           _innerCard(
             context,
             title: context.l10n.criticalMaintenanceAlerts,
+            icon: Icons.notification_important_rounded,
             child: _listBlock(
               context,
               criticalRows,
@@ -321,28 +435,73 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
   Widget _innerCard(
     BuildContext context, {
     required String title,
+    required IconData icon,
     required Widget child,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 2.8.w, vertical: .9.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _mW(context, phone: 2.8, compact: 2.4),
+        vertical: _mH(context, phone: .9, compact: .8),
+      ),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: .05)
-            : const Color(0xFFF7FAFC),
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  Colors.white.withValues(alpha: .06),
+                  Colors.white.withValues(alpha: .03),
+                ]
+              : <Color>[
+                  const Color(0xFFF9FBFE),
+                  Colors.white,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        border: Border.all(
+          color: isDark ? Colors.white10 : const Color(0xFFCBD5E1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppStyles.semiboldTextStyle(context)
-                .copyWith(fontSize: 12.8.sp),
+          Row(
+            children: [
+              Container(
+                width: _mW(context, phone: 5.6, compact: 6.4),
+                height: _mW(context, phone: 5.6, compact: 6.4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  icon,
+                  size: _mSp(context, phone: 10.4),
+                  color: Colors.white,
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _mSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
-          verticalSpace(height: .45.h),
+          verticalSpace(height: .6.h),
           child,
         ],
       ),
@@ -357,11 +516,28 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .85.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _mW(context, phone: 2.4, compact: 2.1),
+        vertical: _mH(context, phone: .85, compact: .75),
+      ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
+        gradient: LinearGradient(
+          colors: <Color>[
+            color.withValues(alpha: .18),
+            color.withValues(alpha: .10),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: .35)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,14 +545,15 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.4.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: _mSp(context, phone: 12.0),
+              fontWeight: FontWeight.w700,
             ),
           ),
           verticalSpace(height: .15.h),
           Text(
             value,
-            style: AppStyles.boldTextStyle(context).copyWith(fontSize: 15.sp),
+            style: AppStyles.boldTextStyle(context)
+                .copyWith(fontSize: _mSp(context, phone: 14.2)),
           ),
           verticalSpace(height: .1.h),
           Text(
@@ -384,7 +561,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.0.sp,
+              fontSize: _mSp(context, phone: 11.3),
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
@@ -407,9 +584,19 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.1.w, vertical: .55.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: _mW(context, phone: 2.1, compact: 1.9),
+          vertical: _mH(context, phone: .55, compact: .5),
+        ),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: .12),
+          gradient: LinearGradient(
+            colors: <Color>[
+              color.withValues(alpha: .18),
+              color.withValues(alpha: .10),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withValues(alpha: .28)),
         ),
@@ -421,7 +608,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.0.sp,
+                fontSize: _mSp(context, phone: 12.0),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -429,7 +616,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
             Text(
               value,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 12.6.sp,
+                fontSize: _mSp(context, phone: 12.0),
               ),
             ),
           ],
@@ -459,9 +646,19 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.1.w, vertical: .55.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: _mW(context, phone: 2.1, compact: 1.9),
+          vertical: _mH(context, phone: .55, compact: .5),
+        ),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: .10),
+          gradient: LinearGradient(
+            colors: <Color>[
+              color.withValues(alpha: .16),
+              color.withValues(alpha: .08),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withValues(alpha: .28)),
         ),
@@ -473,13 +670,13 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppStyles.semiboldTextStyle(context)
-                  .copyWith(fontSize: 12.0.sp),
+                  .copyWith(fontSize: _mSp(context, phone: 11.8)),
             ),
             verticalSpace(height: .3.h),
             Text(
               '$value ($percent%)',
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.0.sp,
+                fontSize: _mSp(context, phone: 11.8),
                 fontWeight: FontWeight.w700,
                 color: onSurface.withValues(alpha: .88),
               ),
@@ -510,7 +707,8 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
     if (rows.isEmpty) {
       return Text(
         emptyTitle,
-        style: AppStyles.regularTextStyle(context).copyWith(fontSize: 11.4.sp),
+        style: AppStyles.regularTextStyle(context)
+            .copyWith(fontSize: _mSp(context, phone: 12.0)),
       );
     }
     return Column(
@@ -537,7 +735,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 12.0.sp,
+                    fontSize: _mSp(context, phone: 11.8),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -546,7 +744,7 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
               Text(
                 e.$2,
                 style: AppStyles.semiboldTextStyle(context).copyWith(
-                  fontSize: 12.0.sp,
+                  fontSize: _mSp(context, phone: 11.4),
                   color: e.$3 ? const Color(0xFFDC2626) : onSurface,
                 ),
               ),
@@ -761,6 +959,39 @@ class MaintenanceAnalyticsCard extends StatelessWidget {
       },
     );
   }
+}
+
+double _mSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
+}
+
+double _mW(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360 && compact != null) return compact.w;
+  return phone.w;
+}
+
+double _mH(
+  BuildContext context, {
+  required double phone,
+  double? compact,
+  double min = 0,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  final value = (width <= 360 && compact != null ? compact : phone).h;
+  if (min <= 0) return value;
+  return value < min ? min : value;
 }
 
 class _MaintenanceEntry {

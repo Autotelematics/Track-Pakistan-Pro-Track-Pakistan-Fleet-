@@ -392,19 +392,20 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
   }
 
   String _fieldLabel(String key) {
+    final l10n = context.l10n;
     switch (key) {
       case 'speed_limit':
-        return 'Speed Limit (km/h)';
+        return l10n.speedLimitKmh;
       case 'ignition_off':
-        return 'Ignition Off Duration (min)';
+        return l10n.ignitionOffDurationMin;
       case 'stops':
-        return 'Stops (minutes)';
+        return l10n.stopsMinutes;
       case 'geofences':
-        return 'Geofence IDs (comma separated)';
+        return l10n.geofenceIdsCommaSeparated;
       case 'show_addresses':
-        return 'Show Addresses';
+        return l10n.showAddresses;
       case 'zones_instead':
-        return 'Zones Instead';
+        return l10n.zonesInstead;
       default:
         return key.replaceAll('_', ' ');
     }
@@ -464,6 +465,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) {
+        final l10n = ctx.l10n;
         return StatefulBuilder(
           builder: (ctx, setLocalState) {
             return Dialog(
@@ -479,7 +481,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        name,
+                        _localizedReportName(ctx, name, type),
                         style: AppStyles.semiboldTextStyle(ctx)
                             .copyWith(fontSize: 15.sp),
                       ),
@@ -487,8 +489,8 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                       if (formats.length > 1) ...[
                         DropdownButtonFormField<String>(
                           initialValue: selectedFormat,
-                          decoration: const InputDecoration(
-                            labelText: 'Format',
+                          decoration: InputDecoration(
+                            labelText: l10n.formatLabel,
                             isDense: true,
                             border: OutlineInputBorder(),
                           ),
@@ -581,7 +583,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                   children: [
                                     Text(
                                       geofenceProvider.errorMessage ??
-                                          'No geofences found',
+                                          l10n.noGeofencesFound,
                                       style: TextStyle(
                                         fontSize: 11.8.sp,
                                         color: isDark
@@ -600,7 +602,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                           );
                                         },
                                         icon: const Icon(Icons.refresh_rounded),
-                                        label: const Text('Reload Geofences'),
+                                        label: Text(l10n.reloadGeofences),
                                       ),
                                     ),
                                   ],
@@ -653,7 +655,9 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                           Padding(
                             padding: EdgeInsets.only(top: .6.h),
                             child: Text(
-                              '${selectedGeofenceIds.length} geofence(s) selected',
+                              l10n.geofencesSelectedCount(
+                                selectedGeofenceIds.length,
+                              ),
                               style: TextStyle(
                                 fontSize: 11.5.sp,
                                 color: ConstantColor.primaryColor,
@@ -681,7 +685,12 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                         ),
                       if (fields.isNotEmpty)
                         Text(
-                          'Fields: ${fields.where((f) => f != 'metas' && f != 'devices').map(_fieldLabel).join(', ')}',
+                          l10n.reportFieldsLabel(
+                            fields
+                                .where((f) => f != 'metas' && f != 'devices')
+                                .map(_fieldLabel)
+                                .join(', '),
+                          ),
                           style: TextStyle(
                             fontSize: 11.5.sp,
                             color: isDark ? Colors.white70 : Colors.black54,
@@ -693,7 +702,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                           Expanded(
                             child: TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancel'),
+                              child: Text(l10n.cancel),
                             ),
                           ),
                           Expanded(
@@ -725,7 +734,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                   zonesInstead: zonesInstead,
                                 );
                               },
-                              child: const Text('Generate'),
+                              child: Text(l10n.generateLabel),
                             ),
                           ),
                         ],
@@ -849,7 +858,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                       if (fromDate.isEmpty || toDate.isEmpty) {
                         showValidationErrorDialog(
                           context,
-                          message: 'Please select both dates',
+                          message: l10n.pleaseSelectBothDates,
                         );
                         return;
                       }
@@ -884,7 +893,7 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                               verticalSpace(height: .8.h),
                               ElevatedButton(
                                   onPressed: provider.retry,
-                                  child: const Text('Retry')),
+                                  child: Text(l10n.retry)),
                             ],
                           ),
                         );
@@ -892,15 +901,14 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
 
                       if (provider.itemsMain.isEmpty &&
                           provider.itemsOther.isEmpty) {
-                        return const Center(
-                            child: Text('No reports available'));
+                        return Center(child: Text(l10n.noReportsAvailable));
                       }
 
                       return ListView(
                         padding: EdgeInsets.zero,
                         children: [
                           Text(
-                            "Report Types",
+                            l10n.reportTypesLabel,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
                               fontSize: 14.sp,
@@ -939,8 +947,8 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                     : Icons.expand_more_rounded,
                               ),
                               label: Text(_showMoreReports
-                                  ? 'Show Less'
-                                  : 'More Reports'),
+                                  ? l10n.showLess
+                                  : l10n.moreReports),
                             ),
                             if (_showMoreReports)
                               ...provider.itemsOther.map(
@@ -960,7 +968,11 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                     leading: Icon(Icons.description_outlined,
                                         color: ConstantColor.primaryColor),
                                     title: Text(
-                                      item.name ?? '',
+                                      _localizedReportName(
+                                        context,
+                                        item.name ?? '',
+                                        item.type ?? 0,
+                                      ),
                                       style:
                                           AppStyles.semiboldTextStyle(context)
                                               .copyWith(
@@ -996,6 +1008,27 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
     } catch (_) {
       return null;
     }
+  }
+}
+
+String _localizedReportName(BuildContext context, String title, int type) {
+  final l10n = context.l10n;
+  if (type == 8) return l10n.alertsReport;
+  if (type == 3) return l10n.tripReport;
+
+  switch (title) {
+    case 'Daily Travel Report':
+      return l10n.dailyTravelReport;
+    case 'Travel Summary with Playback Image':
+      return l10n.travelSummaryWithPlaybackImage;
+    case 'Travel Summary':
+      return l10n.travelSummary;
+    case 'Stops Move Summary':
+      return l10n.stopsMoveSummary;
+    case 'Events':
+      return l10n.eventsReport;
+    default:
+      return title;
   }
 }
 
@@ -1055,11 +1088,11 @@ class _ReportCard extends StatelessWidget {
             Align(
               alignment: Alignment.topLeft,
               child: Text(
-                type == 8
-                    ? 'Alerts Report'
-                    : type == 3
-                        ? 'Trip Report'
-                        : title,
+                _localizedReportName(
+                  context,
+                  title,
+                  type,
+                ),
                 textAlign: TextAlign.left,
                 style: AppStyles.semiboldTextStyle(context).copyWith(
                   fontSize: 13.9.sp,

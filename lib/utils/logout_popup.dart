@@ -240,6 +240,7 @@ void showCustomPopup({
                                           context: context,
                                           oldPassword: oldPass,
                                           newPassword: newPass,
+                                          confirmPassword: confirmPass,
                                         );
                                       } else {
                                         Navigator.pop(context);

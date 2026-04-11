@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -20,13 +21,14 @@ class ExploreSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> cards = [];
+    final l10n = context.l10n;
 
     // Terms and Conditions
     if (CompanyInfo.termAndCondition.trim().isNotEmpty) {
       cards.add(
         _ActionCard(
-          title: "Terms and Conditions",
-          subtitle: "Legal policies and user agreement",
+          title: l10n.termsAndConditions,
+          subtitle: l10n.legalPoliciesAndUserAgreement,
           icon: Icons.gavel_outlined,
           onTap: () => _launchUrl(CompanyInfo.termAndCondition),
         ),
@@ -37,8 +39,8 @@ class ExploreSection extends StatelessWidget {
     if (CompanyInfo.privacyPolicy.trim().isNotEmpty) {
       cards.add(
         _ActionCard(
-          title: "Privacy Policy",
-          subtitle: "How we protect your data",
+          title: l10n.privacyPolicyLabel,
+          subtitle: l10n.howWeProtectYourData,
           icon: Icons.shield_outlined,
           onTap: () => _launchUrl(CompanyInfo.privacyPolicy),
         ),
@@ -49,8 +51,8 @@ class ExploreSection extends StatelessWidget {
     if (CompanyInfo.websiteNews.trim().isNotEmpty) {
       cards.add(
         _ActionCard(
-          title: "Company News",
-          subtitle: "Latest updates and announcements",
+          title: l10n.companyNews,
+          subtitle: l10n.latestUpdatesAndAnnouncements,
           icon: Icons.campaign_outlined,
           onTap: () => _launchUrl(CompanyInfo.websiteNews),
         ),
@@ -64,7 +66,7 @@ class ExploreSection extends StatelessWidget {
     final List<Widget> children = [
       verticalSpace(height: 2.2.h),
       Text(
-        "Explore",
+        l10n.exploreLabel,
         style: AppStyles.appTitleTextStyle.copyWith(
           fontSize: 17.sp,
           color: Theme.of(context).colorScheme.onSurface,
@@ -106,6 +108,9 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subtitleColor = isDark
+        ? Colors.white.withValues(alpha: 0.78)
+        : theme.colorScheme.onSurface.withValues(alpha: 0.72);
 
     return GestureDetector(
       onTap: onTap,
@@ -147,7 +152,7 @@ class _ActionCard extends StatelessWidget {
                   Text(
                     subtitle,
                     style: AppStyles.lightTextStyle(context).copyWith(
-                      color: AppColors.grey.withValues(alpha: 0.85),
+                      color: subtitleColor,
                       fontSize: 12.1.sp,
                     ),
                   ),

@@ -33,13 +33,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmation => 'Are you sure you want to logout?';
 
   @override
+  String get myAccount => 'My Account';
+
+  @override
   String get support => 'Support';
+
+  @override
+  String get driverOptions => 'Driver Options';
+
+  @override
+  String get manageDriversSubtitle => 'Add, update, or remove drivers';
+
+  @override
+  String get addNewDriver => 'Add New Driver';
+
+  @override
+  String get createNewDriver => 'Create a new driver';
+
+  @override
+  String get editDriverLabel => 'Edit Driver';
+
+  @override
+  String get updateDriverInfo => 'Update driver info';
+
+  @override
+  String get deleteDriverLabel => 'Delete Driver';
+
+  @override
+  String get permanentDeleteDriver => 'Permanent delete driver';
+
+  @override
+  String get addDriverLabel => 'Add Driver';
+
+  @override
+  String get assignDriverLabel => 'Assign Driver';
+
+  @override
+  String get driverNameLabel => 'Driver Name';
+
+  @override
+  String get enterDriverName => 'Enter driver name';
+
+  @override
+  String get rfidLabel => 'RFID';
+
+  @override
+  String get enterDriverRfid => 'Enter driver RFID';
+
+  @override
+  String get selectDriverLabel => 'Select Driver';
+
+  @override
+  String get searchAndSelectDriver => 'Search and select driver';
+
+  @override
+  String get pleaseSelectDriver => 'Please select a driver';
+
+  @override
+  String get driverNameRequired => 'Driver name is required';
+
+  @override
+  String get pleaseEnterValidEmail => 'Please enter your valid email';
+
+  @override
+  String get selectDrivers => 'Select Drivers';
+
+  @override
+  String get useCheckboxToSelectDrivers =>
+      'Use the checkbox to select multiple drivers';
+
+  @override
+  String get searchDriverName => 'Search driver name';
+
+  @override
+  String get noDriversFound => 'No drivers found';
+
+  @override
+  String driversSelectedCount(Object count) {
+    return '$count driver(s) selected';
+  }
+
+  @override
+  String get noDriverLabel => 'No Driver';
+
+  @override
+  String get pleaseSelectAtLeastOneDriver =>
+      'Please select at least one driver';
 
   @override
   String get password => 'Password';
 
   @override
   String get drivers => 'Drivers';
+
+  @override
+  String get addExpenseLabel => 'Add Expense';
+
+  @override
+  String get editExpenseLabel => 'Edit Expense';
+
+  @override
+  String get selectExpenseType => 'Select expense type';
+
+  @override
+  String get expenseNameHint => 'Expense name';
+
+  @override
+  String get quantityLabel => 'Quantity';
+
+  @override
+  String get unitCostLabel => 'Unit cost';
+
+  @override
+  String get supplierLabel => 'Supplier';
+
+  @override
+  String get descriptionLabel => 'Description';
+
+  @override
+  String get enterValidQuantity => 'Enter valid quantity';
+
+  @override
+  String get enterValidUnitCost => 'Enter valid unit cost';
+
+  @override
+  String get optionalSupplier => 'Optional supplier';
+
+  @override
+  String get optionalNotes => 'Optional notes';
 
   @override
   String get alertSetting => 'Alert Setting';
@@ -67,10 +188,111 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
+  String get loginEmail => 'Login Email';
+
+  @override
+  String get phoneNumberLabel => 'Phone No.';
+
+  @override
+  String get deviceLimit => 'Device Limit';
+
+  @override
+  String get accountExpiry => 'Account Expiry';
+
+  @override
+  String get unlimited => 'Unlimited';
+
+  @override
   String get selectLanguage => 'Select Language';
 
   @override
   String get languageUpdated => 'Language updated';
+
+  @override
+  String get companySupport => 'Company Support';
+
+  @override
+  String get contactCompanyDetails => 'Contact & company details';
+
+  @override
+  String get liveChat => 'Live Chat';
+
+  @override
+  String get wereHereToHelp => 'We’re here to help';
+
+  @override
+  String get callLabel => 'Call';
+
+  @override
+  String get messageLabel => 'Message';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get websiteLabel => 'Website';
+
+  @override
+  String get whatsAppLabel => 'WhatsApp';
+
+  @override
+  String get facebookLabel => 'Facebook';
+
+  @override
+  String get instagramLabel => 'Instagram';
+
+  @override
+  String get loadingDriverDetails => 'Loading driver details...';
+
+  @override
+  String get driverContactProfileDetails =>
+      'Driver contact and profile details';
+
+  @override
+  String get noDriverAssigned => 'No driver assigned';
+
+  @override
+  String get assignDriverToVehicleToViewContactActions =>
+      'Assign a driver to this vehicle to\nview contact actions';
+
+  @override
+  String get noPhoneNumber => 'No phone number';
+
+  @override
+  String get noEmail => 'No email';
+
+  @override
+  String get noDescriptionAvailable => 'No description available';
+
+  @override
+  String get noContactInformationAvailable =>
+      'No contact information available';
+
+  @override
+  String get officeAddress => 'Office Address';
+
+  @override
+  String get exploreLabel => 'Explore';
+
+  @override
+  String get termsAndConditions => 'Terms and Conditions';
+
+  @override
+  String get legalPoliciesAndUserAgreement =>
+      'Legal policies and user agreement';
+
+  @override
+  String get privacyPolicyLabel => 'Privacy Policy';
+
+  @override
+  String get howWeProtectYourData => 'How we protect your data';
+
+  @override
+  String get companyNews => 'Company News';
+
+  @override
+  String get latestUpdatesAndAnnouncements =>
+      'Latest updates and announcements';
 
   @override
   String get galleryPermissionRequired => 'Gallery Permission Required';
@@ -126,6 +348,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reset => 'Reset';
+
+  @override
+  String get notificationFilters => 'Notification Filters';
+
+  @override
+  String get searchByVehicleAndType => 'Search By Vehicle And Type';
+
+  @override
+  String get searchByDateRange => 'Search By Date Range';
+
+  @override
+  String get vehicleLabel => 'Vehicle';
 
   @override
   String get dashboardCustomizeHint =>
@@ -276,6 +510,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDescription => 'No description';
 
   @override
+  String get addReminderLabel => 'Add Reminder';
+
+  @override
+  String get editReminderLabel => 'Edit Reminder';
+
+  @override
+  String get selectType => 'Select type';
+
+  @override
+  String get titleLabel => 'Title';
+
+  @override
+  String get reminderTitleHint => 'Reminder title';
+
+  @override
+  String get dueDateLabel => 'Due Date';
+
+  @override
+  String get dueTimeLabel => 'Due Time';
+
+  @override
+  String get dateIgnoredForDailyRepeat => 'Date is ignored for daily repeat';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get reminderTitleRequired => 'Reminder title is required';
+
+  @override
+  String get pleaseSelectDueDate => 'Please select due date';
+
+  @override
+  String get pleaseSelectDueTime => 'Please select due time';
+
+  @override
+  String get reminderSavedSuccessfully => 'Reminder saved successfully';
+
+  @override
+  String get reminderUpdatedSuccessfully => 'Reminder updated successfully';
+
+  @override
+  String get oilChange => 'Oil Change';
+
+  @override
+  String get tireRotation => 'Tire Rotation';
+
+  @override
+  String get brakeInspection => 'Brake Inspection';
+
+  @override
+  String get airFilterReplacement => 'Air Filter Replacement';
+
+  @override
+  String get sparkPlugsReplacement => 'Spark Plugs Replacement';
+
+  @override
+  String get batteryCheck => 'Battery Check';
+
+  @override
+  String get charging => 'Charging';
+
+  @override
+  String get insuranceRenewal => 'Insurance Renewal';
+
+  @override
+  String get registrationRenewal => 'Registration Renewal';
+
+  @override
+  String get emissionTest => 'Emission Test';
+
+  @override
+  String get generalService => 'General Service';
+
+  @override
+  String get coolantFlush => 'Coolant Flush';
+
+  @override
   String get repeatOneTime => 'One-time';
 
   @override
@@ -289,6 +601,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noTasksAvailable => 'No tasks available';
+
+  @override
+  String get allTasks => 'All Tasks';
+
+  @override
+  String get addTask => 'Add Task';
+
+  @override
+  String get noTasksFound => 'No tasks found';
+
+  @override
+  String get searchTasksByTitleOrVehicle => 'Search by title or vehicle';
+
+  @override
+  String showingTasksCount(Object count) {
+    return 'Showing $count tasks';
+  }
+
+  @override
+  String showingTasksCountOfTotal(Object count, Object total) {
+    return 'Showing $count of $total tasks';
+  }
+
+  @override
+  String get loadMore => 'Load More';
 
   @override
   String get latestTasks => 'Latest Tasks';
@@ -307,6 +644,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskFailed => 'Failed';
+
+  @override
+  String get hasStops => 'Has Stops';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get routePlayback => 'Route Playback';
+
+  @override
+  String get deleteTask => 'Delete Task';
+
+  @override
+  String get deleteTaskConfirmation =>
+      'Are you sure you want to delete this task?';
+
+  @override
+  String get assignTask => 'Assign Task';
+
+  @override
+  String recreateTaskForVehicle(Object vehicleName) {
+    return 'Are you sure you want to recreate this task for \"$vehicleName\"?';
+  }
+
+  @override
+  String get selectVehicleToRecreateTask =>
+      'Select a vehicle to recreate this task.';
+
+  @override
+  String get pickup => 'Pickup';
+
+  @override
+  String get reachedAt => 'Reached at';
+
+  @override
+  String get leftAt => 'Left at';
+
+  @override
+  String taskStop(Object index) {
+    return 'Stop $index';
+  }
+
+  @override
+  String get delivery => 'Delivery';
 
   @override
   String get completionRate => 'Completion Rate';
@@ -328,6 +713,71 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tasksNotCompletedWithin10Days =>
       'Tasks not completed within 10 days';
+
+  @override
+  String vehicleTasksTitle(Object vehicleName) {
+    return '$vehicleName Tasks';
+  }
+
+  @override
+  String get successRate => 'Success Rate';
+
+  @override
+  String get avgCompletion => 'Avg Completion';
+
+  @override
+  String get createdToDeliveryLeft => 'Created to delivery left';
+
+  @override
+  String get pickupResponse => 'Pickup Response';
+
+  @override
+  String get createdToPickupReached => 'Created to pickup reached';
+
+  @override
+  String get pickupDwell => 'Pickup Dwell';
+
+  @override
+  String get pickupLeftMinusReached => 'Pickup left minus reached';
+
+  @override
+  String get stopDwell => 'Stop Dwell';
+
+  @override
+  String get averageAcrossAllStops => 'Average across all stops';
+
+  @override
+  String get deliveryDwell => 'Delivery Dwell';
+
+  @override
+  String get deliveryLeftMinusReached => 'Delivery left minus reached';
+
+  @override
+  String get stopComplexityTrend => 'Stop Complexity Trend';
+
+  @override
+  String get directJobs => 'Direct Jobs';
+
+  @override
+  String get noStops => 'No stops';
+
+  @override
+  String get multiStopJobs => 'Multi-stop Jobs';
+
+  @override
+  String get oneOrMoreStops => 'One or more stops';
+
+  @override
+  String get recentFailedTasks => 'Recent Failed Tasks';
+
+  @override
+  String get noRecentFailedTasksForVehicle =>
+      'No recent failed tasks for this vehicle';
+
+  @override
+  String taskNumber(Object id) {
+    return 'Task #$id';
+  }
 
   @override
   String get vehicleWorkloadDistribution => 'Vehicle Workload Distribution';
@@ -647,6 +1097,153 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportTab => 'Report';
 
   @override
+  String get formatLabel => 'Format';
+
+  @override
+  String get speedLimitKmh => 'Speed Limit (km/h)';
+
+  @override
+  String get ignitionOffDurationMin => 'Ignition Off Duration (min)';
+
+  @override
+  String get stopsMinutes => 'Stops (minutes)';
+
+  @override
+  String get geofenceIdsCommaSeparated => 'Geofence IDs (comma separated)';
+
+  @override
+  String get showAddresses => 'Show Addresses';
+
+  @override
+  String get zonesInstead => 'Zones Instead';
+
+  @override
+  String get noGeofencesFound => 'No geofences found';
+
+  @override
+  String get reloadGeofences => 'Reload Geofences';
+
+  @override
+  String geofencesSelectedCount(Object count) {
+    return '$count geofence(s) selected';
+  }
+
+  @override
+  String reportFieldsLabel(Object fields) {
+    return 'Fields: $fields';
+  }
+
+  @override
+  String get generateLabel => 'Generate';
+
+  @override
+  String get pleaseSelectBothDates => 'Please select both dates';
+
+  @override
+  String get noReportsAvailable => 'No reports available';
+
+  @override
+  String get reportTypesLabel => 'Report Types';
+
+  @override
+  String get showLess => 'Show Less';
+
+  @override
+  String get moreReports => 'More Reports';
+
+  @override
+  String get dailyTravelReport => 'Daily Travel Report';
+
+  @override
+  String get travelSummaryWithPlaybackImage =>
+      'Travel Summary with Playback Image';
+
+  @override
+  String get travelSummary => 'Travel Summary';
+
+  @override
+  String get stopsMoveSummary => 'Stops Move Summary';
+
+  @override
+  String get eventsReport => 'Events';
+
+  @override
+  String get alertsReport => 'Alerts Report';
+
+  @override
+  String get tripReport => 'Trip Report';
+
+  @override
+  String get playbackLabel => 'Playback';
+
+  @override
+  String tripsCountLabel(Object count) {
+    return 'Trips ($count)';
+  }
+
+  @override
+  String parkedCountLabel(Object count) {
+    return 'Parked ($count)';
+  }
+
+  @override
+  String alertsCountLabel(Object count) {
+    return 'Alerts ($count)';
+  }
+
+  @override
+  String get noTripsFound => 'No trips found';
+
+  @override
+  String get noParkedIntervals => 'No parked intervals';
+
+  @override
+  String get noHistoryAlertsFound => 'No alerts found';
+
+  @override
+  String get playingRouteHighlightedGreen =>
+      'Playing - route highlighted green';
+
+  @override
+  String get pausedLabel => 'Paused';
+
+  @override
+  String get totalTrips => 'Total Trips';
+
+  @override
+  String get moveTime => 'Move Time';
+
+  @override
+  String get fuelLtr => 'Fuel (LTR)';
+
+  @override
+  String get totalSpent => 'Total Spent';
+
+  @override
+  String get topSpeed => 'Top Speed';
+
+  @override
+  String rsAmount(Object amount) {
+    return 'Rs. $amount';
+  }
+
+  @override
+  String get taskPlayback => 'Task Playback';
+
+  @override
+  String get currentLocation => 'Current Location';
+
+  @override
+  String get currentVehicleLocationHistoryHint =>
+      'This is Current Location of the Vehicle. To see History choose Filter or give date range';
+
+  @override
+  String get loadingHistory => 'Loading history...';
+
+  @override
+  String get currentLiveLocation => 'Current Live Location';
+
+  @override
   String get historyTab => 'History';
 
   @override
@@ -717,6 +1314,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get maintenance => 'Maintenance';
+
+  @override
+  String get addServiceLabel => 'Add Service';
+
+  @override
+  String get enterServiceName => 'Enter service name';
+
+  @override
+  String get expirationByLabel => 'Expiration by';
+
+  @override
+  String get selectExpirationType => 'Select expiration type';
+
+  @override
+  String get enterInterval => 'Enter interval';
+
+  @override
+  String get enterLastValueDate => 'Enter last value/date';
+
+  @override
+  String get triggerEventWhenLeftLabel => 'Trigger event when left';
+
+  @override
+  String get triggerEventWhenLeftHint => 'e.g. 1000 km';
+
+  @override
+  String get renewAfterExpirationLabel => 'Renew after expiration';
+
+  @override
+  String get odometerLabel => 'Odometer';
+
+  @override
+  String get engineHoursLabel => 'Engine hours';
+
+  @override
+  String get notificationEmailHint => 'notification@email.com';
+
+  @override
+  String get dateLabel => 'Date';
+
+  @override
+  String get searchVehicleByName => 'Search vehicle by name';
+
+  @override
+  String get noVehiclesFoundForSearch => 'No vehicle found';
+
+  @override
+  String get defaultMapStyle => 'Default';
+
+  @override
+  String get satelliteMapStyle => 'Satellite';
+
+  @override
+  String get loadingDevices => 'Loading devices...';
+
+  @override
+  String get noDevicesFound => 'No devices found.';
+
+  @override
+  String get noVehiclesFound => 'No vehicles found.';
+
+  @override
+  String noVehiclesFoundForStatus(Object status) {
+    return 'No $status vehicles found.';
+  }
+
+  @override
+  String updatedSecondsAgo(Object seconds) {
+    return 'Updated • ${seconds}s ago';
+  }
+
+  @override
+  String speedKmhValue(Object speed) {
+    return 'Speed: $speed km/h';
+  }
+
+  @override
+  String updateValue(Object value) {
+    return 'Update: $value';
+  }
+
+  @override
+  String get openDetails => 'Open details';
 
   @override
   String get expenses => 'Expenses';

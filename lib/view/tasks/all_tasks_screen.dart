@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,7 @@ import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/data/models/task_model.dart';
 import 'package:trackerapp/providers/get_devices_status_provider.dart';
 import 'package:trackerapp/providers/task_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_history_screen.dart';
 import 'package:trackerapp/view/tasks/task_form_screen.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
@@ -34,7 +37,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _searchText = '';
-  String _selectedVehicle = 'All Vehicles';
+  late String _selectedVehicle;
 
   @override
   void dispose() {
@@ -46,6 +49,9 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedVehicle = widget.initialVehicleName?.trim().isNotEmpty == true
+        ? widget.initialVehicleName!.trim()
+        : '';
     final initialVehicle = widget.initialVehicleName?.trim() ?? '';
     if (initialVehicle.isNotEmpty) {
       _selectedVehicle = initialVehicle;
@@ -71,15 +77,28 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final titleSize = _adaptiveSp(
+      context,
+      phone: 16.2,
+      tablet: 13.0,
+      desktop: 10.4,
+    );
     final showAddTaskAction =
         widget.initialDeviceId != null && widget.lockVehicleFilter;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title ?? 'All Tasks'),
+        title: Text(
+          widget.title ?? l10n.allTasks,
+          style: AppStyles.semiboldTextStyle(context).copyWith(
+            fontSize: titleSize,
+          ),
+        ),
         actions: [
           if (showAddTaskAction)
             Padding(
-              padding: EdgeInsets.only(right: 3.w),
+              padding: EdgeInsets.only(
+                  right: _adaptiveW(context, phone: 3, tablet: 2)),
               child: TextButton.icon(
                 onPressed: () async {
                   final created = await Navigator.push<bool>(
@@ -98,8 +117,14 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF166534),
                   backgroundColor: const Color(0xFFDCFCE7),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 3.4.w, vertical: .7.h),
+                  minimumSize: Size(
+                    _adaptiveW(context, phone: 24, tablet: 17),
+                    _adaptiveH(context, phone: 4.6, tablet: 4.1, min: 40),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _adaptiveW(context, phone: 3.2, tablet: 2.3),
+                    vertical: _adaptiveH(context, phone: .55, tablet: .5),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                     side: const BorderSide(
@@ -109,9 +134,9 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                 ),
                 icon: const Icon(Icons.add_task_rounded),
                 label: Text(
-                  'Add Task',
+                  l10n.addTask,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 13.sp,
+                    fontSize: _adaptiveSp(context, phone: 12.4, tablet: 9.9),
                   ),
                 ),
               ),
@@ -135,13 +160,14 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                       provider.errorMessage!,
                       textAlign: TextAlign.center,
                       style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 13.sp,
+                        fontSize:
+                            _adaptiveSp(context, phone: 12.4, tablet: 10.0),
                       ),
                     ),
                     SizedBox(height: 1.2.h),
                     ElevatedButton(
                       onPressed: () => provider.fetchTasks(force: true),
-                      child: const Text('Retry'),
+                      child: Text(l10n.retry),
                     ),
                   ],
                 ),
@@ -165,9 +191,12 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
               .toSet()
               .toList()
             ..sort();
-          final vehicleFilterItems = <String>['All Vehicles', ...vehicleNames];
+          final vehicleFilterItems = <String>[
+            l10n.allVehicles,
+            ...vehicleNames
+          ];
           if (!vehicleFilterItems.contains(_selectedVehicle)) {
-            _selectedVehicle = 'All Vehicles';
+            _selectedVehicle = l10n.allVehicles;
           }
 
           final filtered = tasks.where((task) {
@@ -177,7 +206,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
             final byDevice = widget.initialDeviceId == null ||
                 task.device?.id == widget.initialDeviceId;
             if (!byDevice) return false;
-            final byVehicle = _selectedVehicle == 'All Vehicles' ||
+            final byVehicle = _selectedVehicle == l10n.allVehicles ||
                 vehicle.toLowerCase() == _selectedVehicle.toLowerCase();
             if (!byVehicle) return false;
             if (q.isEmpty) return true;
@@ -188,9 +217,9 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
           if (tasks.isEmpty) {
             return Center(
               child: Text(
-                'No tasks found',
+                l10n.noTasksFound,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 13.6.sp,
+                  fontSize: _adaptiveSp(context, phone: 13.0, tablet: 10.4),
                 ),
               ),
             );
@@ -200,9 +229,16 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
             onRefresh: () => provider.fetchTasks(force: true),
             child: ListView.separated(
               controller: _scrollController,
-              padding: EdgeInsets.fromLTRB(4.w, 1.2.h, 4.w, 2.h),
+              padding: EdgeInsets.fromLTRB(
+                _adaptiveW(context, phone: 4, tablet: 2.8, desktop: 2.2),
+                _adaptiveH(context, phone: 1.2, tablet: 1.0),
+                _adaptiveW(context, phone: 4, tablet: 2.8, desktop: 2.2),
+                _adaptiveH(context, phone: 2.0, tablet: 1.6),
+              ),
               itemCount: filtered.length + 2,
-              separatorBuilder: (_, __) => SizedBox(height: 1.h),
+              separatorBuilder: (_, __) => SizedBox(
+                height: _adaptiveH(context, phone: 1.0, tablet: 0.75),
+              ),
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return _buildFilters(
@@ -232,17 +268,43 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
     required List<String> vehicleFilterItems,
     required int resultCount,
   }) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final filterLabelSize = _adaptiveSp(context, phone: 12.1, tablet: 9.8);
+    final filterValueSize = _adaptiveSp(context, phone: 12.3, tablet: 9.9);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.8.w, vertical: .9.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _adaptiveW(context, phone: 2.8, tablet: 2.1),
+        vertical: _adaptiveH(context, phone: .9, tablet: .75),
+      ),
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  theme.cardColor.withValues(alpha: .98),
+                  theme.cardColor.withValues(alpha: .92),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFF2F8FF),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withValues(alpha: .10),
+          color: const Color(0xFF0EA5E9).withValues(alpha: isDark ? .28 : .18),
         ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                const Color(0xFF0284C7).withValues(alpha: isDark ? .16 : .10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -255,8 +317,15 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
             },
             decoration: InputDecoration(
               isDense: true,
-              hintText: 'Search by title or vehicle',
+              hintText: l10n.searchTasksByTitleOrVehicle,
               prefixIcon: const Icon(Icons.search_rounded),
+              hintStyle: AppStyles.regularTextStyle(context).copyWith(
+                fontSize: filterValueSize,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: _adaptiveW(context, phone: 2.4, tablet: 2.0),
+                vertical: _adaptiveH(context, phone: 1.25, tablet: 1.0),
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -273,8 +342,10 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                 child: widget.lockVehicleFilter
                     ? Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 3.w,
-                          vertical: 1.45.h,
+                          horizontal:
+                              _adaptiveW(context, phone: 3.0, tablet: 2.1),
+                          vertical:
+                              _adaptiveH(context, phone: 1.35, tablet: 1.0),
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -291,7 +362,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppStyles.regularTextStyle(context).copyWith(
-                            fontSize: 12.5.sp,
+                            fontSize: filterValueSize,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -301,7 +372,17 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                         isExpanded: true,
                         decoration: InputDecoration(
                           isDense: true,
-                          labelText: 'Vehicle',
+                          labelText: l10n.vehicle,
+                          labelStyle:
+                              AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: filterLabelSize,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal:
+                                _adaptiveW(context, phone: 2.4, tablet: 2.0),
+                            vertical:
+                                _adaptiveH(context, phone: 1.25, tablet: 1.0),
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -310,7 +391,13 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                             .map(
                               (name) => DropdownMenuItem<String>(
                                 value: name,
-                                child: Text(name),
+                                child: Text(
+                                  name,
+                                  style: AppStyles.regularTextStyle(context)
+                                      .copyWith(
+                                    fontSize: filterValueSize,
+                                  ),
+                                ),
                               ),
                             )
                             .toList(growable: false),
@@ -324,8 +411,10 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
               ),
               SizedBox(width: 2.4.w),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .7.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _adaptiveW(context, phone: 2.5, tablet: 1.9),
+                  vertical: _adaptiveH(context, phone: .75, tablet: .62),
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0284C7).withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(999),
@@ -334,7 +423,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                   '$resultCount',
                   style: AppStyles.regularTextStyle(context).copyWith(
                     fontWeight: FontWeight.w800,
-                    fontSize: 12.sp,
+                    fontSize: _adaptiveSp(context, phone: 12.0, tablet: 9.6),
                     color: const Color(0xFF0369A1),
                   ),
                 ),
@@ -347,6 +436,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
   }
 
   Widget _buildPaginationFooter(BuildContext context, TaskProvider provider) {
+    final l10n = context.l10n;
     final onSurface = Theme.of(context).colorScheme.onSurface;
     final loadedCount = provider.tasks.length;
     final totalCount = provider.totalTasks;
@@ -366,10 +456,10 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
         children: [
           Text(
             totalCount > 0
-                ? 'Showing $loadedCount of $totalCount tasks'
-                : 'Showing $loadedCount tasks',
+                ? l10n.showingTasksCountOfTotal(loadedCount, totalCount)
+                : l10n.showingTasksCount(loadedCount),
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.6.sp,
+              fontSize: _adaptiveSp(context, phone: 11.6, tablet: 9.3),
               fontWeight: FontWeight.w700,
               color: onSurface.withValues(alpha: .66),
             ),
@@ -379,18 +469,22 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
             OutlinedButton(
               onPressed: provider.loadMoreTasks,
               style: OutlinedButton.styleFrom(
+                minimumSize: Size(
+                  _adaptiveW(context, phone: 28, tablet: 20),
+                  _adaptiveH(context, phone: 4.5, tablet: 4.0, min: 40),
+                ),
                 padding: EdgeInsets.symmetric(
-                  horizontal: 5.2.w,
-                  vertical: .85.h,
+                  horizontal: _adaptiveW(context, phone: 5.2, tablet: 4.0),
+                  vertical: _adaptiveH(context, phone: .8, tablet: .7),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
               child: Text(
-                'Load More',
+                l10n.loadMore,
                 style: AppStyles.semiboldTextStyle(context).copyWith(
-                  fontSize: 12.sp,
+                  fontSize: _adaptiveSp(context, phone: 12.0, tablet: 9.6),
                 ),
               ),
             ),
@@ -414,33 +508,52 @@ class _TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
-    final statusText =
-        task.statusName.trim().isEmpty ? 'Unknown' : task.statusName.trim();
+    final titleSize = _adaptiveSp(context, phone: 14.2, tablet: 10.8);
+    final statusBadgeSize = _adaptiveSp(context, phone: 12.2, tablet: 9.6);
+    final actionButtonHeight =
+        _adaptiveH(context, phone: 4.2, tablet: 3.7, min: 38);
+    final actionLabelSize = _adaptiveSp(context, phone: 12.2, tablet: 9.5);
+    final actionIconSize = _adaptiveSp(context, phone: 13.2, tablet: 10.2);
+    final statusText = _localizedTaskStatus(context, task.statusName);
     final routePlaybackWindow = _resolveRoutePlaybackWindow(task);
     final statusTint = _statusTintColor(statusText);
-    final bgColor = Color.alphaBlend(
-      statusTint.withValues(
-          alpha: theme.brightness == Brightness.dark ? .16 : .10),
-      theme.cardColor,
-    );
-    final steps = _buildTimelineSteps(task);
+    final steps = _buildTimelineSteps(context, task);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.4.w, vertical: 1.2.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: _adaptiveW(context, phone: 3.4, tablet: 2.6, desktop: 2.2),
+        vertical: _adaptiveH(context, phone: 1.15, tablet: .95),
+      ),
       decoration: BoxDecoration(
-        color: bgColor,
+        gradient: LinearGradient(
+          colors: <Color>[
+            Color.alphaBlend(
+              statusTint.withValues(
+                  alpha: theme.brightness == Brightness.dark ? .22 : .12),
+              theme.cardColor,
+            ),
+            Color.alphaBlend(
+              statusTint.withValues(
+                  alpha: theme.brightness == Brightness.dark ? .10 : .05),
+              theme.cardColor,
+            ),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: statusTint.withValues(alpha: .28),
+          color: statusTint.withValues(alpha: .38),
         ),
         boxShadow: [
           BoxShadow(
             color: theme.brightness == Brightness.dark
-                ? Colors.black.withValues(alpha: 0.30)
-                : Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+                ? Colors.black.withValues(alpha: 0.34)
+                : statusTint.withValues(alpha: 0.14),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -448,7 +561,12 @@ class _TaskCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(2.8.w, .95.h, 2.8.w, .9.h),
+            padding: EdgeInsets.fromLTRB(
+              _adaptiveW(context, phone: 2.8, tablet: 2.1),
+              _adaptiveH(context, phone: .95, tablet: .75),
+              _adaptiveW(context, phone: 2.8, tablet: 2.1),
+              _adaptiveH(context, phone: .9, tablet: .7),
+            ),
             decoration: BoxDecoration(
               color: statusTint.withValues(
                 alpha: theme.brightness == Brightness.dark ? .26 : .18,
@@ -466,7 +584,7 @@ class _TaskCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppStyles.semiboldTextStyle(context).copyWith(
-                          fontSize: 14.6.sp,
+                          fontSize: titleSize,
                           fontWeight: FontWeight.w900,
                           color: theme.colorScheme.onSurface,
                         ),
@@ -478,18 +596,28 @@ class _TaskCard extends StatelessWidget {
                         vertical: .35.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7).withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: const Color(0xFF0284C7).withValues(alpha: .32),
+                        gradient: const LinearGradient(
+                          colors: <Color>[
+                            Color(0xFF0EA5E9),
+                            Color(0xFF2563EB),
+                          ],
                         ),
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF2563EB).withValues(alpha: .25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: Text(
                         statusText,
                         style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 13.2.sp,
+                          fontSize: statusBadgeSize,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0B4A6F),
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -497,20 +625,20 @@ class _TaskCard extends StatelessWidget {
                 ),
                 SizedBox(height: .75.h),
                 _TaskField(
-                  label: 'Vehicle',
+                  label: l10n.vehicle,
                   value: task.vehicleName,
                   emphasize: true,
                 ),
                 SizedBox(height: .45.h),
                 _TaskField(
-                  label: 'Status',
+                  label: l10n.status,
                   value: statusText,
                   emphasize: true,
                 ),
                 SizedBox(height: .45.h),
                 _TaskField(
-                  label: 'Has Stops',
-                  value: task.hasStops ? 'Yes' : 'No',
+                  label: l10n.hasStops,
+                  value: task.hasStops ? l10n.yes : l10n.no,
                   emphasize: true,
                 ),
                 SizedBox(height: .6.h),
@@ -521,121 +649,68 @@ class _TaskCard extends StatelessWidget {
                     spacing: 2.3.w,
                     runSpacing: .6.h,
                     children: [
-                      SizedBox(
-                        height: 3.3.h,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _handleAssign(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 5.2.w,
-                              vertical: .1.h,
-                            ),
-                            side: BorderSide(color: Colors.green.shade300),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: Icon(
-                            Icons.assignment_return_rounded,
-                            size: 14,
-                            color: Colors.green.shade600,
-                          ),
-                          label: Text(
-                            'Assign',
-                            style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                        ),
+                      _TaskActionButton(
+                        height: actionButtonHeight,
+                        minWidth: _adaptiveW(context, phone: 22, tablet: 16.5),
+                        icon: Icons.assignment_return_rounded,
+                        label: l10n.assign,
+                        iconSize: actionIconSize,
+                        labelSize: actionLabelSize,
+                        onPressed: () => _handleAssign(context),
+                        backgroundColor: const Color(0xFFDCFCE7),
+                        foregroundColor: const Color(0xFF166534),
+                        borderColor: const Color(0xFF86EFAC),
+                        shadowColor: const Color(0xFF16A34A),
                       ),
-                      SizedBox(
-                        height: 3.3.h,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => TaskFormScreen(
-                                  initialTask: task,
-                                ),
+                      _TaskActionButton(
+                        height: actionButtonHeight,
+                        minWidth: _adaptiveW(context, phone: 20, tablet: 15.8),
+                        icon: Icons.edit_outlined,
+                        label: l10n.edit,
+                        iconSize: actionIconSize,
+                        labelSize: actionLabelSize,
+                        onPressed: () async {
+                          await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TaskFormScreen(
+                                initialTask: task,
                               ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 5.9.w,
-                              vertical: .1.h,
                             ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: const Icon(Icons.edit_outlined, size: 14),
-                          label: Text(
-                            'Edit',
-                            style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
+                        backgroundColor: const Color(0xFFE0F2FE),
+                        foregroundColor: const Color(0xFF075985),
+                        borderColor: const Color(0xFF7DD3FC),
+                        shadowColor: const Color(0xFF0EA5E9),
                       ),
                       if (routePlaybackWindow != null)
-                        SizedBox(
-                          height: 3.3.h,
-                          child: OutlinedButton.icon(
-                            onPressed: () =>
-                                _openRoutePlayback(context, routePlaybackWindow),
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 4.6.w,
-                                vertical: .1.h,
-                              ),
-                              side: const BorderSide(
-                                color: Color(0xFF2563EB),
-                              ),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            icon: const Icon(
-                              Icons.route_rounded,
-                              size: 14,
-                              color: Color(0xFF2563EB),
-                            ),
-                            label: Text(
-                              'Route Playback',
-                              style: AppStyles.regularTextStyle(context)
-                                  .copyWith(
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF2563EB),
-                              ),
-                            ),
-                          ),
+                        _TaskActionButton(
+                          height: actionButtonHeight,
+                          minWidth: _adaptiveW(context, phone: 32, tablet: 24),
+                          icon: Icons.route_rounded,
+                          label: l10n.routePlayback,
+                          iconSize: actionIconSize,
+                          labelSize: actionLabelSize,
+                          onPressed: () =>
+                              _openRoutePlayback(context, routePlaybackWindow),
+                          backgroundColor: const Color(0xFFDBEAFE),
+                          foregroundColor: const Color(0xFF1D4ED8),
+                          borderColor: const Color(0xFF93C5FD),
+                          shadowColor: const Color(0xFF2563EB),
                         ),
-                      SizedBox(
-                        height: 3.3.h,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _handleDelete(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 5.5.w,
-                              vertical: .1.h,
-                            ),
-                            side: BorderSide(color: Colors.red.shade300),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: Icon(
-                            Icons.delete_outline_rounded,
-                            size: 14,
-                            color: Colors.red.shade500,
-                          ),
-                          label: Text(
-                            'Delete',
-                            style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.red.shade500,
-                            ),
-                          ),
-                        ),
+                      _TaskActionButton(
+                        height: actionButtonHeight,
+                        minWidth: _adaptiveW(context, phone: 22, tablet: 17),
+                        icon: Icons.delete_outline_rounded,
+                        label: l10n.delete,
+                        iconSize: actionIconSize,
+                        labelSize: actionLabelSize,
+                        onPressed: () => _handleDelete(context),
+                        backgroundColor: const Color(0xFFFEE2E2),
+                        foregroundColor: const Color(0xFFB91C1C),
+                        borderColor: const Color(0xFFFCA5A5),
+                        shadowColor: const Color(0xFFDC2626),
                       ),
                     ],
                   ),
@@ -661,6 +736,7 @@ class _TaskCard extends StatelessWidget {
   }
 
   Future<void> _handleDelete(BuildContext context) async {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -706,7 +782,7 @@ class _TaskCard extends StatelessWidget {
                   SizedBox(width: 2.4.w),
                   Expanded(
                     child: Text(
-                      'Delete Task',
+                      l10n.deleteTask,
                       style: AppStyles.semiboldTextStyle(ctx).copyWith(
                         fontSize: 14.2.sp,
                         color: onSurface,
@@ -719,7 +795,7 @@ class _TaskCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Are you sure you want to delete this task?',
+                  l10n.deleteTaskConfirmation,
                   style: AppStyles.regularTextStyle(ctx).copyWith(
                     fontSize: 12.8.sp,
                     color: onSurface.withValues(alpha: .82),
@@ -733,7 +809,7 @@ class _TaskCard extends StatelessWidget {
                     child: TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
                       child: Text(
-                        'Cancel',
+                        l10n.cancel,
                         style: AppStyles.regularTextStyle(ctx).copyWith(
                           fontSize: 13.sp,
                           color: onSurface.withValues(alpha: .84),
@@ -746,7 +822,7 @@ class _TaskCard extends StatelessWidget {
                   SizedBox(
                     width: 28.w,
                     child: CustomButton(
-                      text: 'Delete',
+                      text: l10n.delete,
                       height: 3.9.h,
                       backgroundColor: AppColors.red,
                       onPressed: () => Navigator.pop(ctx, true),
@@ -836,6 +912,7 @@ class _TaskCard extends StatelessWidget {
     BuildContext context, {
     required String vehicleName,
   }) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -882,7 +959,7 @@ class _TaskCard extends StatelessWidget {
                   SizedBox(width: 2.4.w),
                   Expanded(
                     child: Text(
-                      'Assign Task',
+                      l10n.assignTask,
                       style: AppStyles.semiboldTextStyle(ctx).copyWith(
                         fontSize: 14.2.sp,
                         color: onSurface,
@@ -893,7 +970,7 @@ class _TaskCard extends StatelessWidget {
               ),
               SizedBox(height: 1.6.h),
               Text(
-                'Are you sure, you want to re create this task for the "$vehicleName"?',
+                l10n.recreateTaskForVehicle(vehicleName),
                 style: AppStyles.regularTextStyle(ctx).copyWith(
                   fontSize: 12.9.sp,
                   color: onSurface.withValues(alpha: .82),
@@ -904,7 +981,7 @@ class _TaskCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: CustomButton(
-                      text: 'Cancel',
+                      text: l10n.cancel,
                       onPressed: () => Navigator.pop(ctx, false),
                       backgroundColor: const Color(0xFFFEE2E2),
                       textColor: const Color(0xFFB91C1C),
@@ -916,7 +993,7 @@ class _TaskCard extends StatelessWidget {
                   SizedBox(width: 3.w),
                   Expanded(
                     child: CustomButton(
-                      text: 'OK',
+                      text: l10n.ok,
                       onPressed: () => Navigator.pop(ctx, true),
                       backgroundColor: const Color(0xFFDCFCE7),
                       textColor: const Color(0xFF166534),
@@ -935,6 +1012,7 @@ class _TaskCard extends StatelessWidget {
   }
 
   Future<Item?> _showAssignVehicleDialog(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -996,7 +1074,7 @@ class _TaskCard extends StatelessWidget {
                       SizedBox(width: 2.4.w),
                       Expanded(
                         child: Text(
-                          'Assign Task',
+                          l10n.assignTask,
                           style: AppStyles.semiboldTextStyle(ctx).copyWith(
                             fontSize: 14.2.sp,
                             color: onSurface,
@@ -1007,7 +1085,7 @@ class _TaskCard extends StatelessWidget {
                   ),
                   SizedBox(height: 1.6.h),
                   Text(
-                    'Select a vehicle to re create this task.',
+                    l10n.selectVehicleToRecreateTask,
                     style: AppStyles.regularTextStyle(ctx).copyWith(
                       fontSize: 12.9.sp,
                       color: onSurface.withValues(alpha: .82),
@@ -1018,7 +1096,7 @@ class _TaskCard extends StatelessWidget {
                     initialValue: selectedDevice?.id,
                     isExpanded: true,
                     decoration: InputDecoration(
-                      labelText: 'Vehicle',
+                      labelText: l10n.vehicle,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1048,7 +1126,7 @@ class _TaskCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: CustomButton(
-                          text: 'Cancel',
+                          text: l10n.cancel,
                           onPressed: () => Navigator.pop(ctx),
                           backgroundColor: const Color(0xFFFEE2E2),
                           textColor: const Color(0xFFB91C1C),
@@ -1060,7 +1138,7 @@ class _TaskCard extends StatelessWidget {
                       SizedBox(width: 3.w),
                       Expanded(
                         child: CustomButton(
-                          text: 'OK',
+                          text: l10n.ok,
                           onPressed: selectedDevice == null
                               ? null
                               : () => Navigator.pop(ctx, selectedDevice),
@@ -1083,6 +1161,67 @@ class _TaskCard extends StatelessWidget {
   }
 }
 
+class _TaskActionButton extends StatelessWidget {
+  final double height;
+  final double minWidth;
+  final IconData icon;
+  final String label;
+  final double iconSize;
+  final double labelSize;
+  final VoidCallback? onPressed;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final Color borderColor;
+  final Color shadowColor;
+
+  const _TaskActionButton({
+    required this.height,
+    required this.minWidth,
+    required this.icon,
+    required this.label,
+    required this.iconSize,
+    required this.labelSize,
+    required this.onPressed,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.borderColor,
+    required this.shadowColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          minimumSize: Size(minWidth, height),
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          elevation: 0.8,
+          shadowColor: shadowColor.withValues(alpha: .35),
+          padding: EdgeInsets.symmetric(
+            horizontal: _adaptiveW(context, phone: 4.0, tablet: 3.0),
+            vertical: _adaptiveH(context, phone: .30, tablet: .20),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(11),
+            side: BorderSide(color: borderColor),
+          ),
+        ),
+        icon: Icon(icon, size: iconSize),
+        label: Text(
+          label,
+          style: AppStyles.semiboldTextStyle(context).copyWith(
+            fontSize: labelSize,
+            color: foregroundColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _RoutePlaybackWindow {
   final DateTime from;
   final DateTime to;
@@ -1093,20 +1232,21 @@ class _RoutePlaybackWindow {
   });
 }
 
-List<_TimelineStep> _buildTimelineSteps(TaskItem task) {
+List<_TimelineStep> _buildTimelineSteps(BuildContext context, TaskItem task) {
+  final l10n = context.l10n;
   final List<_TimelineStep> steps = <_TimelineStep>[
     _TimelineStep(
-      label: 'Pickup',
+      label: l10n.pickup,
       value: task.pickup?.address ?? '-',
       isChecked: _hasValue(task.pickup?.address),
     ),
     _TimelineStep(
-      label: 'Reached at',
+      label: l10n.reachedAt,
       value: task.pickup?.timeFrom ?? '-',
       isChecked: _hasValue(task.pickup?.timeFrom),
     ),
     _TimelineStep(
-      label: 'Left at',
+      label: l10n.leftAt,
       value: task.pickup?.timeTo ?? '-',
       isChecked: _hasValue(task.pickup?.timeTo),
     ),
@@ -1116,21 +1256,21 @@ List<_TimelineStep> _buildTimelineSteps(TaskItem task) {
     final waypoint = task.waypoints[index];
     steps.add(
       _TimelineStep(
-        label: 'Stop ${index + 1}',
+        label: l10n.taskStop(index + 1),
         value: waypoint.address,
         isChecked: _hasValue(waypoint.address),
       ),
     );
     steps.add(
       _TimelineStep(
-        label: 'Reached at',
+        label: l10n.reachedAt,
         value: waypoint.reachedAt,
         isChecked: _hasValue(waypoint.reachedAt),
       ),
     );
     steps.add(
       _TimelineStep(
-        label: 'Left at',
+        label: l10n.leftAt,
         value: waypoint.leftAt,
         isChecked: _hasValue(waypoint.leftAt),
       ),
@@ -1139,21 +1279,21 @@ List<_TimelineStep> _buildTimelineSteps(TaskItem task) {
 
   steps.add(
     _TimelineStep(
-      label: 'Delivery',
+      label: l10n.delivery,
       value: task.delivery?.address ?? '-',
       isChecked: _hasValue(task.delivery?.address),
     ),
   );
   steps.add(
     _TimelineStep(
-      label: 'Reached at',
+      label: l10n.reachedAt,
       value: task.delivery?.timeFrom ?? '-',
       isChecked: _hasValue(task.delivery?.timeFrom),
     ),
   );
   steps.add(
     _TimelineStep(
-      label: 'Left at',
+      label: l10n.leftAt,
       value: task.delivery?.timeTo ?? '-',
       isChecked: _hasValue(task.delivery?.timeTo),
     ),
@@ -1191,8 +1331,8 @@ _RoutePlaybackWindow? _resolveRoutePlaybackWindow(TaskItem task) {
   if (deviceId <= 0) return null;
 
   final DateTime? pickupReached = _tryParseTaskDateTime(
-    task.pickup?.reachedAt,
-  ) ??
+        task.pickup?.reachedAt,
+      ) ??
       _tryParseTaskDateTime(task.pickup?.timeFrom);
   if (pickupReached == null) return null;
 
@@ -1245,6 +1385,27 @@ Color _statusTintColor(String statusName) {
   return const Color(0xFF64748B); // fallback
 }
 
+String _localizedTaskStatus(BuildContext context, String? statusName) {
+  final l10n = context.l10n;
+  final rawStatus = statusName?.trim() ?? '';
+  if (rawStatus.isEmpty) return l10n.vehicleStatusUnknown;
+
+  switch (rawStatus.toLowerCase()) {
+    case 'new':
+      return l10n.taskNew;
+    case 'in progress':
+    case 'in_progress':
+      return l10n.taskInProgress;
+    case 'completed':
+    case 'complete':
+      return l10n.taskCompleted;
+    case 'failed':
+      return l10n.taskFailed;
+    default:
+      return rawStatus;
+  }
+}
+
 class _TimelineStep {
   final String label;
   final String value;
@@ -1277,17 +1438,22 @@ class _TimelineRow extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     final activeColor = const Color(0xFF0284C7);
     final inactiveColor = onSurface.withValues(alpha: .22);
+    final markerSize =
+        _adaptiveW(context, phone: 5.0, tablet: 3.2, desktop: 2.4);
+    final iconSize = _adaptiveW(context, phone: 3.3, tablet: 2.2, desktop: 1.7);
+    final connectorHeight =
+        _adaptiveH(context, phone: 2.3, tablet: 1.9, desktop: 1.5);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 8.w,
+          width: _adaptiveW(context, phone: 8.0, tablet: 5.4, desktop: 4.0),
           child: Column(
             children: [
               Container(
-                width: 5.w,
-                height: 5.w,
+                width: markerSize,
+                height: markerSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isChecked
@@ -1301,14 +1467,14 @@ class _TimelineRow extends StatelessWidget {
                 child: isChecked
                     ? Icon(
                         Icons.check_rounded,
-                        size: 3.4.w,
+                        size: iconSize,
                         color: activeColor,
                       )
                     : null,
               ),
               if (showConnector)
                 SizedBox(
-                  height: 2.4.h,
+                  height: connectorHeight,
                   child: _VerticalDotConnector(
                     color: connectorActive ? activeColor : inactiveColor,
                   ),
@@ -1334,14 +1500,15 @@ class _VerticalDotConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dotSize = _adaptiveW(context, phone: .9, tablet: .55, desktop: .42);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List<Widget>.generate(
           5,
           (_) => Container(
-            width: .9.w,
-            height: .9.w,
+            width: dotSize,
+            height: dotSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: color,
@@ -1366,15 +1533,18 @@ class _TaskField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelWidth = _adaptiveW(context, phone: 25, tablet: 19, desktop: 15);
+    final emphasizeSize = _adaptiveSp(context, phone: 13.1, tablet: 10.0);
+    final regularSize = _adaptiveSp(context, phone: 12.6, tablet: 9.7);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 25.w,
+          width: labelWidth,
           child: Text(
             label,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: emphasize ? 13.8.sp : 13.4.sp,
+              fontSize: emphasize ? emphasizeSize : regularSize,
               fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
               color: emphasize
                   ? Theme.of(context).colorScheme.onSurface
@@ -1389,7 +1559,7 @@ class _TaskField extends StatelessWidget {
           child: Text(
             value.trim().isEmpty ? '-' : value.trim(),
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: emphasize ? 13.8.sp : 13.4.sp,
+              fontSize: emphasize ? emphasizeSize : regularSize,
               fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
               color: emphasize
                   ? Theme.of(context).colorScheme.onSurface
@@ -1403,4 +1573,57 @@ class _TaskField extends StatelessWidget {
       ],
     );
   }
+}
+
+double _adaptiveSp(
+  BuildContext context, {
+  required double phone,
+  required double tablet,
+  double? desktop,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  // Prioritize mobile readability first: scale text up across phone widths.
+  if (width < 600) {
+    final double mobileFactor;
+    if (width <= 360) {
+      mobileFactor = 1.06; // compact phones
+    } else if (width <= 430) {
+      mobileFactor = 1.13; // most phones
+    } else {
+      mobileFactor = 1.17; // large phones
+    }
+    return (phone * mobileFactor).sp;
+  }
+  if (width >= 1100) {
+    final base = desktop ?? tablet;
+    return (base * 1.08).sp;
+  }
+  return (tablet * 1.06).sp;
+}
+
+double _adaptiveW(
+  BuildContext context, {
+  required double phone,
+  required double tablet,
+  double? desktop,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width >= 1100 && desktop != null) return desktop.w;
+  return (width >= 600 ? tablet : phone).w;
+}
+
+double _adaptiveH(
+  BuildContext context, {
+  required double phone,
+  required double tablet,
+  double? desktop,
+  double min = 0,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  final value = (width >= 1100 && desktop != null
+          ? desktop
+          : (width >= 600 ? tablet : phone))
+      .h;
+  if (min <= 0) return value;
+  return math.max(min, value);
 }

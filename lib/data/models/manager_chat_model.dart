@@ -136,12 +136,14 @@ class ManagerChatSendPayload {
   final int? deviceId;
   final String? subject;
   final String? category;
+  final Map<String, dynamic>? attachment;
 
   const ManagerChatSendPayload({
     required this.message,
     this.deviceId,
     this.subject,
     this.category,
+    this.attachment,
   });
 
   Map<String, dynamic> toJson() {
@@ -151,6 +153,7 @@ class ManagerChatSendPayload {
       if (subject != null && subject!.trim().isNotEmpty) 'subject': subject!.trim(),
       if (category != null && category!.trim().isNotEmpty)
         'category': category!.trim(),
+      if (attachment != null) 'attachment': attachment,
     };
   }
 }

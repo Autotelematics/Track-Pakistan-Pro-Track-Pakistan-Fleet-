@@ -54,7 +54,9 @@ class VehicleStatusRow extends StatelessWidget {
       return v == 'true' || v == 'on' || v == '1' || v == 'yes';
     }
 
-    final bool immobilizer = parseFlag(param?.blocked);
+    final String blocked = param?.blocked?.trim() ?? '';
+    final bool immobilizer =
+        blocked.isNotEmpty ? parseFlag(blocked) : parseFlag(param?.out1);
     final bool ignOn = parseFlag(param?.ignition);
     final bool chgOn = parseFlag(param?.charge);
 
@@ -86,60 +88,77 @@ class VehicleStatusRow extends StatelessWidget {
       sat = rawSat;
     }
 
+    final sensorItems = <Widget>[
+      _sensorItem(
+        context: context,
+        icon: Icons.lock_outline_rounded,
+        color: immobilizer ? Colors.red : Colors.green,
+        label: "Imm",
+        value: immobilizer ? "On" : "Off",
+      ),
+      _sensorItem(
+        context: context,
+        icon: Icons.signal_cellular_alt_rounded,
+        color: Colors.orange,
+        label: "RSSI",
+        value: rssi,
+      ),
+      _sensorItem(
+        context: context,
+        icon: Icons.satellite_alt_rounded,
+        color: Colors.blueGrey,
+        label: "Sat",
+        value: sat,
+      ),
+      _sensorItem(
+        context: context,
+        icon: Icons.vpn_key_rounded,
+        color: ignition == 'On' ? Colors.green : Colors.red,
+        label: "Ign",
+        value: ignition,
+      ),
+      _sensorItem(
+        context: context,
+        icon: Icons.battery_charging_full_rounded,
+        color: charging == 'On' ? Colors.green : Colors.red,
+        label: "Chg",
+        value: charging,
+      ),
+      _sensorItem(
+        context: context,
+        icon: Icons.sensors_rounded,
+        color: Colors.green,
+        label: "Bat",
+        value: battery,
+      ),
+    ];
+
+    Widget buildSensorRow(List<Widget> items) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            if (i > 0) SizedBox(width: 1.6.w),
+            items[i],
+          ],
+        ],
+      );
+    }
+
+    final firstRowItems = sensorItems.take(3).toList(growable: false);
+    final secondRowItems = sensorItems.skip(3).toList(growable: false);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 1.6.w,
-            runSpacing: .45.h,
-            children: [
-              _sensorItem(
-                context: context,
-                icon: Icons.lock_outline_rounded,
-                color: immobilizer ? Colors.red : Colors.green,
-                label: "Imm",
-                value: immobilizer ? "On" : "Off",
-              ),
-              _sensorItem(
-                context: context,
-                icon: Icons.signal_cellular_alt_rounded,
-                color: Colors.orange,
-                label: "RSSI",
-                value: rssi,
-              ),
-              _sensorItem(
-                context: context,
-                icon: Icons.satellite_alt_rounded,
-                color: Colors.blueGrey,
-                label: "Sat",
-                value: sat,
-              ),
-              _sensorItem(
-                context: context,
-                icon: Icons.vpn_key_rounded,
-                color: ignition == 'On' ? Colors.green : Colors.red,
-                label: "Ign",
-                value: ignition,
-              ),
-              _sensorItem(
-                context: context,
-                icon: Icons.battery_charging_full_rounded,
-                color: charging == 'On' ? Colors.green : Colors.red,
-                label: "Chg",
-                value: charging,
-              ),
-              _sensorItem(
-                context: context,
-                icon: Icons.sensors_rounded,
-                color: Colors.green,
-                label: "Bat",
-                value: battery,
-              ),
-            ],
-          ),
+          buildSensorRow(firstRowItems),
+          if (secondRowItems.isNotEmpty) ...[
+            SizedBox(height: .45.h),
+            buildSensorRow(secondRowItems),
+          ],
         ],
       ),
     );

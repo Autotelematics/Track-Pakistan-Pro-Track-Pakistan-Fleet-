@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -11,15 +12,16 @@ class AddressFooter extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final String address = CompanyInfo.companyAddress.trim();
     final bool hasAddress = address.isNotEmpty;
+    final l10n = context.l10n;
 
     return Column(
       children: [
         Divider(color: isDark ? Colors.white24 : Colors.grey[300], height: 2.h),
         if (hasAddress)
           Text(
-            "Office Address",
+            l10n.officeAddress,
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 14.2.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white70 : Colors.grey[700],
             ),
@@ -32,7 +34,7 @@ class AddressFooter extends StatelessWidget {
               address,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 13.2.sp,
                 height: 1.4,
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),

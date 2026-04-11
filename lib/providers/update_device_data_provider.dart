@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/update_device_data_model.dart';
 import 'package:trackerapp/data/repositories/update_device_data_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 class UpdateDeviceDataProvider extends ChangeNotifier {
   final UpdateDeviceDataRepository _repository = UpdateDeviceDataRepository();
@@ -28,7 +29,7 @@ class UpdateDeviceDataProvider extends ChangeNotifier {
       _updatedData = response;
       return response;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       if (showErrorSnackBar) {
         AppSnackBar.error(message: _errorMessage ?? "Something went wrong");
       }
@@ -65,7 +66,7 @@ class UpdateDeviceDataProvider extends ChangeNotifier {
 
       return response;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       AppSnackBar.error(message: _errorMessage ?? "Something went wrong");
       return null;
     } finally {

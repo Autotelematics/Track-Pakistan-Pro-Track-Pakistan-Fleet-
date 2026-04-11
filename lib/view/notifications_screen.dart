@@ -29,10 +29,12 @@ class NewNotificationScreen extends StatefulWidget {
 
 class _NewNotificationScreenState extends State<NewNotificationScreen>
     with WidgetsBindingObserver {
+  static const String _allAlertTypesValue = 'All';
+
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   int? _selectedDeviceId;
-  String? _selectedAlertType = 'All';
+  String? _selectedAlertType = _allAlertTypesValue;
   DateTime? _fromFilterDate;
   DateTime? _toFilterDate;
   String? _selectedDatePreset;
@@ -126,7 +128,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
     final alertsProvider = Provider.of<AlertsProvider>(context, listen: false);
     alertsProvider.setDeviceFilter(_selectedDeviceId);
     alertsProvider.setAlertTypeFilter(
-        _selectedAlertType == 'All' ? null : _selectedAlertType);
+        _selectedAlertType == _allAlertTypesValue ? null : _selectedAlertType);
     alertsProvider.setDateRangeFilter(from: _fromFilterDate, to: _toFilterDate);
     alertsProvider.fetchAlerts(isRefresh: true, context: context);
   }
@@ -177,20 +179,20 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
     DateTime from;
     DateTime to;
     switch (preset) {
-      case 'Today':
+      case notificationPresetToday:
         from = today;
         to = today;
         break;
-      case 'Yesterday':
+      case notificationPresetYesterday:
         final y = today.subtract(const Duration(days: 1));
         from = y;
         to = y;
         break;
-      case '7 Days':
+      case notificationPresetLast7Days:
         from = today.subtract(const Duration(days: 6));
         to = today;
         break;
-      case '30 Days':
+      case notificationPresetLast30Days:
         from = today.subtract(const Duration(days: 29));
         to = today;
         break;
@@ -303,7 +305,9 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
 
                         final vehicleItems = [
                           allVehiclesLabel,
-                          ...devices.map((d) => d.name ?? 'Device ${d.id}')
+                          ...devices.map(
+                            (d) => d.name ?? '${l10n.vehicleLabel} ${d.id}',
+                          )
                         ];
                         String? selectedVehicleName;
                         if (_selectedDeviceId == null) {
@@ -313,8 +317,8 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                             final device = devices.firstWhere(
                               (d) => d.id == _selectedDeviceId,
                             );
-                            selectedVehicleName =
-                                device.name ?? 'Device ${device.id}';
+                            selectedVehicleName = device.name ??
+                                '${l10n.vehicleLabel} ${device.id}';
                           } catch (e) {
                             selectedVehicleName = allVehiclesLabel;
                           }
@@ -352,7 +356,10 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                               } else {
                                 try {
                                   final device = devices.firstWhere(
-                                    (d) => (d.name ?? 'Device ${d.id}') == val,
+                                    (d) =>
+                                        (d.name ??
+                                            '${l10n.vehicleLabel} ${d.id}') ==
+                                        val,
                                   );
                                   _selectedDeviceId = device.id;
                                 } catch (e) {
@@ -376,7 +383,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                             );
                             setState(() {
                               _selectedDeviceId = null;
-                              _selectedAlertType = 'All';
+                              _selectedAlertType = _allAlertTypesValue;
                               _selectedDatePreset = null;
                               _fromFilterDate = null;
                               _toFilterDate = null;

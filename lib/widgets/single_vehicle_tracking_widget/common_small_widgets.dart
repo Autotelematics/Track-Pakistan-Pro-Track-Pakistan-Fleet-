@@ -6,6 +6,8 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/popups.dart';
+import 'package:trackerapp/data/models/get_device_list_model.dart'
+    as device_list;
 import 'package:trackerapp/data/models/get_device_live_tracking_model.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
@@ -28,10 +30,11 @@ class MovingChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final isMoving = text.toLowerCase() == "moving" ||
-        text == context.l10n.moving;
+    final isMoving =
+        text.toLowerCase() == "moving" || text == context.l10n.moving;
     final statusColor = color ?? (isMoving ? AppColors.green : AppColors.red);
-    final bg = isDark ? Colors.grey.shade900.withValues(alpha: .85) : AppColors.white;
+    final bg =
+        isDark ? Colors.grey.shade900.withValues(alpha: .85) : AppColors.white;
     final textColor = isDark ? AppColors.white : AppColors.textBlack;
 
     return Container(
@@ -156,6 +159,7 @@ class VehicleBasicInfo extends StatefulWidget {
   final String deviceLatestUpdate;
   final int deviceSpeed;
   final List<Sensor>? sensors;
+  final device_list.Param? param;
   final double fallbackOdometer;
 
   const VehicleBasicInfo({
@@ -166,6 +170,7 @@ class VehicleBasicInfo extends StatefulWidget {
     required this.deviceLatestUpdate,
     required this.deviceAddress,
     this.sensors,
+    this.param,
     required this.fallbackOdometer,
   });
 
@@ -283,16 +288,15 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
   }
 
   double? _resolveBatteryPercent() {
-    final sensors = widget.sensors ?? const <Sensor>[];
-    for (final sensor in sensors) {
-      if ((sensor.type ?? '').toLowerCase() != 'battery') continue;
-      final fromVal = _toDouble(sensor.val);
-      if (fromVal != null) return fromVal.clamp(0, 100).toDouble();
-      final fromValue = _toDouble(sensor.value);
-      if (fromValue != null) return fromValue.clamp(0, 100).toDouble();
-      return null;
-    }
-    return null;
+    final value = _toDouble(widget.param?.batterylevel);
+    if (value == null) return null;
+    return value.clamp(0, 100).toDouble();
+  }
+
+  double? _resolvePowerVoltage() {
+    final value = _toDouble(widget.param?.power);
+    if (value == null) return null;
+    return value;
   }
 
   IconData _batteryIcon(double percent) {
@@ -304,29 +308,6 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
     if (percent <= 82) return Icons.battery_5_bar;
     return Icons.battery_full;
   }
-
-  Sensor? _sensorByType(String type) {
-    final sensors = widget.sensors ?? const <Sensor>[];
-    for (final sensor in sensors) {
-      if ((sensor.type ?? '').toLowerCase() == type.toLowerCase()) {
-        return sensor;
-      }
-    }
-    return null;
-  }
-
-  Sensor? _sensorByTypes(List<String> types) {
-    final sensors = widget.sensors ?? const <Sensor>[];
-    final normalizedTypes = types.map((e) => e.toLowerCase()).toSet();
-    for (final sensor in sensors) {
-      if (normalizedTypes.contains((sensor.type ?? '').toLowerCase())) {
-        return sensor;
-      }
-    }
-    return null;
-  }
-
-  bool _hasSensorType(String type) => _sensorByType(type) != null;
 
   Widget _withMissingCross({
     required Widget child,
@@ -351,19 +332,9 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
   }
 
   int? _resolveGsmBars() {
-    final gsm = _sensorByType('gsm');
-    if (gsm == null) return null;
-    if (gsm.scaleValue != null) {
-      return gsm.scaleValue!.clamp(0, 5);
-    }
-    final numeric = _toDouble(gsm.val) ?? _toDouble(gsm.value);
+    final numeric = _toDouble(widget.param?.rssi);
     if (numeric == null) return null;
-    if (numeric <= 0) return 0;
-    if (numeric <= 20) return 1;
-    if (numeric <= 40) return 2;
-    if (numeric <= 60) return 3;
-    if (numeric <= 80) return 4;
-    return 5;
+    return numeric.round().clamp(0, 5);
   }
 
   Widget _buildGsmBars({
@@ -409,21 +380,13 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
   }
 
   int? _resolveGpsSatellites() {
-    final gps = _sensorByType('satellites');
-    if (gps == null) return null;
-    final numeric = _toDouble(gps.val) ?? _toDouble(gps.value);
+    final numeric = _toDouble(widget.param?.sat);
     if (numeric == null) return null;
     return numeric.round();
   }
 
   bool? _resolveIgnitionOn() {
-    final ignition = _sensorByTypes(const ['acc', 'ignition']);
-    if (ignition == null) return null;
-
-    final rawVal = ignition.val;
-    if (rawVal is bool) return rawVal;
-    if (rawVal is num) return rawVal > 0;
-    final text = (rawVal ?? ignition.value)?.toString().trim().toLowerCase();
+    final text = widget.param?.ignition?.toString().trim().toLowerCase();
     if (text == null || text.isEmpty) return null;
     if (text == 'on' || text == 'true' || text == '1') return true;
     if (text == 'off' || text == 'false' || text == '0') return false;
@@ -502,28 +465,40 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
     final speedColor = _speedBandColor(_animatedSpeed);
     final displayOdometer = _resolveVehicleOdometer();
     final batteryPercent = _resolveBatteryPercent();
-    final hasBatterySensor = _hasSensorType('battery');
-    final hasBatteryData = batteryPercent != null;
+    final powerVoltage = _resolvePowerVoltage();
+    final hasBatteryLevel =
+        widget.param?.batterylevel?.trim().isNotEmpty == true;
+    final hasBatteryPower = widget.param?.power?.trim().isNotEmpty == true;
+    final hasBatterySensor = hasBatteryLevel || hasBatteryPower;
+    final showPowerBattery =
+        batteryPercent == null && powerVoltage != null && powerVoltage >= 10;
+    final hasBatteryData = batteryPercent != null || showPowerBattery;
     final batteryColor = !hasBatteryData
         ? (isDark ? Colors.white54 : Colors.grey)
-        : (batteryPercent <= 20 ? Colors.red : AppColors.green);
-    final batteryIcon =
-        hasBatteryData ? _batteryIcon(batteryPercent) : Icons.battery_0_bar;
-    final batteryText = hasBatteryData ? '${batteryPercent.round()}%' : '--';
+        : (batteryPercent != null && batteryPercent <= 20
+            ? Colors.red
+            : AppColors.green);
+    final batteryIcon = batteryPercent != null
+        ? _batteryIcon(batteryPercent)
+        : Icons.battery_full;
+    final batteryText = batteryPercent != null
+        ? '${batteryPercent.round()}%'
+        : (showPowerBattery ? context.l10n.charging : '');
+    final batteryTextSize = batteryPercent != null ? 10.4.sp : 6.6.sp;
     final gsmBars = _resolveGsmBars();
-    final hasGsmSensor = _hasSensorType('gsm');
+    final hasGsmSensor = widget.param?.rssi?.trim().isNotEmpty == true;
     final hasGsmData = gsmBars != null;
     final gsmColor = hasGsmData
         ? (isDark ? Colors.lightGreenAccent.shade100 : AppColors.green)
         : (isDark ? Colors.white54 : Colors.grey);
     final gpsSatellites = _resolveGpsSatellites();
-    final hasGpsSensor = _hasSensorType('satellites');
+    final hasGpsSensor = widget.param?.sat?.trim().isNotEmpty == true;
     final hasGpsData = gpsSatellites != null;
     final gpsColor = hasGpsData
         ? (isDark ? Colors.lightBlueAccent.shade100 : AppColors.blueCyan)
         : (isDark ? Colors.white54 : Colors.grey);
     final ignitionOn = _resolveIgnitionOn();
-    final hasIgnitionSensor = _sensorByTypes(const ['acc', 'ignition']) != null;
+    final hasIgnitionSensor = widget.param?.ignition?.trim().isNotEmpty == true;
     final ignitionColor = ignitionOn == null
         ? (isDark ? Colors.white54 : Colors.grey)
         : (ignitionOn ? AppColors.green : Colors.red);
@@ -593,20 +568,23 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
                               ),
                               Transform.translate(
                                 offset: Offset(-2.2, 0.01.h),
-                                child: Text(
-                                  batteryText,
-                                  textAlign: TextAlign.center,
-                                  style: AppStyles.semiboldTextStyle(context)
-                                      .copyWith(
-                                    fontSize: 10.4.sp,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.0,
-                                    fontFeatures: const [
-                                      FontFeature.tabularFigures()
-                                    ],
-                                  ),
-                                ),
+                                child: batteryText.isEmpty
+                                    ? const SizedBox.shrink()
+                                    : Text(
+                                        batteryText,
+                                        textAlign: TextAlign.center,
+                                        style:
+                                            AppStyles.semiboldTextStyle(context)
+                                                .copyWith(
+                                          fontSize: batteryTextSize,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.0,
+                                          fontFeatures: const [
+                                            FontFeature.tabularFigures()
+                                          ],
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
@@ -916,7 +894,8 @@ class _BottomActionsState extends State<BottomActions> {
                         colors: canSendCommand
                             ? [
                                 ConstantColor.primaryColor,
-                                ConstantColor.primaryColor.withValues(alpha: .86),
+                                ConstantColor.primaryColor
+                                    .withValues(alpha: .86),
                               ]
                             : [
                                 Colors.grey.shade500,
@@ -944,8 +923,7 @@ class _BottomActionsState extends State<BottomActions> {
                             color: AppColors.white, size: 1.9.h),
                         horizontalSpace(width: .8.w),
                         Text(context.l10n.immobilizer,
-                            style:
-                                AppStyles.regularTextStyle(context).copyWith(
+                            style: AppStyles.regularTextStyle(context).copyWith(
                               color: AppColors.white,
                               fontSize: 12.6.sp,
                               fontWeight: FontWeight.w700,

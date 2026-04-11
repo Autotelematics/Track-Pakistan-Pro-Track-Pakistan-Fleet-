@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -274,16 +275,101 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
     final isDark = theme.brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
     final topInset = mediaQuery.padding.top;
-    final isLandscape = mediaQuery.orientation == Orientation.landscape ||
-        mediaQuery.size.width >= 900;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final physicalWidth = mediaQuery.size.width * mediaQuery.devicePixelRatio;
+    final physicalHeight = mediaQuery.size.height * mediaQuery.devicePixelRatio;
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isTallPortrait =
+        isAndroid && !isLandscape && mediaQuery.size.height >= 820;
+    final isVeryTallPortrait =
+        isTallPortrait && (mediaQuery.size.height / mediaQuery.size.width) >= 2.0;
+    final isHighResPortrait = isAndroid &&
+        !isLandscape &&
+        physicalHeight >= 3000 &&
+        physicalWidth >= 1400;
+    final isUltraWideLandscape =
+        isLandscape && mediaQuery.size.width >= 1900;
     final isTallScreen = mediaQuery.size.height >= 850 && !isLandscape;
-    final tabBarHeight = isLandscape ? 54.0 : 60.0;
-    final tabBarTop = topInset + (isLandscape ? 16.0 : 54.0);
+    final tabBarHeight = isUltraWideLandscape
+        ? 66.0
+        : (isLandscape
+            ? 58.0
+            : (isHighResPortrait
+                ? 92.0
+                : (isVeryTallPortrait ? 80.0 : (isTallPortrait ? 66.0 : 60.0))));
+    final tabBarVerticalPadding = isLandscape ? 0.0 : .22.h;
+    final tabBarTop =
+        topInset +
+            (isUltraWideLandscape
+                ? 20.0
+                : (isLandscape
+                    ? 16.0
+                    : (isHighResPortrait
+                        ? 98.0
+                        : (isVeryTallPortrait ? 82.0 : (isTallPortrait ? 64.0 : 54.0)))));
     final contentTop = tabBarTop + tabBarHeight + (isLandscape ? 8.0 : 10.0);
     final headerHeight = contentTop + (isLandscape ? 3.0 : 2.0);
-    final headerTopPadding = topInset + (isLandscape ? 3.0 : 7.0);
-    final tabIconSize = isTallScreen ? 21.0 : 19.0;
-    final tabTextSize = isTallScreen ? 12.6.sp : 11.6.sp;
+    final headerTopPadding =
+        topInset +
+            (isUltraWideLandscape
+                ? 7.0
+                : (isLandscape
+                    ? 3.0
+                    : (isHighResPortrait
+                        ? 12.0
+                        : (isVeryTallPortrait ? 10.0 : (isTallPortrait ? 9.0 : 7.0)))));
+    final tabIconSize = isUltraWideLandscape
+        ? 19.0
+        : (isLandscape
+            ? 16.0
+            : (isHighResPortrait
+                ? 28.0
+                : (isVeryTallPortrait
+                ? 24.0
+                : (isTallPortrait ? 22.0 : (isTallScreen ? 21.0 : 19.0)))));
+    final tabTextSize = isUltraWideLandscape
+        ? 10.5
+        : (isLandscape
+            ? 9.0
+            : (isHighResPortrait
+                ? 16.0.sp
+                : (isVeryTallPortrait
+                ? 14.0.sp
+                : (isTallPortrait ? 13.0.sp : (isTallScreen ? 12.6.sp : 11.6.sp)))));
+    final tabItemHeight = isUltraWideLandscape
+        ? 58.0
+        : (isLandscape
+            ? 50.0
+            : (isHighResPortrait
+                ? 84.0
+                : (isVeryTallPortrait ? 74.0 : (isTallPortrait ? 60.0 : null))));
+    Tab buildCompactTab(IconData icon, String label) {
+      return Tab(
+        height: tabItemHeight,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: tabIconSize),
+            SizedBox(
+              height: (isUltraWideLandscape || isVeryTallPortrait) ? 2 : 1,
+            ),
+            DefaultTextStyle.merge(
+              style: TextStyle(
+                fontSize: tabTextSize,
+                height: 1.0,
+              ),
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -391,7 +477,9 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                           : widget.deviceName,
                       style: AppStyles.vehicleTitle(context).copyWith(
                         color: AppColors.white,
-                        fontSize: 18.sp,
+                        fontSize: isHighResPortrait
+                            ? 19.0.sp
+                            : (isVeryTallPortrait ? 20.0.sp : 18.sp),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -408,7 +496,10 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
             right: 3.w,
             child: Container(
               height: tabBarHeight,
-              padding: EdgeInsets.symmetric(horizontal: 1.0.w, vertical: .22.h),
+              padding: EdgeInsets.symmetric(
+                horizontal: 1.0.w,
+                vertical: tabBarVerticalPadding,
+              ),
               decoration: BoxDecoration(
                 color: isDark
                     ? theme.cardColor.withValues(alpha: .92)
@@ -468,27 +559,12 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: [
-                    Tab(
-                        icon:
-                            Icon(Icons.location_on_outlined, size: tabIconSize),
-                        text: l10n.liveTab),
-                    Tab(
-                        icon: Icon(Icons.bar_chart, size: tabIconSize),
-                        text: l10n.analyticsTab),
-                    Tab(
-                        icon:
-                            Icon(Icons.description_outlined, size: tabIconSize),
-                        text: l10n.reportTab),
-                    Tab(
-                        icon: Icon(Icons.access_time, size: tabIconSize),
-                        text: l10n.historyTab),
-                    Tab(
-                        icon: Icon(Icons.notifications_none, size: tabIconSize),
-                        text: l10n.alertsTabLong),
-                    Tab(
-                        icon:
-                            Icon(Icons.info_outline_rounded, size: tabIconSize),
-                        text: l10n.infoTab),
+                    buildCompactTab(Icons.location_on_outlined, l10n.liveTab),
+                    buildCompactTab(Icons.bar_chart, l10n.analyticsTab),
+                    buildCompactTab(Icons.description_outlined, l10n.reportTab),
+                    buildCompactTab(Icons.access_time, l10n.historyTab),
+                    buildCompactTab(Icons.notifications_none, l10n.alertsTabLong),
+                    buildCompactTab(Icons.info_outline_rounded, l10n.infoTab),
                   ],
                 ),
               ),

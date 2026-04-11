@@ -8,6 +8,7 @@ import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
 enum SettingsItemId {
+  myAccount,
   support,
   password,
   drivers,
@@ -37,47 +38,51 @@ class SettingsProvider extends ChangeNotifier {
   bool _playAlertsAnnouncement =
       MySharedPreferences.getBool(playAlertsAnnouncementKey);
 
-  final List<SettingsItem> settingsItems = [
-    SettingsItem(
-      id: SettingsItemId.support,
-      icon: Icons.person_outline,
-      titleBuilder: (l10n) => l10n.support,
-    ),
-    SettingsItem(
-      id: SettingsItemId.password,
-      icon: Icons.key_outlined,
-      titleBuilder: (l10n) => l10n.password,
-    ),
-    SettingsItem(
-      id: SettingsItemId.drivers,
-      icon: Icons.badge_outlined,
-      titleBuilder: (l10n) => l10n.drivers,
-    ),
-    SettingsItem(
-      id: SettingsItemId.alertSetting,
-      icon: Icons.notifications_none,
-      titleBuilder: (l10n) => l10n.alertSetting,
-    ),
-    SettingsItem(
-      id: SettingsItemId.playAlertsAnnouncement,
-      icon: Icons.speaker_outlined,
-      titleBuilder: (l10n) => l10n.playAlertsAnnouncement,
-      hasSwitch: true,
-    ),
-    SettingsItem(
-      id: SettingsItemId.language,
-      icon: Icons.language_outlined,
-      titleBuilder: (l10n) => l10n.language,
-    ),
-    SettingsItem(
-      id: SettingsItemId.appearance,
-      icon: Icons.palette_outlined,
-      titleBuilder: (l10n) => l10n.appearance,
-    ),
-  ];
+  List<SettingsItem> get settingsItems => [
+        SettingsItem(
+          id: SettingsItemId.myAccount,
+          icon: Icons.account_circle_outlined,
+          titleBuilder: (l10n) => l10n.myAccount,
+        ),
+        SettingsItem(
+          id: SettingsItemId.support,
+          icon: Icons.person_outline,
+          titleBuilder: (l10n) => l10n.support,
+        ),
+        SettingsItem(
+          id: SettingsItemId.password,
+          icon: Icons.key_outlined,
+          titleBuilder: (l10n) => l10n.password,
+        ),
+        SettingsItem(
+          id: SettingsItemId.drivers,
+          icon: Icons.badge_outlined,
+          titleBuilder: (l10n) => l10n.drivers,
+        ),
+        SettingsItem(
+          id: SettingsItemId.alertSetting,
+          icon: Icons.notifications_none,
+          titleBuilder: (l10n) => l10n.alertSetting,
+        ),
+        SettingsItem(
+          id: SettingsItemId.playAlertsAnnouncement,
+          icon: Icons.speaker_outlined,
+          titleBuilder: (l10n) => l10n.playAlertsAnnouncement,
+          hasSwitch: true,
+        ),
+        SettingsItem(
+          id: SettingsItemId.language,
+          icon: Icons.language_outlined,
+          titleBuilder: (l10n) => l10n.language,
+        ),
+        SettingsItem(
+          id: SettingsItemId.appearance,
+          icon: Icons.palette_outlined,
+          titleBuilder: (l10n) => l10n.appearance,
+        ),
+      ];
 
-  List<SettingsItem> get visibleSettingsItems =>
-      settingsItems.where((item) {
+  List<SettingsItem> get visibleSettingsItems => settingsItems.where((item) {
         if (item.id == SettingsItemId.password && !canChangePassword) {
           return false;
         }

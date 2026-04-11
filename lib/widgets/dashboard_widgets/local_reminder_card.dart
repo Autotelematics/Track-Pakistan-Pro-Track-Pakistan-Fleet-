@@ -53,11 +53,38 @@ class LocalReminderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.localReminders,
-            style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 15.sp,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.notifications_active_rounded,
+                  color: Colors.white,
+                  size: _rSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  context.l10n.localReminders,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _rSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: 1.3.h),
           Container(
@@ -150,7 +177,7 @@ class LocalReminderCard extends StatelessWidget {
               child: Text(
                 title,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 14.sp,
+                  fontSize: _rSp(context, phone: 14.0),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -167,7 +194,7 @@ class LocalReminderCard extends StatelessWidget {
                 context.l10n.itemsCount(count),
                 style: AppStyles.regularTextStyle(context).copyWith(
                   fontWeight: FontWeight.w700,
-                  fontSize: 11.5.sp,
+                  fontSize: _rSp(context, phone: 11.5),
                 ),
               ),
             ),
@@ -235,7 +262,19 @@ class LocalReminderCard extends StatelessWidget {
               width: double.infinity,
               constraints: BoxConstraints(maxHeight: 72.h),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0E1624) : Colors.white,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? <Color>[
+                          const Color(0xFF0E1624),
+                          theme.cardColor.withValues(alpha: .92),
+                        ]
+                      : <Color>[
+                          Colors.white,
+                          const Color(0xFFF6FBFF),
+                        ],
+                ),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(20)),
               ),
@@ -252,11 +291,92 @@ class LocalReminderCard extends StatelessWidget {
                       ),
                     ),
                     verticalSpace(height: 1.2.h),
-                    Text(
-                      title,
-                      style: AppStyles.semiboldTextStyle(context).copyWith(
-                        fontSize: 14.sp,
-                        color: onSurface,
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 2.4.w, vertical: .8.h),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: .06)
+                            : const Color(0xFFF2F8FF),
+                        border: Border.all(
+                          color: onSurface.withValues(alpha: .12),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 6.w,
+                            height: 6.w,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: <Color>[
+                                  Color(0xFF22D3EE),
+                                  Color(0xFF0284C7),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              showActive
+                                  ? Icons.notifications_active_rounded
+                                  : Icons.history_rounded,
+                              color: Colors.white,
+                              size: 11.5.sp,
+                            ),
+                          ),
+                          horizontalSpace(width: 2.w),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: 14.4.sp,
+                                fontWeight: FontWeight.w900,
+                                color: onSurface.withValues(alpha: .92),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 2.w,
+                              vertical: .32.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE0F2FE),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: const Color(0xFF7DD3FC),
+                              ),
+                            ),
+                            child: Text(
+                              '${reminders.length}',
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: 10.8.sp,
+                                color: const Color(0xFF075985),
+                              ),
+                            ),
+                          ),
+                          horizontalSpace(width: 1.2.w),
+                          InkWell(
+                            borderRadius: BorderRadius.circular(999),
+                            onTap: () => Navigator.of(sheetContext).pop(),
+                            child: Container(
+                              padding: EdgeInsets.all(1.2.w),
+                              decoration: BoxDecoration(
+                                color: onSurface.withValues(alpha: .08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 10.5.sp,
+                                color: onSurface.withValues(alpha: .75),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     verticalSpace(height: 1.2.h),
@@ -318,6 +438,17 @@ class LocalReminderCard extends StatelessWidget {
   }
 }
 
+double _rSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
+}
+
 class _DashboardReminderTile extends StatelessWidget {
   final LocalReminder reminder;
   final VoidCallback onEdit;
@@ -341,15 +472,30 @@ class _DashboardReminderTile extends StatelessWidget {
     final repeatLabel = reminder.repeatType == "none"
         ? context.l10n.repeatOneTime
         : "${context.l10n.repeatRecurring} • ${_prettyRepeat(reminder.repeatType)}";
+    final isPast = reminder.repeatType == "none" &&
+        reminder.dueAt.isBefore(DateTime.now());
+    final statusColor =
+        isPast ? const Color(0xFF6B7280) : const Color(0xFF2563EB);
+    final statusLabel = isPast ? "PAST" : "ACTIVE";
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.0.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.0.w, vertical: .95.h),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: .05)
-            : const Color(0xFFF7FAFC),
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  Colors.white.withValues(alpha: .08),
+                  Colors.white.withValues(alpha: .04),
+                ]
+              : <Color>[
+                  const Color(0xFFF9FBFE),
+                  Colors.white,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(13),
         border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
       child: Column(
@@ -363,11 +509,30 @@ class _DashboardReminderTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 13.8.sp,
+                    fontSize: 14.6.sp,
                     color: onSurface,
                   ),
                 ),
               ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 1.8.w,
+                  vertical: .26.h,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: statusColor.withValues(alpha: .30)),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 10.2.sp,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+              horizontalSpace(width: .8.w),
               InkWell(
                 onTap: onEdit,
                 borderRadius: BorderRadius.circular(20),
@@ -375,7 +540,7 @@ class _DashboardReminderTile extends StatelessWidget {
                   padding: EdgeInsets.all(1.2.w),
                   child: Icon(
                     Icons.edit_rounded,
-                    size: (16.5 * iconScale).sp,
+                    size: (17.2 * iconScale).sp,
                     color: const Color(0xFF2563EB),
                   ),
                 ),
@@ -388,61 +553,78 @@ class _DashboardReminderTile extends StatelessWidget {
                   padding: EdgeInsets.all(1.2.w),
                   child: Icon(
                     Icons.delete_rounded,
-                    size: (16.8 * iconScale).sp,
+                    size: (17.4 * iconScale).sp,
                     color: const Color(0xFFDC2626),
                   ),
                 ),
               ),
             ],
           ),
-          verticalSpace(height: .35.h),
-          Text(
-            description.isEmpty ? context.l10n.noDescription : description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 13.5.sp,
-              color: onSurface.withValues(alpha: .74),
-            ),
-          ),
-          verticalSpace(height: .28.h),
-          Text(
-            repeatLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.6.sp,
-              fontWeight: FontWeight.w600,
-              color: reminder.repeatType == "none"
-                  ? onSurface.withValues(alpha: .62)
-                  : const Color(0xFF2563EB),
-            ),
-          ),
           verticalSpace(height: .55.h),
-          Row(
-            children: [
-              Icon(Icons.event_rounded,
-                  size: (14.5 * iconScale).sp, color: const Color(0xFF2563EB)),
-              horizontalSpace(width: 1.2.w),
-              Text(
-                dueDate,
-                style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.7.sp,
-                  color: onSurface.withValues(alpha: .8),
+          _tileInfoSection(
+            context,
+            title: "Details",
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  description.isEmpty
+                      ? context.l10n.noDescription
+                      : description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 13.6.sp,
+                    color: onSurface.withValues(alpha: .74),
+                  ),
                 ),
-              ),
-              horizontalSpace(width: 3.w),
-              Icon(Icons.access_time_rounded,
-                  size: (14.5 * iconScale).sp, color: const Color(0xFF2563EB)),
-              horizontalSpace(width: 1.2.w),
-              Text(
-                dueTime,
-                style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.7.sp,
-                  color: onSurface.withValues(alpha: .8),
+                verticalSpace(height: .25.h),
+                Text(
+                  repeatLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 12.8.sp,
+                    fontWeight: FontWeight.w600,
+                    color: reminder.repeatType == "none"
+                        ? onSurface.withValues(alpha: .62)
+                        : const Color(0xFF2563EB),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          verticalSpace(height: .5.h),
+          _tileInfoSection(
+            context,
+            title: "Schedule",
+            child: Row(
+              children: [
+                Icon(Icons.event_rounded,
+                    size: (14.9 * iconScale).sp,
+                    color: const Color(0xFF2563EB)),
+                horizontalSpace(width: 1.2.w),
+                Text(
+                  dueDate,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 12.9.sp,
+                    color: onSurface.withValues(alpha: .8),
+                  ),
+                ),
+                horizontalSpace(width: 3.w),
+                Icon(Icons.access_time_rounded,
+                    size: (14.9 * iconScale).sp,
+                    color: const Color(0xFF2563EB)),
+                horizontalSpace(width: 1.2.w),
+                Text(
+                  dueTime,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 12.9.sp,
+                    color: onSurface.withValues(alpha: .8),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -462,5 +644,36 @@ class _DashboardReminderTile extends StatelessWidget {
       default:
         return repeatType;
     }
+  }
+
+  Widget _tileInfoSection(
+    BuildContext context, {
+    required String title,
+    required Widget child,
+  }) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 2.1.w, vertical: .52.h),
+      decoration: BoxDecoration(
+        color: onSurface.withValues(alpha: .04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: onSurface.withValues(alpha: .10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 11.1.sp,
+              color: onSurface.withValues(alpha: .8),
+            ),
+          ),
+          verticalSpace(height: .3.h),
+          child,
+        ],
+      ),
+    );
   }
 }

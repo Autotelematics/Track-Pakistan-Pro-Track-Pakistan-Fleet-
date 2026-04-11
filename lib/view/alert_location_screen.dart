@@ -144,149 +144,155 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
               ),
             ),
           ),
-          Container(
-            width: double.infinity,
-            margin: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 2.h),
-            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.7.h),
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? LinearGradient(
-                      colors: [
-                        theme.cardColor,
-                        theme.colorScheme.surface.withValues(alpha: 0.97),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : LinearGradient(
-                      colors: [
-                        Colors.white,
-                        const Color(0xFFF8FAFF),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
-              boxShadow: [
-                BoxShadow(
+          SafeArea(
+            top: false,
+            minimum: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.7.h),
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? LinearGradient(
+                        colors: [
+                          theme.cardColor,
+                          theme.colorScheme.surface.withValues(alpha: 0.97),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : LinearGradient(
+                        colors: [
+                          Colors.white,
+                          const Color(0xFFF8FAFF),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
                   color: isDark
-                      ? Colors.black.withValues(alpha: 0.35)
-                      : Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.05),
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 10.w,
-                      height: 10.w,
-                      decoration: BoxDecoration(
-                        color: softRedBg.withValues(alpha: isDark ? 0.5 : 0.9),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: softRed.withValues(alpha: .35),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.35)
+                        : Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 10.w,
+                        height: 10.w,
+                        decoration: BoxDecoration(
+                          color:
+                              softRedBg.withValues(alpha: isDark ? 0.5 : 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: softRed.withValues(alpha: .35),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.notification_important_rounded,
+                          color: softRed,
+                          size: 19.sp,
                         ),
                       ),
-                      child: Icon(
-                        Icons.notification_important_rounded,
-                        color: softRed,
-                        size: 19.sp,
+                      SizedBox(width: 2.6.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'ALERT',
+                              style: AppStyles.semiboldTextStyle(
+                                context,
+                              ).copyWith(
+                                color: softRed,
+                                fontSize: 16.8.sp,
+                                letterSpacing: .4,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              alert.deviceName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppStyles.semiboldTextStyle(
+                                context,
+                              ).copyWith(
+                                color: onSurface,
+                                fontSize: 14.8.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  verticalSpace(height: 1.0.h),
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.h),
+                    decoration: BoxDecoration(
+                      color: softRedBg.withValues(alpha: isDark ? .22 : .55),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: softRed.withValues(alpha: .30),
                       ),
                     ),
-                    SizedBox(width: 2.6.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ALERT',
-                            style:
-                                AppStyles.semiboldTextStyle(context).copyWith(
-                              color: softRed,
-                              fontSize: 16.8.sp,
-                              letterSpacing: .4,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            alert.deviceName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style:
-                                AppStyles.semiboldTextStyle(context).copyWith(
-                              color: onSurface,
-                              fontSize: 14.8.sp,
-                            ),
-                          ),
-                        ],
+                    child: Text(
+                      alert.message,
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        color: onSurface.withValues(alpha: 0.94),
+                        fontSize: 14.5.sp,
+                        height: 1.25,
                       ),
                     ),
-                  ],
-                ),
-                verticalSpace(height: 1.0.h),
-                Container(
-                  width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.h),
-                  decoration: BoxDecoration(
-                    color: softRedBg.withValues(alpha: isDark ? .22 : .55),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: softRed.withValues(alpha: .30),
-                    ),
                   ),
-                  child: Text(
-                    alert.message,
-                    style: AppStyles.semiboldTextStyle(context).copyWith(
-                      color: onSurface.withValues(alpha: 0.94),
-                      fontSize: 14.5.sp,
-                      height: 1.25,
-                    ),
+                  verticalSpace(height: 1.0.h),
+                  _detailTile(
+                    context,
+                    icon: Icons.label_rounded,
+                    label: 'Type',
+                    value: alert.type,
                   ),
-                ),
-                verticalSpace(height: 1.0.h),
-                _detailTile(
-                  context,
-                  icon: Icons.label_rounded,
-                  label: 'Type',
-                  value: alert.type,
-                ),
-                verticalSpace(height: .7.h),
-                _detailTile(
-                  context,
-                  icon: Icons.schedule_rounded,
-                  label: 'Time',
-                  value: alert.time?.toLocal().toString().split(".").first ??
-                      "No time",
-                ),
-                verticalSpace(height: .7.h),
-                _detailTile(
-                  context,
-                  icon: Icons.place_rounded,
-                  label: 'Location',
-                  value:
-                      '${alert.latitude.toStringAsFixed(6)}, ${alert.longitude.toStringAsFixed(6)}',
-                ),
-                if (alert.address.trim().isNotEmpty) ...[
                   verticalSpace(height: .7.h),
                   _detailTile(
                     context,
-                    icon: Icons.route_rounded,
-                    label: 'Address',
-                    value: alert.address,
+                    icon: Icons.schedule_rounded,
+                    label: 'Time',
+                    value: alert.time?.toLocal().toString().split(".").first ??
+                        "No time",
                   ),
+                  verticalSpace(height: .7.h),
+                  _detailTile(
+                    context,
+                    icon: Icons.place_rounded,
+                    label: 'Location',
+                    value:
+                        '${alert.latitude.toStringAsFixed(6)}, ${alert.longitude.toStringAsFixed(6)}',
+                  ),
+                  if (alert.address.trim().isNotEmpty) ...[
+                    verticalSpace(height: .7.h),
+                    _detailTile(
+                      context,
+                      icon: Icons.route_rounded,
+                      label: 'Address',
+                      value: alert.address,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ],

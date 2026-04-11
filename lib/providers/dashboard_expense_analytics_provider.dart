@@ -7,6 +7,7 @@ import 'package:trackerapp/data/models/get_device_status_model.dart'
     as status_model;
 import 'package:trackerapp/data/repositories/device_expense_repository.dart';
 import 'package:trackerapp/data/repositories/get_device_status_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 enum ExpenseRangePreset { today, sevenDays, thirtyDays, thisMonth, custom }
 
@@ -188,7 +189,7 @@ class DashboardExpenseAnalyticsProvider extends ChangeNotifier {
         _loadMonthComparison(),
       ]);
     } catch (e) {
-      _error = e.toString();
+      _error = AppErrorMessage.normalize(e);
     } finally {
       if (!_disposed) {
         _isLoading = false;

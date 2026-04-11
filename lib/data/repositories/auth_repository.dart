@@ -62,20 +62,26 @@ class AuthRepository {
     return true;
   }
 
-  int? _extractMobileAccess(Map<String, dynamic> body) {
-    int? parseValue(dynamic value) {
-      if (value is int) return value;
-      if (value is num) return value.toInt();
-      if (value is String) return int.tryParse(value.trim());
-      return null;
+  bool _hasFleetMobileAccess(Map<String, dynamic> body) {
+    bool containsFleet(dynamic value) {
+      if (value is List) {
+        final normalized = value
+            .map((e) => e.toString().trim().toLowerCase())
+            .where((e) => e.isNotEmpty);
+        return normalized.contains("autotel_fleet");
+      }
+      if (value is String) {
+        return value.trim().toLowerCase() == "autotel_fleet";
+      }
+      return false;
     }
 
     final topLevelPermissions = body["permissions"];
     if (topLevelPermissions is Map<String, dynamic>) {
       final customerDetails = topLevelPermissions["customer_details"];
-      if (customerDetails is Map<String, dynamic>) {
-        final parsed = parseValue(customerDetails["mobile_access"]);
-        if (parsed != null) return parsed;
+      if (customerDetails is Map<String, dynamic> &&
+          containsFleet(customerDetails["mobile_access"])) {
+        return true;
       }
     }
 
@@ -84,14 +90,14 @@ class AuthRepository {
       final permissions = data["permissions"];
       if (permissions is Map<String, dynamic>) {
         final customerDetails = permissions["customer_details"];
-        if (customerDetails is Map<String, dynamic>) {
-          final parsed = parseValue(customerDetails["mobile_access"]);
-          if (parsed != null) return parsed;
+        if (customerDetails is Map<String, dynamic> &&
+            containsFleet(customerDetails["mobile_access"])) {
+          return true;
         }
       }
     }
 
-    return null;
+    return false;
   }
 
   int _extractUserId(Map<String, dynamic> body) {
@@ -127,6 +133,23 @@ class AuthRepository {
     return "";
   }
 
+  String _extractStringField(Map<String, dynamic> body, String key) {
+    final topLevel = body[key]?.toString().trim();
+    if (topLevel != null && topLevel.isNotEmpty && topLevel != "null") {
+      return topLevel;
+    }
+
+    final data = body["data"];
+    if (data is Map<String, dynamic>) {
+      final nested = data[key]?.toString().trim();
+      if (nested != null && nested.isNotEmpty && nested != "null") {
+        return nested;
+      }
+    }
+
+    return "";
+  }
+
   String _extractUserType(Map<String, dynamic> body) {
     final topLevel = body["user_type"]?.toString().trim();
     if (topLevel != null && topLevel.isNotEmpty) return topLevel;
@@ -138,6 +161,115 @@ class AuthRepository {
     }
 
     return "";
+  }
+
+  String _extractCompanyField(Map<String, dynamic> body, String key) {
+    final companyDetails = body["company_details"];
+    if (companyDetails is Map<String, dynamic>) {
+      final topLevel = companyDetails[key]?.toString().trim();
+      if (topLevel != null && topLevel.isNotEmpty && topLevel != "null") {
+        return topLevel;
+      }
+    }
+
+    final data = body["data"];
+    if (data is Map<String, dynamic>) {
+      final nestedCompanyDetails = data["company_details"];
+      if (nestedCompanyDetails is Map<String, dynamic>) {
+        final nested = nestedCompanyDetails[key]?.toString().trim();
+        if (nested != null && nested.isNotEmpty && nested != "null") {
+          return nested;
+        }
+      }
+    }
+
+    return "";
+  }
+
+  Future<void> _persistCompanyDetails(Map<String, dynamic> body) async {
+    await MySharedPreferences.setString(
+      companyNameKey,
+      _extractCompanyField(body, "company_name"),
+    );
+    await MySharedPreferences.setString(
+      companyAddressKey,
+      _extractCompanyField(body, "company_address"),
+    );
+    await MySharedPreferences.setString(
+      companyPhoneKey,
+      _extractCompanyField(body, "phone_no"),
+    );
+    await MySharedPreferences.setString(
+      companySupportEmailKey,
+      _extractCompanyField(body, "support_email"),
+    );
+    await MySharedPreferences.setString(
+      companyWebsiteKey,
+      _extractCompanyField(body, "website"),
+    );
+    await MySharedPreferences.setString(
+      companyWhatsappKey,
+      _extractCompanyField(body, "whatsapp_no"),
+    );
+    await MySharedPreferences.setString(
+      companyFacebookKey,
+      _extractCompanyField(body, "facebook"),
+    );
+    await MySharedPreferences.setString(
+      companyInstagramKey,
+      _extractCompanyField(body, "instagram"),
+    );
+    await MySharedPreferences.setString(
+      companyTermsUrlKey,
+      _extractCompanyField(body, "terms_condition_url"),
+    );
+    await MySharedPreferences.setString(
+      companyPrivacyUrlKey,
+      _extractCompanyField(body, "privacy_policy_url"),
+    );
+    await MySharedPreferences.setString(
+      companyNewsUrlKey,
+      _extractCompanyField(body, "company_news_url"),
+    );
+  }
+
+  Future<void> _persistUserSession(Map<String, dynamic> body) async {
+    await MySharedPreferences.setBool(isLoggedInKey, true);
+    await MySharedPreferences.setString(
+      authTokenKey,
+      body["user_api_hash"]?.toString() ??
+          MySharedPreferences.getString(authTokenKey),
+    );
+    await MySharedPreferences.setInt(userIdKey, _extractUserId(body));
+    await MySharedPreferences.setString(
+      userNameKey,
+      _extractStringField(body, "user_name"),
+    );
+    await MySharedPreferences.setString(
+      userEmailKey,
+      _extractUserEmail(body),
+    );
+    await MySharedPreferences.setString(
+      userPhoneNumberKey,
+      _extractStringField(body, "user_phone_number"),
+    );
+    await MySharedPreferences.setString(
+      userExpirationDateKey,
+      _extractStringField(body, "expiration_date"),
+    );
+    await MySharedPreferences.setString(
+      userDevicesLimitKey,
+      _extractStringField(body, "devices_limit"),
+    );
+    await MySharedPreferences.setString(userTypeKey, _extractUserType(body));
+    await MySharedPreferences.setBool(
+      canChangePasswordKey,
+      _extractCanChangePassword(body),
+    );
+    await MySharedPreferences.setBool(
+      canSendCommandViewKey,
+      _extractSendCommandView(body),
+    );
   }
 
   //Login
@@ -155,20 +287,10 @@ class AuthRepository {
     final result = await http.post(url).timeout(const Duration(seconds: 12));
     final body = jsonDecode(result.body);
     if (result.statusCode == 200) {
-      if (_extractMobileAccess(body) != 3) {
+      if (!_hasFleetMobileAccess(body)) {
         throw mobileAccessDeniedMessage;
       }
-      await MySharedPreferences.setBool(isLoggedInKey, true);
-      await MySharedPreferences.setString(
-          authTokenKey, body["user_api_hash"]?.toString() ?? "");
-      await MySharedPreferences.setInt(userIdKey, _extractUserId(body));
-      await MySharedPreferences.setString(
-          userEmailKey, _extractUserEmail(body));
-      await MySharedPreferences.setString(userTypeKey, _extractUserType(body));
-      await MySharedPreferences.setBool(
-          canChangePasswordKey, _extractCanChangePassword(body));
-      await MySharedPreferences.setBool(
-          canSendCommandViewKey, _extractSendCommandView(body));
+      await _persistUserSession(body);
       final fcmRepo = FcmTokenRepository();
       await fcmRepo.syncCurrentDeviceToken(force: true);
       await fcmRepo.syncLatestTokenIfAvailable(force: true);
@@ -178,18 +300,48 @@ class AuthRepository {
     }
   }
 
+  Future<void> fetchCompanyDetailsApi() async {
+    final token = MySharedPreferences.getString(authTokenKey).trim();
+    if (token.isEmpty) return;
+
+    final endpointPath = AppUrl.getCompanyDetailsEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': token,
+      },
+    );
+
+    final result = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    ).timeout(const Duration(seconds: 12));
+
+    final body = jsonDecode(result.body);
+    if (result.statusCode == 200 && body["status"] == 1) {
+      await _persistCompanyDetails(body);
+      return;
+    }
+
+    throw body["message"] ?? "Unable to load company details";
+  }
+
   // change password
   Future<String> changePasswordApi({
     required String oldPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
     final token = MySharedPreferences.getString(authTokenKey);
     final endpointPath = AppUrl.changePasswordEp.split('?').first;
     final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
       queryParameters: {
         'user_api_hash': token,
-        'password': oldPassword,
-        'password_confirmation': newPassword,
+        'old_password': oldPassword,
+        'current_password': oldPassword,
+        'password': newPassword,
+        'new_password': newPassword,
+        'password_confirmation': confirmPassword,
+        'new_password_confirmation': confirmPassword,
       },
     );
     final result = await http.post(

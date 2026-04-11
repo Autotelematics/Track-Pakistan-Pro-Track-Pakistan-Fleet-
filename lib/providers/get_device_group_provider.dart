@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/get_device_group_model.dart';
 import 'package:trackerapp/data/repositories/get_device_group_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 class GetDeviceGroupProvider with ChangeNotifier {
   final GetDeviceGroupRepository _repository = GetDeviceGroupRepository();
@@ -70,7 +71,7 @@ class GetDeviceGroupProvider with ChangeNotifier {
       _hasMore = _currentPage <= _totalPages;
     } catch (e) {
       _isError = true;
-      _error = e.toString();
+      _error = AppErrorMessage.normalize(e);
     } finally {
       _isLoading = false;
       notifyListeners();

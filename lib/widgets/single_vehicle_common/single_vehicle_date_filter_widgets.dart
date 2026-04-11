@@ -27,99 +27,127 @@ class SingleVehicleDateFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const reportAccent = Color(0xFFE0A800);
+    const filterAccent = Color(0xFF2563EB);
+    const filterAccentSoft = Color(0xFFEFF4FF);
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
+    final borderColor = isDark ? Colors.white12 : Colors.black12;
+    final textColor = isDark ? AppColors.white : AppColors.textBlack;
+    final selectedLabel =
+        selectedFilterIndex >= 0 && selectedFilterIndex < filterLabels.length
+            ? filterLabels[selectedFilterIndex]
+            : '';
 
     return Column(
       children: [
-        Row(
-          children: List.generate(filterLabels.length, (i) {
-            final selected = selectedFilterIndex == i;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                    right: i == filterLabels.length - 1 ? 0 : 1.2.w),
+        Container(
+          height: 5.8.h,
+          padding: EdgeInsets.symmetric(horizontal: 2.5.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? <Color>[
+                      cardColor,
+                      Colors.white.withValues(alpha: .03),
+                    ]
+                  : <Color>[
+                      Colors.white,
+                      const Color(0xFFF8FBFF),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14.sp),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? .18 : .07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(9),
-                  onTap: () => onFilterTap(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.symmetric(vertical: .9.h),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? reportAccent.withValues(alpha: .22)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: .06)
-                              : Colors.white),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: selected
-                            ? reportAccent.withValues(alpha: .62)
-                            : (isDark ? Colors.white12 : Colors.black12),
-                      ),
-                    ),
-                    child: Text(
-                      filterLabels[i],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: AppStyles.semiboldTextStyle(context).copyWith(
-                        fontSize: 10.9.sp,
-                        color: selected
-                            ? reportAccent
-                            : (isDark ? Colors.white70 : Colors.black87),
-                      ),
+                  borderRadius: BorderRadius.circular(10.sp),
+                  onTap: onDateRangeTap,
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: .5.h, horizontal: .8.w),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today,
+                            size: 17.sp, color: filterAccent),
+                        horizontalSpace(width: 2.w),
+                        Expanded(
+                          child: Text(
+                            rangeText,
+                            style: AppStyles.semiboldTextStyle(context)
+                                .copyWith(fontSize: 12.4.sp, color: textColor),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            );
-          }),
-        ),
-        verticalSpace(height: 1.h),
-        InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onDateRangeTap,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.15.h),
-            decoration: BoxDecoration(
-              color:
-                  isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border:
-                  Border.all(color: isDark ? Colors.white12 : Colors.black12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? .16 : .06),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_month_rounded,
-                    size: 17.sp, color: ConstantColor.primaryColor),
-                horizontalSpace(width: 1.8.w),
-                Expanded(
+              if (selectedLabel.isNotEmpty) ...[
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? filterAccent.withValues(alpha: .24)
+                        : filterAccentSoft,
+                    borderRadius: BorderRadius.circular(8.sp),
+                    border: Border.all(
+                      color: filterAccent.withValues(alpha: .46),
+                    ),
+                  ),
                   child: Text(
-                    rangeText,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    selectedLabel,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 12.2.sp,
-                      color: isDark ? AppColors.white : AppColors.textBlack,
+                      fontSize: 11.2.sp,
+                      color: filterAccent,
                     ),
                   ),
                 ),
-                Icon(
-                  showDateRangePicker
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
+                horizontalSpace(width: 2.w),
               ],
-            ),
+              PopupMenuButton<int>(
+                padding: EdgeInsets.zero,
+                offset: Offset(0, 5.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.sp)),
+                icon: Icon(Icons.filter_list, color: filterAccent, size: 24.sp),
+                onSelected: onFilterTap,
+                itemBuilder: (_) => List.generate(filterLabels.length, (i) {
+                  final selected = selectedFilterIndex == i;
+                  return PopupMenuItem<int>(
+                    value: i,
+                    child: Row(
+                      children: [
+                        if (selected)
+                          Icon(Icons.check, color: filterAccent, size: 18.sp),
+                        if (selected) horizontalSpace(width: 2.w),
+                        Text(
+                          filterLabels[i],
+                          style: TextStyle(
+                            fontSize: 12.6.sp,
+                            fontWeight:
+                                selected ? FontWeight.bold : FontWeight.normal,
+                            color: selected ? filterAccent : textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
           ),
         ),
       ],
@@ -168,16 +196,66 @@ class SingleVehicleDateRangePickerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    const filterAccent = Color(0xFF2563EB);
+    const filterAccentSoft = Color(0xFFEFF4FF);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.2.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.8.w, vertical: 1.4.h),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  Colors.white.withValues(alpha: .08),
+                  Colors.white.withValues(alpha: .04),
+                ]
+              : [AppColors.white, Colors.grey.shade50],
+        ),
+        borderRadius: BorderRadius.circular(14.sp),
         border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? .18 : .07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                width: 8.8.w,
+                height: 4.3.h,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? filterAccent.withValues(alpha: .22)
+                      : filterAccentSoft,
+                  borderRadius: BorderRadius.circular(10.sp),
+                ),
+                child: Icon(
+                  Icons.date_range_rounded,
+                  color: filterAccent,
+                  size: 17.sp,
+                ),
+              ),
+              horizontalSpace(width: 2.2.w),
+              Expanded(
+                child: Text(
+                  'Date & Time Range',
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 14.4.sp,
+                    color: onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          verticalSpace(height: 1.1.h),
           Row(
             children: [
               Expanded(
@@ -231,11 +309,20 @@ class SingleVehicleDateRangePickerCard extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: ConstantColor.primaryColor,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 1.15.h),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: onApply,
-              child: Text(applyLabel),
+              child: Text(
+                applyLabel,
+                style: AppStyles.semiboldTextStyle(context).copyWith(
+                  fontSize: 13.2.sp,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ],
@@ -262,6 +349,7 @@ class _RangePickerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    const filterAccent = Color(0xFF2563EB);
 
     return InkWell(
       borderRadius: BorderRadius.circular(10),
@@ -273,8 +361,7 @@ class _RangePickerTile extends StatelessWidget {
               ? Colors.white.withValues(alpha: .05)
               : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: ConstantColor.primaryColor.withValues(alpha: .25)),
+          border: Border.all(color: filterAccent.withValues(alpha: .32)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +377,7 @@ class _RangePickerTile extends StatelessWidget {
             verticalSpace(height: .2.h),
             Row(
               children: [
-                Icon(icon, size: 14.sp, color: ConstantColor.primaryColor),
+                Icon(icon, size: 14.sp, color: filterAccent),
                 horizontalSpace(width: 1.2.w),
                 Expanded(
                   child: Text(

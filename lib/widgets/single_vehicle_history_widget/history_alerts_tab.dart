@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 import 'common_widgets.dart';
@@ -21,6 +22,7 @@ class HistoryAlertsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final alerts = provider.alertSegments;
     if (alerts.isEmpty) {
       return Center(
@@ -31,7 +33,7 @@ class HistoryAlertsTab extends StatelessWidget {
                 size: 40.sp, color: Colors.grey.shade400),
             verticalSpace(height: 1.h),
             Text(
-              'No alerts found',
+              l10n.noHistoryAlertsFound,
               style: AppStyles.regularTextStyle(context)
                   .copyWith(fontSize: 15.sp, color: Colors.grey.shade500),
             ),
@@ -48,8 +50,9 @@ class HistoryAlertsTab extends StatelessWidget {
         alert: alerts[i],
         onTap: () {
           if (provider.routeList.isEmpty || mapController == null) return;
-          final idx =
-              alerts[i].anchorRouteIndex.clamp(0, provider.routeList.length - 1);
+          final idx = alerts[i]
+              .anchorRouteIndex
+              .clamp(0, provider.routeList.length - 1);
           provider.seekTo(idx);
           mapController!.animateCamera(
             CameraUpdate.newCameraPosition(

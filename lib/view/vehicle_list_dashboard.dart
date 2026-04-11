@@ -389,9 +389,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
                     MaterialPageRoute(
                         builder: (BuildContext context) =>
                             SingleVehicleAnalytics(
-                              deviceId: provider.filteredVehicles[i].id ?? 0,
-                              deviceName:
-                                  provider.filteredVehicles[i].name ?? "",
+                              deviceId: item.id ?? 0,
+                              deviceName: item.name ?? "",
                               sensors: item.sensors ?? [],
                               isExpired: isExpired,
                               isOffline: isOffline,

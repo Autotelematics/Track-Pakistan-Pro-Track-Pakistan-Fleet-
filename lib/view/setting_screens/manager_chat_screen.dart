@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/data/models/manager_chat_model.dart';
 import 'package:trackerapp/providers/manager_chat_provider.dart';
+import 'package:trackerapp/utils/app_snackbar.dart';
 
 class ManagerChatScreen extends StatelessWidget {
   final int? deviceId;
@@ -36,14 +40,17 @@ class _ManagerChatView extends StatefulWidget {
   State<_ManagerChatView> createState() => _ManagerChatViewState();
 }
 
-class _ManagerChatViewState extends State<_ManagerChatView> {
+class _ManagerChatViewState extends State<_ManagerChatView>
+    with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   int _lastMessageCount = 0;
+  Timer? _resumeRefreshTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ManagerChatProvider>().initialize();
@@ -52,9 +59,36 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
 
   @override
   void dispose() {
+    _resumeRefreshTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    final provider = context.read<ManagerChatProvider>();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (provider.hasThread) {
+          provider.startPolling();
+          _resumeRefreshTimer?.cancel();
+          _resumeRefreshTimer = Timer(const Duration(seconds: 2), () {
+            if (!mounted) return;
+            context.read<ManagerChatProvider>().refreshMessages(silent: true);
+          });
+        }
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _resumeRefreshTimer?.cancel();
+        provider.stopPolling();
+        break;
+    }
   }
 
   void _scrollToBottom() {
@@ -71,6 +105,447 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
     if (text.trim().isEmpty) return;
     _messageController.clear();
     await context.read<ManagerChatProvider>().sendMessage(text);
+  }
+
+  double? _parseCoordinate(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString().trim());
+  }
+
+  Future<void> _showSendLocationDialog(BuildContext context) async {
+    final provider = context.read<ManagerChatProvider>();
+    List<Item> devices;
+    try {
+      devices = await provider.fetchDeviceOptions();
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.error(message: 'Unable to load devices. Please try again.');
+      return;
+    }
+
+    if (!mounted) return;
+    if (devices.isEmpty) {
+      AppSnackBar.error(message: 'No devices available to share location.');
+      return;
+    }
+
+    Item selectedDevice = devices.first;
+    final preferredId = provider.linkedDeviceId;
+    if (preferredId != null) {
+      for (final item in devices) {
+        if (item.id == preferredId) {
+          selectedDevice = item;
+          break;
+        }
+      }
+    }
+
+    bool isSubmitting = false;
+    await showDialog<void>(
+      context: this.context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final lat = _parseCoordinate(selectedDevice.lat);
+            final lng = _parseCoordinate(selectedDevice.lng);
+            final hasCoordinates = lat != null && lng != null;
+            final locationPreview = hasCoordinates
+                ? 'Lat: ${lat.toStringAsFixed(6)}\nLng: ${lng.toStringAsFixed(6)}'
+                : 'Location is unavailable for this device.';
+
+            return AlertDialog(
+              title: Text(
+                'Send Location',
+                style: AppStyles.semiboldTextStyle(context),
+              ),
+              content: SizedBox(
+                width: 86.w,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Select vehicle',
+                      style: AppStyles.regularTextStyle(context).copyWith(
+                        fontSize: 12.5.sp,
+                      ),
+                    ),
+                    SizedBox(height: 0.8.h),
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedDevice.id,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 3.w,
+                          vertical: 1.1.h,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      items: devices
+                          .where((item) => item.id != null)
+                          .map(
+                            (item) => DropdownMenuItem<int>(
+                              value: item.id!,
+                              child: Text(
+                                item.name?.trim().isNotEmpty == true
+                                    ? item.name!.trim()
+                                    : 'Device ${item.id}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isSubmitting
+                          ? null
+                          : (value) {
+                              if (value == null) return;
+                              final next = devices.firstWhere(
+                                (item) => item.id == value,
+                                orElse: () => selectedDevice,
+                              );
+                              setDialogState(() => selectedDevice = next);
+                            },
+                    ),
+                    SizedBox(height: 1.4.h),
+                    Text(
+                      locationPreview,
+                      style: AppStyles.regularTextStyle(context).copyWith(
+                        fontSize: 12.2.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: (!hasCoordinates || isSubmitting)
+                      ? null
+                      : () async {
+                          final deviceId = selectedDevice.id;
+                          final deviceLat = _parseCoordinate(selectedDevice.lat);
+                          final deviceLng = _parseCoordinate(selectedDevice.lng);
+                          if (deviceId == null ||
+                              deviceLat == null ||
+                              deviceLng == null) {
+                            AppSnackBar.error(
+                              message: 'Selected device location is invalid.',
+                            );
+                            return;
+                          }
+
+                          setDialogState(() => isSubmitting = true);
+                          final sent = await provider.sendLocationAttachment(
+                            deviceId: deviceId,
+                            deviceName: selectedDevice.name ?? '',
+                            lat: deviceLat,
+                            lng: deviceLng,
+                          );
+                          if (!mounted || !dialogContext.mounted) return;
+                          if (!sent) {
+                            setDialogState(() => isSubmitting = false);
+                            return;
+                          }
+                          Navigator.of(dialogContext).pop();
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                  ),
+                  child: isSubmitting
+                      ? SizedBox(
+                          width: 15.sp,
+                          height: 15.sp,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Send'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showPreAlertDialog(BuildContext context) async {
+    final provider = context.read<ManagerChatProvider>();
+    List<Item> devices;
+    try {
+      devices = await provider.fetchDeviceOptions();
+    } catch (_) {
+      if (!mounted) return;
+      AppSnackBar.error(message: 'Unable to load devices. Please try again.');
+      return;
+    }
+
+    if (!mounted) return;
+    if (devices.isEmpty) {
+      AppSnackBar.error(message: 'No devices available for pre alert.');
+      return;
+    }
+
+    Item selectedDevice = devices.first;
+    final preferredId = provider.linkedDeviceId;
+    if (preferredId != null) {
+      for (final item in devices) {
+        if (item.id == preferredId) {
+          selectedDevice = item;
+          break;
+        }
+      }
+    }
+
+    DateTime fromDate = DateTime.now();
+    DateTime toDate = DateTime.now().add(const Duration(days: 7));
+    final TextEditingController noteController = TextEditingController();
+    bool isSubmitting = false;
+    final dateFmt = DateFormat('yyyy-MM-dd');
+
+    await showDialog<void>(
+      context: this.context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                'Pre Alert Info',
+                style: AppStyles.semiboldTextStyle(context),
+              ),
+              content: SizedBox(
+                width: 88.w,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select vehicle',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.5.sp,
+                        ),
+                      ),
+                      SizedBox(height: 0.8.h),
+                      DropdownButtonFormField<int>(
+                        initialValue: selectedDevice.id,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.1.h,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: devices
+                            .where((item) => item.id != null)
+                            .map(
+                              (item) => DropdownMenuItem<int>(
+                                value: item.id!,
+                                child: Text(
+                                  item.name?.trim().isNotEmpty == true
+                                      ? item.name!.trim()
+                                      : 'Device ${item.id}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: isSubmitting
+                            ? null
+                            : (value) {
+                                if (value == null) return;
+                                final next = devices.firstWhere(
+                                  (item) => item.id == value,
+                                  orElse: () => selectedDevice,
+                                );
+                                setDialogState(() => selectedDevice = next);
+                              },
+                      ),
+                      SizedBox(height: 1.2.h),
+                      Text(
+                        'From date',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.5.sp,
+                        ),
+                      ),
+                      SizedBox(height: 0.6.h),
+                      InkWell(
+                        onTap: isSubmitting
+                            ? null
+                            : () async {
+                                final picked = await showDatePicker(
+                                  context: dialogContext,
+                                  initialDate: fromDate,
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2100),
+                                );
+                                if (picked == null || !dialogContext.mounted) {
+                                  return;
+                                }
+                                setDialogState(() {
+                                  fromDate = picked;
+                                  if (toDate.isBefore(fromDate)) {
+                                    toDate = fromDate;
+                                  }
+                                });
+                              },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.1.h,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(dateFmt.format(fromDate)),
+                        ),
+                      ),
+                      SizedBox(height: 1.2.h),
+                      Text(
+                        'To date',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.5.sp,
+                        ),
+                      ),
+                      SizedBox(height: 0.6.h),
+                      InkWell(
+                        onTap: isSubmitting
+                            ? null
+                            : () async {
+                                final picked = await showDatePicker(
+                                  context: dialogContext,
+                                  initialDate: toDate.isBefore(fromDate)
+                                      ? fromDate
+                                      : toDate,
+                                  firstDate: fromDate,
+                                  lastDate: DateTime(2100),
+                                );
+                                if (picked == null || !dialogContext.mounted) {
+                                  return;
+                                }
+                                setDialogState(() => toDate = picked);
+                              },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.1.h,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(dateFmt.format(toDate)),
+                        ),
+                      ),
+                      SizedBox(height: 1.2.h),
+                      Text(
+                        'Message',
+                        style: AppStyles.regularTextStyle(context).copyWith(
+                          fontSize: 12.5.sp,
+                        ),
+                      ),
+                      SizedBox(height: 0.6.h),
+                      TextField(
+                        controller: noteController,
+                        minLines: 2,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          hintText: 'Write pre alert message',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.2.h,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          final deviceId = selectedDevice.id;
+                          final message = noteController.text.trim();
+                          if (deviceId == null) {
+                            AppSnackBar.error(message: 'Please select a device.');
+                            return;
+                          }
+                          if (message.isEmpty) {
+                            AppSnackBar.error(
+                              message: 'Please write a pre alert message.',
+                            );
+                            return;
+                          }
+                          if (toDate.isBefore(fromDate)) {
+                            AppSnackBar.error(
+                              message: 'To date must be after from date.',
+                            );
+                            return;
+                          }
+
+                          setDialogState(() => isSubmitting = true);
+                          final sent = await provider.sendPreAlertAttachment(
+                            deviceId: deviceId,
+                            fromDate: fromDate,
+                            toDate: toDate,
+                            userMessage: message,
+                          );
+                          if (!mounted || !dialogContext.mounted) return;
+                          if (!sent) {
+                            setDialogState(() => isSubmitting = false);
+                            return;
+                          }
+                          Navigator.of(dialogContext).pop();
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                  ),
+                  child: isSubmitting
+                      ? SizedBox(
+                          width: 15.sp,
+                          height: 15.sp,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Send'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    noteController.dispose();
   }
 
   @override
@@ -194,6 +669,90 @@ class _ManagerChatViewState extends State<_ManagerChatView> {
                                     vehicleName: provider.vehicleLabel,
                                   ),
                           ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 0),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: provider.isSendingPreAlert
+                                ? null
+                                : () => _showPreAlertDialog(context),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 3.8.w,
+                                vertical: .8.h,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                            icon: provider.isSendingPreAlert
+                                ? SizedBox(
+                                    width: 13.sp,
+                                    height: 13.sp,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 15.sp,
+                                  ),
+                            label: Text(
+                              'Pre Alert Info',
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                color: Colors.white,
+                                fontSize: 12.4.sp,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 0.7.h),
+                          FilledButton.icon(
+                            onPressed: provider.isSendingLocation
+                                ? null
+                                : () => _showSendLocationDialog(context),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 3.8.w,
+                                vertical: .8.h,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                            icon: provider.isSendingLocation
+                                ? SizedBox(
+                                    width: 13.sp,
+                                    height: 13.sp,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.near_me_rounded,
+                                    size: 15.sp,
+                                  ),
+                            label: Text(
+                              'Send Location',
+                              style:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                color: Colors.white,
+                                fontSize: 12.4.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   _ComposerBar(
                     controller: _messageController,
@@ -457,7 +1016,7 @@ class _MessageBubble extends StatelessWidget {
                 Text(
                   message.isPending ? 'Sending...' : timestamp,
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 10.6.sp,
+                    fontSize: 11.6.sp,
                     color: theme.colorScheme.onSurface.withValues(alpha: .55),
                   ),
                 ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -202,34 +203,100 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
     final displayedTabs = isRtl ? _tabs.reversed.toList() : List.of(_tabs);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final screenSize = MediaQuery.sizeOf(context);
+    final dpr = MediaQuery.of(context).devicePixelRatio;
+    final physicalWidth = screenSize.width * dpr;
+    final physicalHeight = screenSize.height * dpr;
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isCompactWidthPhone = isAndroid && screenSize.width <= 420;
+    final isTallPortrait = isAndroid &&
+        screenSize.height > screenSize.width &&
+        screenSize.height >= 820;
+    final isVeryTallPortrait =
+        isTallPortrait && (screenSize.height / screenSize.width) >= 2.0;
+    final isHighResPortrait =
+        isTallPortrait && physicalHeight >= 3000 && physicalWidth >= 1400;
     final barHeight = AppUiTokens.adaptiveHeight(
       context,
-      ratio: 0.068,
-      min: 52,
-      max: 58,
+      ratio: isHighResPortrait
+          ? 0.094
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 0.075 : 0.082)
+              : (isTallPortrait
+                  ? (isCompactWidthPhone ? 0.071 : 0.076)
+                  : 0.068)),
+      min: isHighResPortrait
+          ? 66
+          : (isTallPortrait ? (isCompactWidthPhone ? 54 : 58) : 52),
+      max: isHighResPortrait
+          ? 88
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 66 : 74)
+              : (isTallPortrait ? (isCompactWidthPhone ? 62 : 68) : 58)),
     );
     final iconSize = AppUiTokens.adaptiveHeight(
       context,
-      ratio: 0.0235,
-      min: 18,
-      max: 21,
+      ratio: isHighResPortrait
+          ? 0.031
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 0.025 : 0.028)
+              : (isTallPortrait
+                  ? (isCompactWidthPhone ? 0.024 : 0.026)
+                  : 0.0235)),
+      min: isHighResPortrait
+          ? 22
+          : (isTallPortrait ? (isCompactWidthPhone ? 19 : 20) : 18),
+      max: isHighResPortrait
+          ? 28
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 22 : 25)
+              : (isTallPortrait ? (isCompactWidthPhone ? 21 : 23) : 21)),
     );
     final selectedIconSize = AppUiTokens.adaptiveHeight(
       context,
-      ratio: 0.0245,
-      min: 19,
-      max: 22,
+      ratio: isHighResPortrait
+          ? 0.033
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 0.026 : 0.029)
+              : (isTallPortrait
+                  ? (isCompactWidthPhone ? 0.025 : 0.027)
+                  : 0.0245)),
+      min: isHighResPortrait
+          ? 23
+          : (isTallPortrait ? (isCompactWidthPhone ? 20 : 21) : 19),
+      max: isHighResPortrait
+          ? 30
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 23 : 26)
+              : (isTallPortrait ? (isCompactWidthPhone ? 22 : 24) : 22)),
     );
     final labelSize = AppUiTokens.adaptiveHeight(
       context,
-      ratio: 0.013,
-      min: 12,
-      max: 14,
+      ratio: isHighResPortrait
+          ? 0.018
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 0.014 : 0.016)
+              : (isTallPortrait
+                  ? (isCompactWidthPhone ? 0.0135 : 0.015)
+                  : 0.013)),
+      min: isHighResPortrait
+          ? 14
+          : (isTallPortrait ? (isCompactWidthPhone ? 12 : 13) : 12),
+      max: isHighResPortrait
+          ? 19
+          : (isVeryTallPortrait
+              ? (isCompactWidthPhone ? 14.5 : 17)
+              : (isTallPortrait ? (isCompactWidthPhone ? 14 : 15.5) : 14)),
     );
     final navBackground =
         isDark ? theme.cardColor : ConstantColor.secondaryColor;
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = bottomInset > 0 ? bottomInset + 6 : 10.0;
+    final bottomPadding = isIOS
+        ? (bottomInset > 0 ? bottomInset : 6.0)
+        : (bottomInset > 0
+            ? bottomInset + (isHighResPortrait ? 10 : (isTallPortrait ? 8 : 6))
+            : (isHighResPortrait ? 14.0 : (isTallPortrait ? 12.0 : 10.0)));
     return Scaffold(
       floatingActionButton: _showBackToAdminAction
           ? FloatingActionButton.extended(
@@ -251,7 +318,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
           : Container(
               padding: EdgeInsets.fromLTRB(
                 10,
-                8,
+                isHighResPortrait ? 12 : (isTallPortrait ? 10 : 8),
                 10,
                 bottomPadding,
               ),
@@ -279,8 +346,8 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                           duration: const Duration(milliseconds: 220),
                           curve: Curves.easeOut,
                           height: barHeight,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isIOS ? 6 : 8,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
@@ -299,19 +366,25 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                                     ? ConstantColor.primaryColor
                                     : AppColors.white,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                tab.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? ConstantColor.primaryColor
-                                      : AppColors.white,
-                                  fontSize: labelSize,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
+                              SizedBox(height: isHighResPortrait ? 6 : 4),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    tab.label,
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? ConstantColor.primaryColor
+                                          : AppColors.white,
+                                      fontSize: labelSize,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

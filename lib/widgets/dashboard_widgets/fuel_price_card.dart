@@ -46,10 +46,38 @@ class FuelPriceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.fuelPrices,
-            style:
-                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+          Row(
+            children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.local_gas_station_rounded,
+                  color: Colors.white,
+                  size: _fSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  context.l10n.fuelPrices,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _fSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: 1.3.h),
           Container(
@@ -88,14 +116,16 @@ class FuelPriceCard extends StatelessWidget {
                   price: "${data.petrolPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFF16A34A),
                 ),
-                Divider(height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
+                Divider(
+                    height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
                 _fuelRow(
                   context,
                   label: context.l10n.diesel,
                   price: "${data.dieselPrice.toStringAsFixed(2)} PKR",
                   accent: const Color(0xFFF59E0B),
                 ),
-                Divider(height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
+                Divider(
+                    height: 1.6.h, color: onSurface.withValues(alpha: 0.12)),
                 Row(
                   children: [
                     // Container(
@@ -116,7 +146,7 @@ class FuelPriceCard extends StatelessWidget {
                       child: Text(
                         context.l10n.lastUpdated,
                         style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 12.sp,
+                          fontSize: _fSp(context, phone: 12.0),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -131,7 +161,7 @@ class FuelPriceCard extends StatelessWidget {
                       child: Text(
                         _formatLastUpdated(data.fuelPriceLastUpdated),
                         style: AppStyles.regularTextStyle(context)
-                            .copyWith(fontSize: 11.2.sp),
+                            .copyWith(fontSize: _fSp(context, phone: 11.2)),
                       ),
                     ),
                   ],
@@ -172,7 +202,7 @@ class FuelPriceCard extends StatelessWidget {
           child: Text(
             label,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 14.sp,
+              fontSize: _fSp(context, phone: 14.0),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -187,7 +217,7 @@ class FuelPriceCard extends StatelessWidget {
           child: Text(
             price,
             style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 11.8.sp,
+              fontSize: _fSp(context, phone: 11.8),
               color: onSurface,
             ),
           ),
@@ -195,4 +225,15 @@ class FuelPriceCard extends StatelessWidget {
       ],
     );
   }
+}
+
+double _fSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

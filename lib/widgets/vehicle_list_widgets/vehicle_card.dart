@@ -22,6 +22,16 @@ class VehicleCard extends StatelessWidget {
     required this.theme,
   });
 
+  bool _isEngineKilled() {
+    final blocked = vehicle.param?.blocked?.trim().toLowerCase();
+    if (blocked != null && blocked.isNotEmpty) {
+      return blocked == 'true';
+    }
+
+    final out1 = vehicle.param?.out1?.trim().toLowerCase();
+    return out1 == 'true';
+  }
+
   String _getColorPrefix() {
     final onlineStatus = vehicle.online?.toLowerCase();
     final timeLower = vehicle.time?.toLowerCase();
@@ -167,7 +177,7 @@ class VehicleCard extends StatelessWidget {
     final statusKey = _getStatusKey();
     final statusLabel = _localizedStatus(context, statusKey);
     final isRunning = statusKey == 'running';
-    final isBlocked = vehicle.param?.blocked?.toLowerCase() == 'true';
+    final isBlocked = _isEngineKilled();
     final String? localAsset = _getLocalAssetPath();
     final textScale = vehicleListTextScale(context);
     final iconScale = vehicleListIconScale(context);

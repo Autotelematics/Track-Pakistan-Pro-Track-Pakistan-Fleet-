@@ -3,7 +3,6 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
-import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -57,17 +56,32 @@ class AnalyticsFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
+    const filterAccent = Color(0xFF2563EB);
+    const filterAccentSoft = Color(0xFFEFF4FF);
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
     final borderColor = isDark ? Colors.white12 : Colors.black12;
     final textColor = isDark ? AppColors.white : AppColors.textBlack;
 
     return Column(
       children: [
         Container(
-          height: 5.4.h,
+          height: 5.8.h,
           padding: EdgeInsets.symmetric(horizontal: 2.5.w),
           decoration: BoxDecoration(
-            color: cardColor,
+            gradient: LinearGradient(
+              colors: isDark
+                  ? <Color>[
+                      cardColor,
+                      Colors.white.withValues(alpha: .03),
+                    ]
+                  : <Color>[
+                      Colors.white,
+                      const Color(0xFFF8FBFF),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(14.sp),
             border: Border.all(color: borderColor),
             boxShadow: [
@@ -85,17 +99,18 @@ class AnalyticsFilterBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.sp),
                   onTap: onDateRangeTap,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: .5.h, horizontal: .8.w),
+                    padding:
+                        EdgeInsets.symmetric(vertical: .5.h, horizontal: .8.w),
                     child: Row(
                       children: [
                         Icon(Icons.calendar_today,
-                            size: 17.sp, color: ConstantColor.primaryColor),
+                            size: 17.sp, color: filterAccent),
                         horizontalSpace(width: 2.w),
                         Expanded(
                           child: Text(
                             "${_formatDate(fromDate)} → ${_formatDate(toDate)}",
                             style: AppStyles.semiboldTextStyle(context)
-                                .copyWith(fontSize: 13.2.sp, color: textColor),
+                                .copyWith(fontSize: 12.4.sp, color: textColor),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -106,20 +121,21 @@ class AnalyticsFilterBar extends StatelessWidget {
               ),
               // Active filter badge
               Container(
-                padding:
-                EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
+                padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
                 decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor.withValues(alpha: .14),
+                  color: isDark
+                      ? filterAccent.withValues(alpha: .24)
+                      : filterAccentSoft,
                   borderRadius: BorderRadius.circular(8.sp),
                   border: Border.all(
-                    color: ConstantColor.primaryColor.withValues(alpha: .45),
+                    color: filterAccent.withValues(alpha: .46),
                   ),
                 ),
                 child: Text(
                   _labelForFilter(context, selectedFilter),
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 11.9.sp,
-                    color: ConstantColor.primaryColor,
+                    fontSize: 11.2.sp,
+                    color: filterAccent,
                   ),
                 ),
               ),
@@ -130,8 +146,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                 offset: Offset(0, 5.h),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.sp)),
-                icon: Icon(Icons.filter_list,
-                    color: ConstantColor.primaryColor, size: 24.sp),
+                icon: Icon(Icons.filter_list, color: filterAccent, size: 24.sp),
                 onSelected: onFilterSelected,
                 itemBuilder: (_) => [
                   "Today",
@@ -142,37 +157,35 @@ class AnalyticsFilterBar extends StatelessWidget {
                 ]
                     .map(
                       (e) => PopupMenuItem<String>(
-                    value: e,
-                    child: Row(
-                      children: [
-                        if (e == selectedFilter)
-                          Icon(Icons.check,
-                              color: ConstantColor.primaryColor,
-                              size: 18.sp),
-                        if (e == selectedFilter)
-                          horizontalSpace(width: 2.w),
-                          Text(
-                          _labelForFilter(context, e),
-                          style: TextStyle(
-                            fontSize: 12.6.sp,
-                            fontWeight: e == selectedFilter
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: e == selectedFilter
-                                ? ConstantColor.primaryColor
-                                : textColor,
-                          ),
+                        value: e,
+                        child: Row(
+                          children: [
+                            if (e == selectedFilter)
+                              Icon(Icons.check,
+                                  color: filterAccent, size: 18.sp),
+                            if (e == selectedFilter)
+                              horizontalSpace(width: 2.w),
+                            Text(
+                              _labelForFilter(context, e),
+                              style: TextStyle(
+                                fontSize: 12.6.sp,
+                                fontWeight: e == selectedFilter
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: e == selectedFilter
+                                    ? filterAccent
+                                    : textColor,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                )
+                      ),
+                    )
                     .toList(),
               ),
             ],
           ),
         ),
-
         if (showDateRangePicker) ...[
           verticalSpace(height: 1.h),
           _AnalyticsCustomDatePicker(
@@ -238,6 +251,8 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
     final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    const filterAccent = Color(0xFF2563EB);
+    const filterAccentSoft = Color(0xFFEFF4FF);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.8.w, vertical: 1.4.h),
       decoration: BoxDecoration(
@@ -245,7 +260,10 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [Colors.white.withValues(alpha: .08), Colors.white.withValues(alpha: .04)]
+              ? [
+                  Colors.white.withValues(alpha: .08),
+                  Colors.white.withValues(alpha: .04)
+                ]
               : [AppColors.white, Colors.grey.shade50],
         ),
         borderRadius: BorderRadius.circular(14.sp),
@@ -267,12 +285,14 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
                 width: 8.8.w,
                 height: 4.3.h,
                 decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor.withValues(alpha: .14),
+                  color: isDark
+                      ? filterAccent.withValues(alpha: .22)
+                      : filterAccentSoft,
                   borderRadius: BorderRadius.circular(10.sp),
                 ),
                 child: Icon(
                   Icons.date_range_rounded,
-                  color: ConstantColor.primaryColor,
+                  color: filterAccent,
                   size: 17.sp,
                 ),
               ),
@@ -297,7 +317,8 @@ class _AnalyticsCustomDatePicker extends StatelessWidget {
                         : Colors.black.withValues(alpha: .05),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.close_rounded, size: 16.sp, color: onSurface),
+                  child:
+                      Icon(Icons.close_rounded, size: 16.sp, color: onSurface),
                 ),
               )
             ],
@@ -401,17 +422,18 @@ class _PickerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    const filterAccent = Color(0xFF2563EB);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 1.0.h),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.grey.shade50,
+        color:
+            isDark ? Colors.white.withValues(alpha: .06) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(10.sp),
-        border:
-            Border.all(color: ConstantColor.primaryColor.withValues(alpha: 0.3)),
+        border: Border.all(color: filterAccent.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18.sp, color: ConstantColor.primaryColor),
+          Icon(icon, size: 18.sp, color: filterAccent),
           horizontalSpace(width: 2.w),
           Expanded(
             child: Text(

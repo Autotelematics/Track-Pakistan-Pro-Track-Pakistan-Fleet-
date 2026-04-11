@@ -8,7 +8,9 @@ import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/data/repositories/dashboard_repository.dart';
 import 'package:trackerapp/data/repositories/get_device_status_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
 class DashboardProvider with ChangeNotifier {
@@ -84,6 +86,10 @@ class DashboardProvider with ChangeNotifier {
         }
       }
     } catch (e) {
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return;
+      }
       if (!hadData) {
         _error = _friendlyErrorMessage(e);
         AppSnackBar.error(message: _error!);
@@ -116,6 +122,10 @@ class DashboardProvider with ChangeNotifier {
         }
       }
     } catch (e) {
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return;
+      }
       if (_dashboardModel == null) {
         _error = _friendlyErrorMessage(e);
         AppSnackBar.error(message: _error!);
@@ -132,7 +142,7 @@ class DashboardProvider with ChangeNotifier {
       _dashboardData = await _repository.fetchDashboardData();
       _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = AppErrorMessage.normalize(e);
     } finally {
       notifyListeners();
     }

@@ -4,6 +4,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -22,197 +23,237 @@ class HistoryPlaybackTab extends StatelessWidget {
     required this.mapController,
   });
 
+  static const double _playbackZoom = 15.5;
+  static const double _playbackYOffset = 0.0;
+
+  Future<void> _focusPlaybackPosition(LatLng target) async {
+    if (mapController == null) return;
+    try {
+      await mapController!.moveCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: target, zoom: _playbackZoom),
+        ),
+      );
+      await mapController!.moveCamera(
+        CameraUpdate.scrollBy(0, _playbackYOffset),
+      );
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
-    final hasPosition = provider.currentSliderValue < provider.routeList.length;
-    final pos =
-        hasPosition ? provider.routeList[provider.currentSliderValue] : null;
+    return ValueListenableBuilder<int>(
+      valueListenable: provider.playbackSliderNotifier,
+      builder: (context, sliderValue, _) {
+        final hasPosition = sliderValue < provider.routeList.length;
+        final pos = hasPosition ? provider.routeList[sliderValue] : null;
 
-    return ListView(
-      controller: scrollController,
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
-      children: [
-        if (hasPosition && pos != null) ...[
-          Wrap(
-            spacing: 2.w,
-            runSpacing: .8.h,
-            children: [
-              InfoChip(
-                  icon: Icons.speed, label: '${pos.speed} km/h', wide: true),
-              InfoChip(
-                  icon: Icons.access_alarm,
-                  label: pos.rawTime ?? '—',
-                  wide: true),
-              InfoChip(
-                  icon: Icons.directions_car,
-                  label: '${pos.distance.toStringAsFixed(2)} km',
-                  wide: true),
-            ],
-          ),
-          verticalSpace(height: 1.h),
-        ],
-        // Playback status indicator
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.9.h),
-          decoration: BoxDecoration(
-            color: provider.isPlaying
-                ? Colors.green.withValues(alpha: 0.10)
-                : Colors.orange.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10.sp),
-            border: Border.all(
-              color: provider.isPlaying
-                  ? Colors.green.withValues(alpha: 0.40)
-                  : Colors.orange.withValues(alpha: 0.30),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                provider.isPlaying
-                    ? Icons.fiber_manual_record
-                    : Icons.pause_circle_outline,
-                color: provider.isPlaying ? Colors.green : Colors.orange,
-                size: 18.sp,
-              ),
-              horizontalSpace(width: 1.5.w),
-              Text(
-                provider.isPlaying
-                    ? 'Playing — route highlighted green'
-                    : 'Paused',
-                style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 14.0.sp,
-                  color: provider.isPlaying ? Colors.green : Colors.orange,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        verticalSpace(height: 1.1.h),
-
-        // Slider + controls
-        Row(
+        return ListView(
+          controller: scrollController,
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
           children: [
-            GestureDetector(
-              onTap: provider.playPause,
-              child: Container(
-                padding: EdgeInsets.all(1.6.w),
-                decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor.withValues(alpha: .92),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ConstantColor.primaryColor.withValues(alpha: .30),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+            if (hasPosition && pos != null) ...[
+              Wrap(
+                spacing: 2.w,
+                runSpacing: .8.h,
+                children: [
+                  InfoChip(
+                      icon: Icons.speed,
+                      label: '${pos.speed} km/h',
+                      wide: true),
+                  InfoChip(
+                      icon: Icons.access_alarm,
+                      label: pos.rawTime ?? '—',
+                      wide: true),
+                  InfoChip(
+                      icon: Icons.directions_car,
+                      label: '${pos.distance.toStringAsFixed(2)} km',
+                      wide: true),
+                ],
+              ),
+              verticalSpace(height: 1.h),
+            ],
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.9.h),
+              decoration: BoxDecoration(
+                color: provider.isPlaying
+                    ? Colors.green.withValues(alpha: 0.10)
+                    : Colors.orange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10.sp),
+                border: Border.all(
+                  color: provider.isPlaying
+                      ? Colors.green.withValues(alpha: 0.40)
+                      : Colors.orange.withValues(alpha: 0.30),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    provider.isPlaying
+                        ? Icons.fiber_manual_record
+                        : Icons.pause_circle_outline,
+                    color: provider.isPlaying ? Colors.green : Colors.orange,
+                    size: 18.sp,
+                  ),
+                  horizontalSpace(width: 1.5.w),
+                  Text(
+                    provider.isPlaying
+                        ? l10n.playingRouteHighlightedGreen
+                        : l10n.pausedLabel,
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 14.0.sp,
+                      color: provider.isPlaying ? Colors.green : Colors.orange,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
-                child: Icon(
-                  provider.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 18.sp,
-                ),
+                  ),
+                ],
               ),
             ),
-            horizontalSpace(width: 3.w),
-            Expanded(
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: provider.isPlaying
-                      ? Colors.green
-                      : ConstantColor.primaryColor,
-                  inactiveTrackColor: onSurface.withValues(alpha: .18),
-                  thumbColor: provider.isPlaying
-                      ? Colors.green
-                      : ConstantColor.primaryColor,
-                  overlayColor:
-                      ConstantColor.primaryColor.withValues(alpha: .15),
-                  thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 8),
-                  overlayShape:
-                      const RoundSliderOverlayShape(overlayRadius: 16),
-                ),
-                child: Slider(
-                  padding: EdgeInsets.zero,
-                  value: provider.currentSliderValue.toDouble(),
-                  min: 0,
-                  max: provider.sliderValueMax.toDouble(),
-                  divisions:
-                      provider.sliderValueMax > 0 ? provider.sliderValueMax : 1,
-                  onChanged: (v) {
-                    provider.seekTo(v.toInt());
-                    if (mapController != null &&
-                        v.toInt() < provider.routeList.length) {
-                      final loc = provider.routeList[v.toInt()];
-                      mapController!.animateCamera(
-                        CameraUpdate.newCameraPosition(
-                          CameraPosition(
-                              target: LatLng(loc.lat, loc.lng), zoom: 17),
+            verticalSpace(height: 1.1.h),
+
+            // Slider + controls
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: provider.playPause,
+                  child: Container(
+                    padding: EdgeInsets.all(1.6.w),
+                    decoration: BoxDecoration(
+                      color: ConstantColor.primaryColor.withValues(alpha: .92),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              ConstantColor.primaryColor.withValues(alpha: .30),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
-            horizontalSpace(width: 3.w),
-            GestureDetector(
-              onTap: provider.changePlaybackSpeed,
-              child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 0.7.h),
-                decoration: BoxDecoration(
-                  color: ConstantColor.primaryColor.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(6.sp),
-                  border: Border.all(
-                      color: ConstantColor.primaryColor.withValues(alpha: .36)),
-                ),
-                child: Text(
-                  provider.playbackSpeedLabel,
-                  style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 14.sp,
-                    color: ConstantColor.primaryColor,
+                      ],
+                    ),
+                    child: Icon(
+                      provider.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 18.sp,
+                    ),
                   ),
                 ),
-              ),
+                horizontalSpace(width: 3.w),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: provider.isPlaying
+                          ? Colors.green
+                          : ConstantColor.primaryColor,
+                      inactiveTrackColor: onSurface.withValues(alpha: .18),
+                      thumbColor: provider.isPlaying
+                          ? Colors.green
+                          : ConstantColor.primaryColor,
+                      overlayColor:
+                          ConstantColor.primaryColor.withValues(alpha: .15),
+                      thumbShape:
+                          const RoundSliderThumbShape(enabledThumbRadius: 8),
+                      overlayShape:
+                          const RoundSliderOverlayShape(overlayRadius: 16),
+                    ),
+                    child: Slider(
+                      padding: EdgeInsets.zero,
+                      value: sliderValue.toDouble(),
+                      min: 0,
+                      max: provider.sliderValueMax.toDouble(),
+                      divisions: provider.sliderValueMax > 0
+                          ? provider.sliderValueMax
+                          : 1,
+                      onChangeStart: (_) {
+                        if (provider.isPlaying) {
+                          provider.pausePlayback();
+                        }
+                      },
+                      onChanged: (v) {
+                        provider.seekTo(v.toInt());
+                        if (mapController == null ||
+                            provider.carLat == 0 ||
+                            provider.carLng == 0) {
+                          return;
+                        }
+                        _focusPlaybackPosition(
+                          LatLng(provider.carLat, provider.carLng),
+                        );
+                      },
+                      onChangeEnd: (_) {
+                        if (mapController == null ||
+                            provider.carLat == 0 ||
+                            provider.carLng == 0) {
+                          return;
+                        }
+                        _focusPlaybackPosition(
+                          LatLng(provider.carLat, provider.carLng),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                horizontalSpace(width: 3.w),
+                GestureDetector(
+                  onTap: provider.changePlaybackSpeed,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 2.2.w, vertical: 0.7.h),
+                    decoration: BoxDecoration(
+                      color: ConstantColor.primaryColor.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(6.sp),
+                      border: Border.all(
+                          color: ConstantColor.primaryColor
+                              .withValues(alpha: .36)),
+                    ),
+                    child: Text(
+                      provider.playbackSpeedLabel,
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: 14.sp,
+                        color: ConstantColor.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+            verticalSpace(height: 1.1.h),
+            Wrap(
+              spacing: 2.w,
+              runSpacing: .8.h,
+              children: [
+                StatCard(
+                  l10n.totalTrips,
+                  provider.tripCount.toString(),
+                  ConstantColor.primaryColor,
+                  width: 44.w,
+                ),
+                StatCard(l10n.moveTime, provider.moveDuration, AppColors.purple,
+                    width: 44.w),
+                StatCard(
+                    l10n.fuelLtr,
+                    provider.totalFuelSpent.toStringAsFixed(2),
+                    AppColors.yellow,
+                    width: 44.w),
+                StatCard(l10n.stopTime, provider.stopDuration, Colors.orange,
+                    width: 44.w),
+                StatCard(
+                  l10n.totalSpent,
+                  l10n.rsAmount(provider.totalFuelCost.toStringAsFixed(0)),
+                  AppColors.green,
+                  width: 44.w,
+                ),
+                StatCard(l10n.topSpeed, provider.topSpeed, AppColors.red,
+                    width: 44.w),
+              ],
+            ),
+            verticalSpace(height: 1.2.h),
           ],
-        ),
-        verticalSpace(height: 1.1.h),
-
-        Wrap(
-          spacing: 2.w,
-          runSpacing: .8.h,
-          children: [
-            StatCard(
-              "Total Trips",
-              provider.tripCount.toString(),
-              ConstantColor.primaryColor,
-              width: 44.w,
-            ),
-            StatCard("Move Time", provider.moveDuration, AppColors.purple,
-                width: 44.w),
-            StatCard("Fuel (LTR)", provider.totalFuelSpent.toStringAsFixed(2),
-                AppColors.yellow,
-                width: 44.w),
-            StatCard("Stop Time", provider.stopDuration, Colors.orange,
-                width: 44.w),
-            StatCard(
-              "Total Spent",
-              "Rs. ${provider.totalFuelCost.toStringAsFixed(0)}",
-              AppColors.green,
-              width: 44.w,
-            ),
-            StatCard("Top Speed", provider.topSpeed, AppColors.red,
-                width: 44.w),
-          ],
-        ),
-        verticalSpace(height: 1.2.h),
-      ],
+        );
+      },
     );
   }
 }

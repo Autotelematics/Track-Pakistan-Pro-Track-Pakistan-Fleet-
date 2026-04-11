@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
+import 'package:trackerapp/data/repositories/auth_repository.dart';
 import 'package:trackerapp/providers/contact_us_provider.dart';
 import 'package:trackerapp/utils/top_curve_bezier.dart';
 import 'package:trackerapp/widgets/contact_widgets/address_footer_widget.dart';
@@ -10,8 +11,28 @@ import 'package:trackerapp/widgets/contact_widgets/explore_section_widget.dart';
 import 'package:trackerapp/widgets/contact_widgets/header_section_widget.dart';
 import 'package:trackerapp/widgets/contact_widgets/hero_section_widget.dart';
 
-class ContactScreen extends StatelessWidget {
+class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
+
+  @override
+  State<ContactScreen> createState() => _ContactScreenState();
+}
+
+class _ContactScreenState extends State<ContactScreen> {
+  final AuthRepository _authRepository = AuthRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await _authRepository.fetchCompanyDetailsApi();
+      } catch (_) {}
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

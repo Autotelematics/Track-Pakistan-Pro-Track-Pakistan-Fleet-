@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/data/repositories/vehicle_repository.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 
 class VehicleMapProvider extends ChangeNotifier {
   final VehicleRepository repository = VehicleRepository();
@@ -14,6 +15,7 @@ class VehicleMapProvider extends ChangeNotifier {
   static const double _sharedMarkerIconPx = 30.0;
   static const double _labelScale = 0.65;
   static const double _markerRenderScale = 3.0;
+  static const double _clusterIconBasePx = 42.0;
   // No-label markers can look visually larger than labeled markers on map,
   // so keep a slightly smaller base size for non-labeled mode.
   static const double _plainMarkerScale = 1.0;
@@ -561,6 +563,10 @@ class VehicleMapProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (_isDisposed) return;
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return;
+      }
       if (isInitialLoad) {
         errorMessage = _friendlyErrorMessage(e);
         deviceMarkers.clear();
@@ -817,28 +823,39 @@ class VehicleMapProvider extends ChangeNotifier {
     final label = count > 99 ? '99+' : '$count';
     if (_clusterIcons.containsKey(label)) return _clusterIcons[label]!;
 
-    const size = 110.0;
+    final logicalSize =
+        (_clusterIconBasePx * _screenMarkerScale).clamp(34.0, 56.0);
+    final physicalSize = (logicalSize * _markerRenderScale).round();
+    final radius = logicalSize * 0.39;
+    final innerRadius = radius * 0.82;
+    final borderWidth = math.max(1.6, logicalSize * 0.055);
+    final fontSize = math.max(11.0, logicalSize * 0.25);
+
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, size, size));
-    final center = const Offset(size / 2, size / 2);
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, physicalSize.toDouble(), physicalSize.toDouble()),
+    );
+    canvas.scale(_markerRenderScale);
+    final center = Offset(logicalSize / 2, logicalSize / 2);
 
     final outer = Paint()..color = Colors.white;
     final border = Paint()
       ..color = Colors.blue.shade700
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7;
+      ..strokeWidth = borderWidth;
     final inner = Paint()..color = Colors.blue.shade500;
 
-    canvas.drawCircle(center, 43, outer);
-    canvas.drawCircle(center, 43, border);
-    canvas.drawCircle(center, 36, inner);
+    canvas.drawCircle(center, radius, outer);
+    canvas.drawCircle(center, radius, border);
+    canvas.drawCircle(center, innerRadius, inner);
 
     final tp = TextPainter(
       text: TextSpan(
         text: label,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 30,
+          fontSize: fontSize,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -847,10 +864,17 @@ class VehicleMapProvider extends ChangeNotifier {
     tp.paint(
         canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
 
-    final image =
-        await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final image = await recorder.endRecording().toImage(
+          physicalSize,
+          physicalSize,
+        );
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final icon = BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
+    final icon = BitmapDescriptor.bytes(
+      bytes!.buffer.asUint8List(),
+      width: logicalSize,
+      height: logicalSize,
+      imagePixelRatio: _markerRenderScale,
+    );
     _clusterIcons[label] = icon;
     return icon;
   }

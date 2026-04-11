@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/device_service_model.dart';
 import 'package:trackerapp/data/repositories/device_service_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 class DeviceServiceProvider extends ChangeNotifier {
   final DeviceServiceRepository _repository = DeviceServiceRepository();
@@ -35,7 +36,7 @@ class DeviceServiceProvider extends ChangeNotifier {
       _currentPage = list.currentPage;
       _lastPage = list.lastPage;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       AppSnackBar.error(message: _errorMessage ?? 'Failed to load services');
     } finally {
       _isLoading = false;
@@ -52,7 +53,7 @@ class DeviceServiceProvider extends ChangeNotifier {
       _lastPage = list.lastPage;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       AppSnackBar.error(message: _errorMessage ?? 'Failed to load services');
     } finally {
       notifyListeners();
@@ -97,7 +98,7 @@ class DeviceServiceProvider extends ChangeNotifier {
       AppSnackBar.success(message: 'Service added');
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();
@@ -143,7 +144,7 @@ class DeviceServiceProvider extends ChangeNotifier {
       AppSnackBar.success(message: 'Service updated');
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();
@@ -164,7 +165,7 @@ class DeviceServiceProvider extends ChangeNotifier {
       AppSnackBar.success(message: 'Service deleted');
       await refresh(deviceId: deviceId);
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     } finally {
       _isSubmitting = false;
       notifyListeners();

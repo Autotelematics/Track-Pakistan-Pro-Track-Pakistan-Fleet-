@@ -148,7 +148,8 @@ class _RightSideButtonsState extends State<RightSideButtons> {
   Widget build(BuildContext context) {
     return Consumer<VehicleTrackingProvider>(
       builder: (context, provider, child) {
-        return Column(
+        final controls = Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             _circle(
               context,
@@ -246,6 +247,23 @@ class _RightSideButtonsState extends State<RightSideButtons> {
                   () => provider.adjustZoom(provider.currentZoom - 1),
             ),
           ],
+        );
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            if (!constraints.hasBoundedHeight) return controls;
+            return SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: controls,
+                ),
+              ),
+            );
+          },
         );
       },
     );

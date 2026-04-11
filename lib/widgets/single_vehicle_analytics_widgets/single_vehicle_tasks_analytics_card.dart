@@ -60,15 +60,31 @@ class _SingleVehicleTasksAnalyticsCardState
         return Container(
           padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.5.w),
           decoration: BoxDecoration(
-            color: theme.cardColor,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? <Color>[
+                      theme.cardColor.withValues(alpha: .98),
+                      theme.cardColor.withValues(alpha: .92),
+                    ]
+                  : <Color>[
+                      Colors.white,
+                      const Color(0xFFF6FBFF),
+                    ],
+            ),
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color:
+                  const Color(0xFF0EA5E9).withValues(alpha: isDark ? .24 : .14),
+            ),
             boxShadow: [
               BoxShadow(
                 color: isDark
                     ? Colors.black.withValues(alpha: 0.55)
-                    : Colors.black.withValues(alpha: 0.12),
-                blurRadius: isDark ? 14 : 10,
-                offset: const Offset(0, 4),
+                    : const Color(0xFF0284C7).withValues(alpha: 0.10),
+                blurRadius: isDark ? 16 : 14,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -77,11 +93,33 @@ class _SingleVehicleTasksAnalyticsCardState
             children: [
               Row(
                 children: [
+                  Container(
+                    width: 5.8.w,
+                    height: 5.8.w,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: <Color>[
+                          Color(0xFF22D3EE),
+                          Color(0xFF0284C7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(
+                      Icons.analytics_rounded,
+                      color: Colors.white,
+                      size: _svtSp(context, phone: 15.0),
+                    ),
+                  ),
+                  horizontalSpace(width: 2.w),
                   Expanded(
                     child: Text(
                       l10n.tasksAnalytics,
-                      style: AppStyles.semiboldTextStyle(context)
-                          .copyWith(fontSize: 15.sp),
+                      style: AppStyles.semiboldTextStyle(context).copyWith(
+                        fontSize: _svtSp(context, phone: 12.8),
+                        fontWeight: FontWeight.w900,
+                        color: onSurface.withValues(alpha: .92),
+                      ),
                     ),
                   ),
                   if (provider.isLoading)
@@ -93,16 +131,16 @@ class _SingleVehicleTasksAnalyticsCardState
                 ],
               ),
               verticalSpace(height: .35.h),
-              Text(
-                widget.vehicleName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 12.3.sp,
-                  fontWeight: FontWeight.w700,
-                  color: onSurface.withValues(alpha: .76),
-                ),
-              ),
+              // Text(
+              //   widget.vehicleName,
+              //   maxLines: 1,
+              //   overflow: TextOverflow.ellipsis,
+              //   style: AppStyles.regularTextStyle(context).copyWith(
+              //     fontSize: 12.3.sp,
+              //     fontWeight: FontWeight.w700,
+              //     color: onSurface.withValues(alpha: .76),
+              //   ),
+              // ),
               verticalSpace(height: 1.2.h),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: 1.h),
@@ -142,7 +180,7 @@ class _SingleVehicleTasksAnalyticsCardState
               verticalSpace(height: .7.h),
               Align(
                 alignment: Alignment.bottomRight,
-                child: TextButton(
+                child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -150,26 +188,36 @@ class _SingleVehicleTasksAnalyticsCardState
                         builder: (_) => AllTasksScreen(
                           initialDeviceId: widget.deviceId,
                           initialVehicleName: widget.vehicleName,
-                          title: '${widget.vehicleName} Tasks',
+                          title: l10n.vehicleTasksTitle(widget.vehicleName),
                           lockVehicleFilter: true,
                         ),
                       ),
                     );
                   },
-                  style: TextButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0EA5E9),
+                    foregroundColor: Colors.white,
+                    elevation: .8,
+                    shadowColor: const Color(0xFF0284C7).withValues(alpha: .35),
                     padding: EdgeInsets.symmetric(
                       horizontal: 2.2.w,
-                      vertical: .2.h,
+                      vertical: .45.h,
                     ),
                     minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(11),
+                    ),
                   ),
-                  child: Text(
+                  icon: Icon(
+                    Icons.arrow_forward_rounded,
+                    size: _svtSp(context, phone: 11.2),
+                  ),
+                  label: Text(
                     l10n.seeMore,
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0284C7),
+                      fontSize: _svtSp(context, phone: 11.8),
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -197,7 +245,7 @@ class _SingleVehicleTasksAnalyticsCardState
           Text(
             provider.errorMessage!,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.4.sp,
+              fontSize: _svtSp(context, phone: 12.4),
               color: Colors.red.shade400,
             ),
           ),
@@ -216,7 +264,7 @@ class _SingleVehicleTasksAnalyticsCardState
         child: Text(
           l10n.noTasksAvailable,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 13.sp,
+            fontSize: _svtSp(context, phone: 13.0),
           ),
         ),
       );
@@ -233,7 +281,7 @@ class _SingleVehicleTasksAnalyticsCardState
         Text(
           l10n.latestTasks,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.4.sp,
+            fontSize: _svtSp(context, phone: 12.4),
             fontWeight: FontWeight.w800,
             color: onSurface.withValues(alpha: .88),
           ),
@@ -375,7 +423,7 @@ class _SingleVehicleTasksAnalyticsCardState
           Text(
             '$label: $count',
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.2.sp,
+              fontSize: _svtSp(context, phone: 12.2),
               fontWeight: FontWeight.w700,
               color: onSurface.withValues(alpha: .86),
             ),
@@ -404,7 +452,7 @@ class _SingleVehicleTasksAnalyticsCardState
               Text(
                 label,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 10.9.sp,
+                  fontSize: _svtSp(context, phone: 10.9),
                   fontWeight: FontWeight.w700,
                   color: onSurface.withValues(alpha: .72),
                 ),
@@ -413,7 +461,7 @@ class _SingleVehicleTasksAnalyticsCardState
               Text(
                 value,
                 style: AppStyles.semiboldTextStyle(context).copyWith(
-                  fontSize: 14.4.sp,
+                  fontSize: _svtSp(context, phone: 14.4),
                   color: color,
                 ),
               ),
@@ -422,7 +470,7 @@ class _SingleVehicleTasksAnalyticsCardState
                 Text(
                   subtitle,
                   style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 10.sp,
+                    fontSize: _svtSp(context, phone: 10.0),
                     fontWeight: FontWeight.w600,
                     color: onSurface.withValues(alpha: .58),
                   ),
@@ -440,7 +488,7 @@ class _SingleVehicleTasksAnalyticsCardState
         Text(
           l10n.taskFunnel,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.4.sp,
+            fontSize: _svtSp(context, phone: 12.4),
             fontWeight: FontWeight.w800,
             color: onSurface.withValues(alpha: .88),
           ),
@@ -459,7 +507,8 @@ class _SingleVehicleTasksAnalyticsCardState
               : Row(
                   children: [
                     if (newCount > 0)
-                      Expanded(flex: newCount, child: Container(color: newColor)),
+                      Expanded(
+                          flex: newCount, child: Container(color: newColor)),
                     if (inProgressCount > 0)
                       Expanded(
                         flex: inProgressCount,
@@ -505,16 +554,16 @@ class _SingleVehicleTasksAnalyticsCardState
         Row(
           children: [
             metricCard(
-              label: 'Success Rate',
+              label: l10n.successRate,
               value: '${(successRate * 100).toStringAsFixed(1)}%',
-              subtitle: '$completedCount of $total tasks',
+              subtitle: l10n.tasksCountSummary(completedCount, total),
               color: completedColor,
             ),
             horizontalSpace(width: 2.4.w),
             metricCard(
-              label: 'Avg Completion',
+              label: l10n.avgCompletion,
               value: _formatAverageDuration(completionDurations),
-              subtitle: 'Created to delivery left',
+              subtitle: l10n.createdToDeliveryLeft,
               color: const Color(0xFF7C3AED),
             ),
           ],
@@ -523,16 +572,16 @@ class _SingleVehicleTasksAnalyticsCardState
         Row(
           children: [
             metricCard(
-              label: 'Pickup Response',
+              label: l10n.pickupResponse,
               value: _formatAverageDuration(pickupResponseDurations),
-              subtitle: 'Created to pickup reached',
+              subtitle: l10n.createdToPickupReached,
               color: const Color(0xFF0891B2),
             ),
             horizontalSpace(width: 2.4.w),
             metricCard(
-              label: 'Pickup Dwell',
+              label: l10n.pickupDwell,
               value: _formatAverageDuration(pickupDwellDurations),
-              subtitle: 'Pickup left minus reached',
+              subtitle: l10n.pickupLeftMinusReached,
               color: const Color(0xFFF59E0B),
             ),
           ],
@@ -541,25 +590,25 @@ class _SingleVehicleTasksAnalyticsCardState
         Row(
           children: [
             metricCard(
-              label: 'Stop Dwell',
+              label: l10n.stopDwell,
               value: _formatAverageDuration(stopDwellDurations),
-              subtitle: 'Average across all stops',
+              subtitle: l10n.averageAcrossAllStops,
               color: const Color(0xFFEA580C),
             ),
             horizontalSpace(width: 2.4.w),
             metricCard(
-              label: 'Delivery Dwell',
+              label: l10n.deliveryDwell,
               value: _formatAverageDuration(deliveryDwellDurations),
-              subtitle: 'Delivery left minus reached',
+              subtitle: l10n.deliveryLeftMinusReached,
               color: const Color(0xFF2563EB),
             ),
           ],
         ),
         verticalSpace(height: 1.2.h),
         Text(
-          'Stop Complexity Trend',
+          l10n.stopComplexityTrend,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.2.sp,
+            fontSize: _svtSp(context, phone: 12.2),
             fontWeight: FontWeight.w800,
             color: onSurface.withValues(alpha: .84),
           ),
@@ -568,25 +617,25 @@ class _SingleVehicleTasksAnalyticsCardState
         Row(
           children: [
             metricCard(
-              label: 'Direct Jobs',
+              label: l10n.directJobs,
               value: '$directJobs',
-              subtitle: 'No stops',
+              subtitle: l10n.noStops,
               color: const Color(0xFF0F766E),
             ),
             horizontalSpace(width: 2.4.w),
             metricCard(
-              label: 'Multi-stop Jobs',
+              label: l10n.multiStopJobs,
               value: '$multiStopJobs',
-              subtitle: 'One or more stops',
+              subtitle: l10n.oneOrMoreStops,
               color: const Color(0xFF9333EA),
             ),
           ],
         ),
         verticalSpace(height: 1.2.h),
         Text(
-          'Recent Failed Tasks',
+          l10n.recentFailedTasks,
           style: AppStyles.regularTextStyle(context).copyWith(
-            fontSize: 12.2.sp,
+            fontSize: _svtSp(context, phone: 12.2),
             fontWeight: FontWeight.w800,
             color: onSurface.withValues(alpha: .84),
           ),
@@ -594,67 +643,71 @@ class _SingleVehicleTasksAnalyticsCardState
         verticalSpace(height: .7.h),
         if (recentFailedTasks.isEmpty)
           Text(
-            'No recent failed tasks for this vehicle',
+            l10n.noRecentFailedTasksForVehicle,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.5.sp,
+              fontSize: _svtSp(context, phone: 11.5),
               color: onSurface.withValues(alpha: .62),
             ),
           )
         else
           ...recentFailedTasks.take(5).map(
-            (task) => Padding(
-              padding: EdgeInsets.only(bottom: .8.h),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 2.8.w, vertical: .9.h),
-                decoration: BoxDecoration(
-                  color: failedColor.withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: failedColor.withValues(alpha: .16),
+                (task) => Padding(
+                  padding: EdgeInsets.only(bottom: .8.h),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.8.w, vertical: .9.h),
+                    decoration: BoxDecoration(
+                      color: failedColor.withValues(alpha: .08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: failedColor.withValues(alpha: .16),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 2.2.w,
+                          height: 2.2.w,
+                          decoration: BoxDecoration(
+                            color: failedColor,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        horizontalSpace(width: 2.2.w),
+                        Expanded(
+                          child: Text(
+                            task.title.trim().isEmpty
+                                ? l10n.taskNumber(task.id)
+                                : task.title.trim(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: _svtSp(context, phone: 11.6),
+                              fontWeight: FontWeight.w700,
+                              color: onSurface.withValues(alpha: .82),
+                            ),
+                          ),
+                        ),
+                        horizontalSpace(width: 1.6.w),
+                        Text(
+                          _formatTaskDate(task.createdAt),
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: _svtSp(context, phone: 10.4),
+                            fontWeight: FontWeight.w600,
+                            color: onSurface.withValues(alpha: .58),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 2.2.w,
-                      height: 2.2.w,
-                      decoration: BoxDecoration(
-                        color: failedColor,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    horizontalSpace(width: 2.2.w),
-                    Expanded(
-                      child: Text(
-                        task.title.trim().isEmpty ? 'Task #${task.id}' : task.title.trim(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 11.6.sp,
-                          fontWeight: FontWeight.w700,
-                          color: onSurface.withValues(alpha: .82),
-                        ),
-                      ),
-                    ),
-                    horizontalSpace(width: 1.6.w),
-                    Text(
-                      _formatTaskDate(task.createdAt),
-                      style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 10.4.sp,
-                        fontWeight: FontWeight.w600,
-                        color: onSurface.withValues(alpha: .58),
-                      ),
-                    ),
-                  ],
-                ),
               ),
-            ),
-          ),
       ],
     );
   }
 
   Widget _taskRow(BuildContext context, TaskItem task) {
+    final l10n = context.l10n;
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Row(
@@ -670,7 +723,7 @@ class _SingleVehicleTasksAnalyticsCardState
           child: Icon(
             Icons.assignment_turned_in_outlined,
             color: const Color(0xFF0284C7),
-            size: 17.sp,
+            size: _svtSp(context, phone: 17.0),
           ),
         ),
         horizontalSpace(width: 2.2.w),
@@ -683,18 +736,20 @@ class _SingleVehicleTasksAnalyticsCardState
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 13.4.sp,
+                  fontSize: _svtSp(context, phone: 13.4),
                   fontWeight: FontWeight.w700,
                   color: onSurface,
                 ),
               ),
               verticalSpace(height: .1.h),
               Text(
-                task.statusName.trim().isEmpty ? 'Unknown' : task.statusName.trim(),
+                task.statusName.trim().isEmpty
+                    ? l10n.vehicleStatusUnknown
+                    : _localizedTaskStatus(context, task.statusName),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 11.6.sp,
+                  fontSize: _svtSp(context, phone: 11.6),
                   color: onSurface.withValues(alpha: 0.68),
                   fontWeight: FontWeight.w600,
                 ),
@@ -704,6 +759,27 @@ class _SingleVehicleTasksAnalyticsCardState
         ),
       ],
     );
+  }
+}
+
+String _localizedTaskStatus(BuildContext context, String? statusName) {
+  final l10n = context.l10n;
+  final rawStatus = statusName?.trim() ?? '';
+  if (rawStatus.isEmpty) return l10n.vehicleStatusUnknown;
+
+  switch (rawStatus.toLowerCase()) {
+    case 'new':
+      return l10n.taskNew;
+    case 'in progress':
+    case 'in_progress':
+      return l10n.taskInProgress;
+    case 'completed':
+    case 'complete':
+      return l10n.taskCompleted;
+    case 'failed':
+      return l10n.taskFailed;
+    default:
+      return rawStatus;
   }
 }
 
@@ -743,4 +819,15 @@ String _formatTaskDate(DateTime? value) {
   final month = value.month.toString().padLeft(2, '0');
   final day = value.day.toString().padLeft(2, '0');
   return '$day/$month/${value.year}';
+}
+
+double _svtSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

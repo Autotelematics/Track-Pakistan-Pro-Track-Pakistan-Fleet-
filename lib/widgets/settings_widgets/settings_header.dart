@@ -118,12 +118,15 @@ class _SettingsHeaderState extends State<SettingsHeader> {
     final userEmailFromApi = context.select<DashboardProvider, String>(
       (provider) => provider.dashboardModel?.userEmail ?? "",
     );
+    final storedUserName = MySharedPreferences.getString(userNameKey).trim();
     final storedUserEmail = MySharedPreferences.getString(userEmailKey).trim();
     final userEmail = userEmailFromApi.trim().isNotEmpty
         ? userEmailFromApi.trim()
         : storedUserEmail;
+    final greetingName = storedUserName.isNotEmpty ? storedUserName : userEmail;
     final l10n = context.l10n;
-    final greeting = userEmail.isNotEmpty ? l10n.hiUser(userEmail) : l10n.hi;
+    final greeting =
+        greetingName.isNotEmpty ? l10n.hiUser(greetingName) : l10n.hi;
 
     return Column(
       children: [

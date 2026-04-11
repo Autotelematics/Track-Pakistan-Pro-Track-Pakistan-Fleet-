@@ -159,7 +159,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                       children: [
                         Icon(
                           Icons.auto_awesome_rounded,
-                          size: 18.sp,
+                          size: _fiSp(context, phone: 18.0),
                           color: displayInsight.color,
                         ),
                         horizontalSpace(width: 2.w),
@@ -167,7 +167,8 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                           child: Text(
                             context.l10n.fleetInsightTitle,
                             style: AppStyles.semiboldTextStyle(context)
-                                .copyWith(fontSize: 15.2.sp),
+                                .copyWith(
+                                    fontSize: _fiSp(context, phone: 15.2)),
                           ),
                         ),
                         Container(
@@ -183,7 +184,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                           child: Text(
                             displayInsight.statusLabel,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 11.5.sp,
+                              fontSize: _fiSp(context, phone: 11.5),
                               fontWeight: FontWeight.w800,
                               color: displayInsight.color,
                             ),
@@ -195,7 +196,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                     Text(
                       displayInsight.headline,
                       style: AppStyles.semiboldTextStyle(context).copyWith(
-                        fontSize: 14.1.sp,
+                        fontSize: _fiSp(context, phone: 14.1),
                         color:
                             theme.colorScheme.onSurface.withValues(alpha: .92),
                       ),
@@ -204,7 +205,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                     Text(
                       displayInsight.message,
                       style: AppStyles.regularTextStyle(context).copyWith(
-                        fontSize: 12.6.sp,
+                        fontSize: _fiSp(context, phone: 12.6),
                         height: 1.35,
                         color:
                             theme.colorScheme.onSurface.withValues(alpha: .8),
@@ -233,7 +234,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
                                   item,
                                   style: AppStyles.regularTextStyle(context)
                                       .copyWith(
-                                    fontSize: 11.1.sp,
+                                    fontSize: _fiSp(context, phone: 11.1),
                                     fontWeight: FontWeight.w700,
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: isDark ? .92 : .84),
@@ -561,6 +562,17 @@ class _InsightCandidate {
     required this.headlines,
     required this.details,
   });
+}
+
+double _fiSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }
 
 class _InsightResult {

@@ -8,6 +8,7 @@ import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/providers/get_devices_status_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_detail_screen.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
@@ -72,6 +73,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
 
   Future<void> _openVehicleSearch(
       BuildContext context, VehicleMapProvider provider) async {
+    final l10n = context.l10n;
     final controller = TextEditingController();
     String query = '';
 
@@ -109,7 +111,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                           setSheetState(() => query = v);
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search vehicle by name',
+                          hintText: l10n.searchVehicleByName,
                           prefixIcon: const Icon(Icons.search_rounded),
                           suffixIcon: query.isNotEmpty
                               ? IconButton(
@@ -131,7 +133,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                         child: results.isEmpty
                             ? Center(
                                 child: Text(
-                                  'No vehicle found',
+                                  l10n.noVehiclesFoundForSearch,
                                   style: AppStyles.regularTextStyle(context)
                                       .copyWith(fontSize: 13.sp),
                                 ),
@@ -153,7 +155,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                                           Theme.of(context).colorScheme.primary,
                                     ),
                                     title: Text(
-                                      item.name ?? 'Unknown',
+                                      item.name ?? l10n.unknownVehicle,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style:
@@ -161,7 +163,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                                               .copyWith(fontSize: 13.sp),
                                     ),
                                     subtitle: Text(
-                                      '${item.speed ?? 0} km/h • ${item.online ?? 'Unknown'}',
+                                      '${item.speed ?? 0} km/h • ${_localizedVehicleOnlineStatus(context, item.online)}',
                                       style: AppStyles.regularTextStyle(context)
                                           .copyWith(fontSize: 11.sp),
                                     ),
@@ -185,6 +187,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
   }
 
   Widget _mapStyleToggle(VehicleMapProvider provider) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -209,13 +212,13 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           _styleChip(
-            label: 'Default',
+            label: l10n.defaultMapStyle,
             isSelected: selected == 'default',
             onTap: () => provider.setMapType(MapType.normal),
           ),
           SizedBox(width: .8.w),
           _styleChip(
-            label: 'Satellite',
+            label: l10n.satelliteMapStyle,
             isSelected: selected == 'satellite',
             onTap: () => provider.setMapType(MapType.hybrid),
           ),
@@ -264,14 +267,25 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
     Color cardColor,
     double topInset,
   ) {
+    final l10n = context.l10n;
     final List<_StatusItem> statuses = [
-      _StatusItem(title: "All", key: "all", color: Colors.blue),
-      _StatusItem(title: "Running", key: "running", color: Colors.green),
-      _StatusItem(title: "Stopped", key: "stopped", color: Colors.red),
-      _StatusItem(title: "Idle", key: "idle", color: Colors.orange),
-      _StatusItem(title: "Offline", key: "offline", color: Colors.cyan),
-      _StatusItem(title: "No Data", key: "nodata", color: Colors.grey),
-      _StatusItem(title: "Expired", key: "expired", color: Colors.purple),
+      _StatusItem(title: l10n.vehicleStatusAll, key: "all", color: Colors.blue),
+      _StatusItem(
+          title: l10n.vehicleStatusRunning,
+          key: "running",
+          color: Colors.green),
+      _StatusItem(
+          title: l10n.vehicleStatusStopped, key: "stopped", color: Colors.red),
+      _StatusItem(
+          title: l10n.vehicleStatusIdle, key: "idle", color: Colors.orange),
+      _StatusItem(
+          title: l10n.vehicleStatusOffline, key: "offline", color: Colors.cyan),
+      _StatusItem(
+          title: l10n.vehicleStatusNoData, key: "nodata", color: Colors.grey),
+      _StatusItem(
+          title: l10n.vehicleStatusExpired,
+          key: "expired",
+          color: Colors.purple),
     ];
 
     return Container(
@@ -303,6 +317,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                     onTap: () => provider.setSelectedStatus(statusItem.key),
                     child: StatusBox(
                       title: statusItem.title,
+                      statusKey: statusItem.key,
                       count: provider.getStatusCount(statusItem.key),
                       color: statusItem.color,
                       onSurface: onSurface,
@@ -325,6 +340,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
     final topInset = MediaQuery.of(context).padding.top;
     final onSurface = theme.colorScheme.onSurface;
     final cardColor = theme.cardColor;
+    final l10n = context.l10n;
     final controlBg = cardColor.withValues(alpha: isDark ? .96 : .93);
     final controlIcon = onSurface.withValues(alpha: isDark ? .9 : .78);
 
@@ -363,7 +379,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                           const CircularProgressIndicator(),
                           SizedBox(height: 2.h),
                           Text(
-                            'Loading devices...',
+                            l10n.loadingDevices,
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 14.sp,
                               color: onSurface.withValues(alpha: .82),
@@ -397,7 +413,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                           ElevatedButton(
                             onPressed: () =>
                                 provider.fetchVehicleList(context: context),
-                            child: Text("Retry",
+                            child: Text(l10n.retry,
                                 style: TextStyle(fontSize: 13.6.sp)),
                           ),
                         ],
@@ -418,10 +434,15 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                           SizedBox(height: 2.h),
                           Text(
                             provider.deviceListModel == null
-                                ? "No devices found."
+                                ? l10n.noDevicesFound
                                 : provider.selectedStatus == 'all'
-                                    ? "No vehicles found."
-                                    : "No ${provider.getSelectedStatusTitle()} vehicles found.",
+                                    ? l10n.noVehiclesFound
+                                    : l10n.noVehiclesFoundForStatus(
+                                        _localizedVehicleStatusKey(
+                                          context,
+                                          provider.selectedStatus,
+                                        ),
+                                      ),
                             style: AppStyles.regularTextStyle(context).copyWith(
                               fontSize: 14.sp,
                               color: onSurface.withValues(alpha: .7),
@@ -439,8 +460,8 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                                   },
                             child: Text(
                               provider.deviceListModel == null
-                                  ? "Retry"
-                                  : "Show All Vehicles",
+                                  ? l10n.retry
+                                  : l10n.viewAllVehicles,
                               style: TextStyle(fontSize: 13.8.sp),
                             ),
                           ),
@@ -607,7 +628,9 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                           ],
                         ),
                         child: Text(
-                          'Updated • ${_secondsSinceLastRefresh(provider)}s ago',
+                          l10n.updatedSecondsAgo(
+                            _secondsSinceLastRefresh(provider),
+                          ),
                           style: AppStyles.regularTextStyle(context).copyWith(
                             fontSize: 12.8.sp,
                             color: onSurface.withValues(alpha: .9),
@@ -634,6 +657,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
   }
 
   Widget _miniVehicleCard(Item vehicle) {
+    final l10n = context.l10n;
     final actionColor = _vehicleStatusColor(vehicle);
     return Material(
       color: Colors.transparent,
@@ -662,7 +686,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    vehicle.name ?? 'Unknown Vehicle',
+                    vehicle.name ?? l10n.unknownVehicle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
@@ -671,14 +695,14 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                   ),
                   SizedBox(height: .4.h),
                   Text(
-                    'Speed: ${vehicle.speed ?? 0} km/h',
+                    l10n.speedKmhValue(vehicle.speed ?? 0),
                     style: AppStyles.regularTextStyle(context).copyWith(
                       fontSize: 11.sp,
                     ),
                   ),
                   SizedBox(height: .15.h),
                   Text(
-                    'Update: ${vehicle.time ?? 'N/A'}',
+                    l10n.updateValue(vehicle.time ?? l10n.notAvailableShort),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.regularTextStyle(context).copyWith(
@@ -740,7 +764,7 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Open details',
+                    l10n.openDetails,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       fontSize: 10.6.sp,
                       color: actionColor,
@@ -774,6 +798,53 @@ class _MapForAllVehiclesScreenState extends State<MapForAllVehiclesScreen>
     if (online == 'offline' && time == 'expired') return Colors.purple;
     if (online == 'offline' && time == 'not connected') return Colors.grey;
     return Colors.blue;
+  }
+
+  String _localizedVehicleStatusKey(BuildContext context, String statusKey) {
+    final l10n = context.l10n;
+    switch (statusKey) {
+      case 'running':
+        return l10n.vehicleStatusRunning;
+      case 'stopped':
+        return l10n.vehicleStatusStopped;
+      case 'idle':
+        return l10n.vehicleStatusIdle;
+      case 'offline':
+        return l10n.vehicleStatusOffline;
+      case 'nodata':
+        return l10n.vehicleStatusNoData;
+      case 'expired':
+        return l10n.vehicleStatusExpired;
+      case 'all':
+      default:
+        return l10n.vehicleStatusAll;
+    }
+  }
+
+  String _localizedVehicleOnlineStatus(BuildContext context, String? raw) {
+    final l10n = context.l10n;
+    final value = (raw ?? '').toLowerCase().trim();
+    switch (value) {
+      case 'online':
+      case 'running':
+      case 'moving':
+        return l10n.vehicleStatusRunning;
+      case 'ack':
+      case 'stopped':
+      case 'parking':
+        return l10n.vehicleStatusStopped;
+      case 'idle':
+      case 'engine':
+        return l10n.vehicleStatusIdle;
+      case 'offline':
+        return l10n.vehicleStatusOffline;
+      case 'expired':
+        return l10n.vehicleStatusExpired;
+      case '':
+        return l10n.vehicleStatusUnknown;
+      default:
+        return raw ?? l10n.vehicleStatusUnknown;
+    }
   }
 
   Widget _mapFab({
@@ -844,6 +915,7 @@ class _StatusItem {
 
 class StatusBox extends StatelessWidget {
   final String title;
+  final String statusKey;
   final int count;
   final Color color;
   final Color onSurface;
@@ -853,6 +925,7 @@ class StatusBox extends StatelessWidget {
   const StatusBox({
     super.key,
     required this.title,
+    required this.statusKey,
     required this.count,
     required this.color,
     required this.onSurface,
@@ -860,30 +933,9 @@ class StatusBox extends StatelessWidget {
     required this.selectedKey,
   });
 
-  String get _statusKey {
-    switch (title) {
-      case 'All':
-        return 'all';
-      case 'Running':
-        return 'running';
-      case 'Stopped':
-        return 'stopped';
-      case 'Idle':
-        return 'idle';
-      case 'Offline':
-        return 'offline';
-      case 'No Data':
-        return 'nodata';
-      case 'Expired':
-        return 'expired';
-      default:
-        return 'all';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isSelected = selectedKey == _statusKey;
+    final isSelected = selectedKey == statusKey;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,

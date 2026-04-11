@@ -7,11 +7,46 @@ import 'package:trackerapp/data/models/dashboard_data.dart';
 import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
 import 'package:trackerapp/data/models/get_dashboard_model.dart';
 import 'package:trackerapp/res/app_endpoints.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 import 'package:http/http.dart' as http;
 
 class DashboardRepository {
+  dynamic _decodeBody(String body) {
+    try {
+      return jsonDecode(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _throwIfSessionExpired({
+    required int statusCode,
+    dynamic body,
+  }) {
+    final message = body is Map<String, dynamic>
+        ? (body['message'] ?? body['error'] ?? '').toString().trim()
+        : '';
+
+    final isUnauthorized = statusCode == 401 || statusCode == 403;
+    final hasExpiredMessage = SessionGuard.looksLikeSessionExpiredMessage(message);
+    final apiStatus = body is Map<String, dynamic> ? body['status'] : null;
+    final reportedFailure = apiStatus == 0 || apiStatus == false;
+
+    if (isUnauthorized || (reportedFailure && hasExpiredMessage)) {
+      throw SessionExpiredException(
+        message.isEmpty
+            ? 'Session expired. Please login again.'
+            : message,
+      );
+    }
+  }
+
   //Fetch Dashboard data From Api
   Future<GetDashboardModel?> getDashboardData({required String token}) async {
+    if (token.trim().isEmpty) {
+      throw const SessionExpiredException();
+    }
+
     final endpointPath = AppUrl.getDashboardEp.split('?').first;
     final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
       queryParameters: {
@@ -23,8 +58,13 @@ class DashboardRepository {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
+      final body = _decodeBody(response.body);
+      _throwIfSessionExpired(
+        statusCode: response.statusCode,
+        body: body,
+      );
       if (response.statusCode == 200) {
-        return GetDashboardModel.fromJson(jsonDecode(response.body));
+        return GetDashboardModel.fromJson(body ?? jsonDecode(response.body));
       } else {
         log('Error fetching business profiles: ${response.body}');
         return null;
@@ -139,6 +179,10 @@ class DashboardRepository {
   //get dashboard History
   Future<GetDashboardHistoryModel?> getDashboardHistoryData({required String token})
   async {
+    if (token.trim().isEmpty) {
+      throw const SessionExpiredException();
+    }
+
     final endpointPath = AppUrl.getDashboardHistoryEp.split('?').first;
     final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
       queryParameters: {
@@ -150,8 +194,15 @@ class DashboardRepository {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
+      final body = _decodeBody(response.body);
+      _throwIfSessionExpired(
+        statusCode: response.statusCode,
+        body: body,
+      );
       if (response.statusCode == 200) {
-        return GetDashboardHistoryModel.fromJson(jsonDecode(response.body));
+        return GetDashboardHistoryModel.fromJson(
+          body ?? jsonDecode(response.body),
+        );
       } else {
         log('Error fetching business profiles: ${response.body}');
         return null;
@@ -160,6 +211,7 @@ class DashboardRepository {
       log('Timeout fetching dashboard history');
       return null;
     } catch (error) {
+      if (error is SessionExpiredException) rethrow;
       log('UnExpected Error fetching business profiles: ${error.toString()}');
       return null;
     }

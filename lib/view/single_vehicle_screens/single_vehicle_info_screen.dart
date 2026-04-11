@@ -19,12 +19,25 @@ import 'package:trackerapp/providers/reminder_provider.dart';
 import 'package:trackerapp/providers/update_device_data_provider.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/view/setting_screens/manager_chat_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_expense_screen.dart';
 import 'package:trackerapp/view/single_vehicle_screens/single_vehicle_service_screen.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
+
+double _infoMobileScale(BuildContext context) {
+  final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+  if (shortestSide >= 430) return 1.12;
+  if (shortestSide >= 400) return 1.07;
+  if (shortestSide >= 375) return 1.0;
+  if (shortestSide >= 360) return 0.97;
+  return 0.94;
+}
+
+double _infoSp(BuildContext context, double base) =>
+    base * _infoMobileScale(context);
 
 class SingleVehicleInfoScreen extends StatelessWidget {
   final List<Sensor> sensors;
@@ -93,16 +106,9 @@ class SingleVehicleInfoScreen extends StatelessWidget {
         body: SafeArea(
           top: false,
           child: ListView(
-            padding: EdgeInsets.fromLTRB(4.w, .6.h, 4.w, 1.h),
+            padding: EdgeInsets.fromLTRB(4.w, 1.0.h, 4.w, 1.8.h),
             children: [
-              // Text(
-              //   "Vehicle Info",
-              //   style: AppStyles.boldTextStyle(context).copyWith(
-              //     fontSize: 16.4.sp,
-              //     color: isDark ? AppColors.white : AppColors.textBlack,
-              //   ),
-              // ),
-              verticalSpace(height: 0.0.h),
+              verticalSpace(height: 0.2.h),
               _SensorsCard(sensors: sensors),
               verticalSpace(height: 1.h),
               _UpdateVehicleInfoCard(
@@ -179,7 +185,7 @@ class SingleVehicleInfoScreen extends StatelessWidget {
                 iconBg: const Color(0xFFFFF4E5),
                 iconColor: const Color(0xFFD97706),
                 title: l10n.complainVehicle,
-                subtitle: l10n.supportChatVehicle,
+                // subtitle: l10n.supportChatVehicle,
                 actionText: l10n.complain,
                 bodyText: l10n.talkToSupportVehicle(vehicleName),
                 deviceId: deviceId,
@@ -274,37 +280,43 @@ class _SensorsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
+    final scale = _infoMobileScale(context);
+    final onSurface = theme.colorScheme.onSurface;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        color: isDark ? const Color(0xFF172131) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: .10)
+              : const Color(0xFFD9E2F2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? .20 : .07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ExpansionTile(
-        tilePadding: EdgeInsets.symmetric(horizontal: 3.w, vertical: .2.h),
-        childrenPadding: EdgeInsets.fromLTRB(3.w, .1.h, 3.w, 1.0.h),
+        tilePadding: EdgeInsets.symmetric(horizontal: 3.4.w, vertical: .35.h),
+        childrenPadding: EdgeInsets.fromLTRB(3.4.w, .25.h, 3.4.w, 1.2.h),
         shape: const RoundedRectangleBorder(side: BorderSide.none),
         collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
         title: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(7.px),
+              padding: EdgeInsets.all(8.5.px),
               decoration: BoxDecoration(
                 color: ConstantColor.primaryColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(12.px),
+                borderRadius: BorderRadius.circular(14.px),
               ),
               child: Icon(
                 Icons.sensors,
                 color: ConstantColor.primaryColor,
-                size: 2.6.h,
+                size: 2.8.h * scale,
               ),
             ),
             horizontalSpace(width: 2.4.w),
@@ -315,15 +327,17 @@ class _SensorsCard extends StatelessWidget {
                   Text(
                     l10n.vehicleSensors,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 14.2.sp,
-                      color: isDark ? AppColors.white : AppColors.textBlack,
+                      fontSize: _infoSp(context, 14.4.sp),
+                      color: isDark ? AppColors.white : onSurface,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
                     l10n.sensorItemsCount(sensors.length),
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 13.2.sp,
+                      fontSize: _infoSp(context, 13.0.sp),
                       color: isDark ? Colors.white60 : Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -370,7 +384,7 @@ class _SensorsCard extends StatelessWidget {
                       ),
                       child: Icon(
                         sensorIcon,
-                        size: 15.sp,
+                        size: _infoSp(context, 14.8.sp),
                         color: AppColors.blueCyan,
                       ),
                     ),
@@ -381,8 +395,8 @@ class _SensorsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 13.1.sp,
-                          color: isDark ? AppColors.white : AppColors.textBlack,
+                          fontSize: _infoSp(context, 13.4.sp),
+                          color: isDark ? AppColors.white : onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -412,7 +426,7 @@ class _SensorsCard extends StatelessWidget {
                               textAlign: TextAlign.right,
                               style:
                                   AppStyles.semiboldTextStyle(context).copyWith(
-                                fontSize: 12.3.sp,
+                                fontSize: _infoSp(context, 12.8.sp),
                                 color: _getValueColor(value, isDark),
                               ),
                             ),
@@ -526,18 +540,23 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = context.l10n;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.25.h),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        color: isDark ? const Color(0xFF172131) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: .10)
+              : const Color(0xFFD9E2F2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? .20 : .07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -547,15 +566,15 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8.px),
+                padding: EdgeInsets.all(9.px),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF8FF),
-                  borderRadius: BorderRadius.circular(11.px),
+                  borderRadius: BorderRadius.circular(14.px),
                 ),
                 child: Icon(
                   Icons.tune_rounded,
                   color: Color(0xFF0284C7),
-                  size: 1.9.h,
+                  size: 2.05.h,
                 ),
               ),
               horizontalSpace(width: 2.4.w),
@@ -563,8 +582,9 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                 child: Text(
                   l10n.vehicleInfo,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 13.8.sp,
-                    color: isDark ? AppColors.white : AppColors.textBlack,
+                    fontSize: _infoSp(context, 14.2.sp),
+                    color: isDark ? AppColors.white : onSurface,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -578,18 +598,22 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                     pressedYOffset: 1.4,
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                          horizontal: 3.0.w, vertical: .78.h),
+                          horizontal: 3.2.w, vertical: .9.h),
                       decoration: BoxDecoration(
-                        color: AppColors.blueCyan.withValues(alpha: .70),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: AppColors.blueCyan.withValues(alpha: .85),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.blueCyan.withValues(alpha: .22),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                            color: AppColors.blueCyan.withValues(alpha: .28),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -606,7 +630,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                                 )
                               : Icon(
                                   Icons.edit_outlined,
-                                  size: 1.75.h,
+                                  size: 1.82.h,
                                   color: Colors.white,
                                 ),
                           horizontalSpace(width: .8.w),
@@ -614,7 +638,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
                             l10n.update,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 12.4.sp,
+                              fontSize: _infoSp(context, 12.8.sp),
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -647,7 +671,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
         color: isDark
             ? Colors.white.withValues(alpha: .05)
             : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.black12,
         ),
@@ -658,7 +682,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
             child: Text(
               title,
               style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 13.5.sp,
+                fontSize: _infoSp(context, 13.6.sp),
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
             ),
@@ -666,7 +690,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           Text(
             value,
             style: AppStyles.semiboldTextStyle(context).copyWith(
-              fontSize: 13.5.sp,
+              fontSize: _infoSp(context, 13.6.sp),
               color: isDark ? AppColors.white : AppColors.textBlack,
             ),
           ),
@@ -1075,7 +1099,7 @@ class _InfoCardState extends State<_InfoCard> {
         );
         AppSnackBar.success(message: l10n.serviceAddedSuccessfully);
       } catch (e) {
-        AppSnackBar.error(message: e.toString());
+        AppSnackBar.error(message: AppErrorMessage.normalize(e));
       }
     } else if (index == 3) {
       final formData = await showExpenseFormDialog(
@@ -1097,7 +1121,7 @@ class _InfoCardState extends State<_InfoCard> {
         );
         AppSnackBar.success(message: l10n.expenseAddedSuccessfully);
       } catch (e) {
-        AppSnackBar.error(message: e.toString());
+        AppSnackBar.error(message: AppErrorMessage.normalize(e));
       }
     } else if (index == 5) {
       showAddReminderPopup(
@@ -1164,6 +1188,7 @@ class _InfoCardState extends State<_InfoCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = context.l10n;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     final activeReminderText = index == 5
         ? context.select<ReminderProvider, String>((provider) {
@@ -1196,14 +1221,18 @@ class _InfoCardState extends State<_InfoCard> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.25.h),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: .06) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        color: isDark ? const Color(0xFF172131) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: .10)
+              : const Color(0xFFD9E2F2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? .18 : .06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? .20 : .07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -1214,10 +1243,10 @@ class _InfoCardState extends State<_InfoCard> {
             right: 0,
             left: 0,
             top: 0,
-            height: 6.8.h,
+            height: 7.2.h,
             child: Icon(
               icon,
-              size: 40.sp,
+              size: _infoSp(context, 39.sp),
               color: iconColor.withValues(alpha: .11),
             ),
           ),
@@ -1226,12 +1255,12 @@ class _InfoCardState extends State<_InfoCard> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8.px),
+                    padding: EdgeInsets.all(9.px),
                     decoration: BoxDecoration(
                       color: iconBg,
-                      borderRadius: BorderRadius.circular(11.px),
+                      borderRadius: BorderRadius.circular(14.px),
                     ),
-                    child: Icon(icon, color: iconColor, size: 1.9.h),
+                    child: Icon(icon, color: iconColor, size: 2.05.h),
                   ),
                   horizontalSpace(width: 2.4.w),
                   Expanded(
@@ -1241,20 +1270,21 @@ class _InfoCardState extends State<_InfoCard> {
                         Text(
                           title,
                           style: AppStyles.semiboldTextStyle(context).copyWith(
-                            fontSize: 13.8.sp,
-                            color:
-                                isDark ? AppColors.white : AppColors.textBlack,
+                            fontSize: _infoSp(context, 14.2.sp),
+                            color: isDark ? AppColors.white : onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         if (subtitle != null)
                           Padding(
-                            padding: const EdgeInsets.only(top: 2),
+                            padding: EdgeInsets.only(top: .25.h),
                             child: Text(
                               subtitle!,
                               style:
                                   AppStyles.regularTextStyle(context).copyWith(
-                                fontSize: 13.0.sp,
+                                fontSize: _infoSp(context, 13.0.sp),
                                 color: isDark ? Colors.white70 : Colors.black54,
+                                height: 1.18,
                               ),
                             ),
                           ),
@@ -1270,18 +1300,30 @@ class _InfoCardState extends State<_InfoCard> {
                     pressedYOffset: 1.4,
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                          horizontal: 3.0.w, vertical: .78.h),
+                          horizontal: 3.1.w, vertical: .9.h),
                       decoration: BoxDecoration(
-                        color: AppColors.blueCyan.withValues(alpha: .70),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: index == 6
+                              ? const [Color(0xFFF97316), Color(0xFFEA580C)]
+                              : const [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: AppColors.blueCyan.withValues(alpha: .85),
+                          color: (index == 6
+                                  ? const Color(0xFFF97316)
+                                  : AppColors.blueCyan)
+                              .withValues(alpha: .88),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.blueCyan.withValues(alpha: .22),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                            color: (index == 6
+                                    ? const Color(0xFFF97316)
+                                    : AppColors.blueCyan)
+                                .withValues(alpha: .26),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -1303,7 +1345,7 @@ class _InfoCardState extends State<_InfoCard> {
                                   : index == 6
                                       ? Icons.chat_rounded
                                       : Icons.add_rounded,
-                              size: 1.75.h,
+                              size: 1.82.h,
                               color: Colors.white,
                             ),
                           horizontalSpace(width: .8.w),
@@ -1311,7 +1353,7 @@ class _InfoCardState extends State<_InfoCard> {
                             actionText,
                             style:
                                 AppStyles.semiboldTextStyle(context).copyWith(
-                              fontSize: 13.0.sp,
+                              fontSize: _infoSp(context, 12.9.sp),
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1327,13 +1369,13 @@ class _InfoCardState extends State<_InfoCard> {
                 if (index == 5)
                   Container(
                     width: double.infinity,
-                    padding:
-                        EdgeInsets.symmetric(vertical: .9.h, horizontal: 2.4.w),
+                    padding: EdgeInsets.symmetric(
+                        vertical: 1.0.h, horizontal: 2.6.w),
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withValues(alpha: .05)
                           : const Color(0xFFF6F8FB),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isDark ? Colors.white10 : Colors.black12,
                       ),
@@ -1361,7 +1403,7 @@ class _InfoCardState extends State<_InfoCard> {
                             borderRadius: BorderRadius.circular(10),
                             child: Padding(
                               padding: EdgeInsets.symmetric(
-                                  vertical: .8.h, horizontal: 1.2.w),
+                                  vertical: .9.h, horizontal: 1.6.w),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -1369,7 +1411,7 @@ class _InfoCardState extends State<_InfoCard> {
                                       activeReminderText,
                                       style: AppStyles.regularTextStyle(context)
                                           .copyWith(
-                                        fontSize: 14.0.sp,
+                                        fontSize: _infoSp(context, 14.0.sp),
                                         color: isDark
                                             ? AppColors.white
                                             : AppColors.textBlack,
@@ -1379,7 +1421,7 @@ class _InfoCardState extends State<_InfoCard> {
                                   ),
                                   Icon(
                                     Icons.arrow_forward_ios_rounded,
-                                    size: 14.5.sp,
+                                    size: _infoSp(context, 14.2.sp),
                                     color: isDark
                                         ? Colors.white70
                                         : Colors.black54,
@@ -1411,7 +1453,7 @@ class _InfoCardState extends State<_InfoCard> {
                             borderRadius: BorderRadius.circular(10),
                             child: Padding(
                               padding: EdgeInsets.symmetric(
-                                  vertical: .8.h, horizontal: 1.2.w),
+                                  vertical: .9.h, horizontal: 1.6.w),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -1419,7 +1461,7 @@ class _InfoCardState extends State<_InfoCard> {
                                       pastReminderText,
                                       style: AppStyles.regularTextStyle(context)
                                           .copyWith(
-                                        fontSize: 14.0.sp,
+                                        fontSize: _infoSp(context, 14.0.sp),
                                         color: isDark
                                             ? AppColors.white
                                             : AppColors.textBlack,
@@ -1429,7 +1471,7 @@ class _InfoCardState extends State<_InfoCard> {
                                   ),
                                   Icon(
                                     Icons.arrow_forward_ios_rounded,
-                                    size: 14.5.sp,
+                                    size: _infoSp(context, 14.2.sp),
                                     color: isDark
                                         ? Colors.white70
                                         : Colors.black54,
@@ -1448,17 +1490,36 @@ class _InfoCardState extends State<_InfoCard> {
                     child: Container(
                       width: double.infinity,
                       padding: EdgeInsets.symmetric(
-                          vertical: 1.0.h, horizontal: 3.w),
+                          vertical: 1.1.h, horizontal: 3.w),
                       decoration: BoxDecoration(
+                        gradient: index == 0
+                            ? const LinearGradient(
+                                colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
                         color: index == 0
-                            ? AppColors.blueCyan.withValues(alpha: .70)
+                            ? null
                             : (isDark
                                 ? Colors.white.withValues(alpha: .05)
                                 : const Color(0xFFF6F8FB)),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isDark ? Colors.white10 : Colors.black12,
+                          color: index == 0
+                              ? Colors.transparent
+                              : (isDark ? Colors.white10 : Colors.black12),
                         ),
+                        boxShadow: index == 0
+                            ? [
+                                BoxShadow(
+                                  color:
+                                      AppColors.blueCyan.withValues(alpha: .20),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : null,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1466,12 +1527,16 @@ class _InfoCardState extends State<_InfoCard> {
                           Text(
                             bodyText,
                             style: AppStyles.regularTextStyle(context).copyWith(
-                              fontSize: 13.5.sp,
+                              fontSize: _infoSp(context, 13.8.sp),
                               color: index == 0
                                   ? AppColors.white
                                   : (isDark
                                       ? AppColors.white
                                       : AppColors.textBlack),
+                              fontWeight: index == 0
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              height: 1.2,
                             ),
                           ),
                         ],

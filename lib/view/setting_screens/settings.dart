@@ -7,6 +7,7 @@ import 'package:trackerapp/utils/local_notification_service.dart';
 import 'package:trackerapp/utils/logout_popup.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/view/auth_screens/login_screen.dart';
+import 'package:trackerapp/view/setting_screens/manager_chat_screen.dart';
 import 'package:trackerapp/widgets/settings_widgets/settings_header.dart';
 import 'package:trackerapp/widgets/settings_widgets/settings_menu_tile.dart';
 
@@ -34,8 +35,44 @@ class ModernSettingsScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.fromLTRB(6.w, 1.4.h, 6.w, .4.h),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ManagerChatScreen(),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF16A34A),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 3.2.w,
+                          vertical: 0.8.h,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          side: const BorderSide(
+                            color: Color(0xFF86EFAC),
+                          ),
+                        ),
+                      ),
+                      icon: Icon(
+                        Icons.chat_bubble_rounded,
+                        size: 16.sp,
+                      ),
+                      label: Text(
+                        l10n.liveChat,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {

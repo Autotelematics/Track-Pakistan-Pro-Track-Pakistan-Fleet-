@@ -73,6 +73,31 @@ class DriverRepository {
     }
   }
 
+  Future<void> deleteDriverMethod({
+    required String driverId,
+  }) async {
+    final userApiHashKey = MySharedPreferences.getString(authTokenKey);
+    final endpointPath = AppUrl.deleteDriverUserEp.split('?').first;
+    final url = Uri.parse('${AppUrl.baseURL}$endpointPath').replace(
+      queryParameters: {
+        'user_api_hash': userApiHashKey,
+        'id': driverId,
+      },
+    );
+    final headers = {"Content-Type": "application/json"};
+    final response = await http.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final message = (decoded["message"] ?? "").toString();
+      if (message.isNotEmpty) {
+        AppSnackBar.success(message: message);
+      }
+    } else {
+      final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
+      AppSnackBar.error(message: decodedBody["message"]);
+    }
+  }
+
   //get Driver Api Method
   Future<GetDriverModel?> getDriverMethod({
     required String deviceId,

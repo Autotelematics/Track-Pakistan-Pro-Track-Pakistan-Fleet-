@@ -37,19 +37,20 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   bool _isDisposing = false;
   LatLng? _lastCameraTarget;
   double? _lastCameraZoom;
+  bool _isCameraAnimating = false;
+  LatLng? _pendingCameraTarget;
+  double? _pendingCameraZoom;
   bool _showUserDistanceBanner = false;
+  final Map<String, BitmapDescriptor> _markerIconCache = {};
+  String? _loadingMarkerIconKey;
+  BitmapDescriptor? _activeMarkerIcon;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     provider = VehicleTrackingProvider();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.fetchDeviceLiveTracking(
-        deviceId: widget.deviceId,
-        context: context,
-      );
-
-      provider.startPeriodicRefresh(widget.deviceId, context);
+      provider.startPeriodicRefresh(widget.deviceId);
     });
   }
 
@@ -67,7 +68,13 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   Future<void> _animateCameraToLocation(
       LatLng targetLocation, double zoom) async {
     if (_isDisposing) return;
+    if (_isCameraAnimating) {
+      _pendingCameraTarget = targetLocation;
+      _pendingCameraZoom = zoom;
+      return;
+    }
     if (mapController != null && mounted) {
+      _isCameraAnimating = true;
       try {
         CameraPosition cameraPosition =
             CameraPosition(target: targetLocation, zoom: zoom);
@@ -76,6 +83,26 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
         );
       } catch (e) {
         // Optionally log or ignore; map might be disposed or busy
+      } finally {
+        _isCameraAnimating = false;
+        final pendingTarget = _pendingCameraTarget;
+        final pendingZoom = _pendingCameraZoom;
+        _pendingCameraTarget = null;
+        _pendingCameraZoom = null;
+        if (pendingTarget != null &&
+            pendingZoom != null &&
+            mounted &&
+            !_isDisposing) {
+          final shouldRunNext = _lastCameraTarget == null ||
+              (pendingTarget.latitude - _lastCameraTarget!.latitude).abs() >
+                  0.000001 ||
+              (pendingTarget.longitude - _lastCameraTarget!.longitude).abs() >
+                  0.000001 ||
+              pendingZoom != _lastCameraZoom;
+          if (shouldRunNext) {
+            await _animateCameraToLocation(pendingTarget, pendingZoom);
+          }
+        }
       }
     }
   }
@@ -217,13 +244,17 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     }
 
     String color = "blue";
-    switch (status.toLowerCase()) {
+    switch (status.toLowerCase().trim()) {
+      case "online":
       case "running":
+      case "moving":
         color = "green";
         break;
+      case "ack":
       case "stopped":
         color = "red";
         break;
+      case "engine":
       case "idle":
         color = "yellow";
         break;
@@ -236,22 +267,22 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
         : "assets/images/${baseType}_$color.png";
 
     Future<BitmapDescriptor> fromAssetPath(String path) async {
-      final ByteData data = await rootBundle.load(path);
-      final ui.Codec codec = await ui.instantiateImageCodec(
+      final data = await rootBundle.load(path);
+      final codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
-        targetHeight: (markerLogicalHeight * _vehicleMarkerRenderScale).round(),
+        targetHeight:
+            (markerLogicalHeight * 1.22 * _vehicleMarkerRenderScale).round(),
       );
-      final ui.FrameInfo frame = await codec.getNextFrame();
-      final ByteData? bytes =
+      final frame = await codec.getNextFrame();
+      final bytes =
           await frame.image.toByteData(format: ui.ImageByteFormat.png);
-      final logicalWidth =
-          frame.image.width.toDouble() / _vehicleMarkerRenderScale;
-      final logicalHeight =
-          frame.image.height.toDouble() / _vehicleMarkerRenderScale;
+      if (bytes == null) {
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+      }
       return BitmapDescriptor.bytes(
-        bytes!.buffer.asUint8List(),
-        width: logicalWidth,
-        height: logicalHeight,
+        bytes.buffer.asUint8List(),
+        width: frame.image.width.toDouble() / _vehicleMarkerRenderScale,
+        height: frame.image.height.toDouble() / _vehicleMarkerRenderScale,
         imagePixelRatio: _vehicleMarkerRenderScale,
       );
     }
@@ -270,14 +301,59 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     }
   }
 
+  String _markerIconCacheKey({
+    required String status,
+    required String vehicleType,
+    required double markerLogicalHeight,
+  }) {
+    return '${status.trim().toLowerCase()}|${vehicleType.trim().toLowerCase()}|${markerLogicalHeight.toStringAsFixed(2)}';
+  }
+
+  void _ensureMarkerIconLoaded({
+    required String status,
+    required String vehicleType,
+    required double markerLogicalHeight,
+  }) {
+    final key = _markerIconCacheKey(
+      status: status,
+      vehicleType: vehicleType,
+      markerLogicalHeight: markerLogicalHeight,
+    );
+
+    final cached = _markerIconCache[key];
+    if (cached != null) {
+      _activeMarkerIcon = cached;
+      return;
+    }
+
+    if (_loadingMarkerIconKey == key) return;
+    _loadingMarkerIconKey = key;
+    _markerIcon(
+      status,
+      vehicleType,
+      markerLogicalHeight: markerLogicalHeight,
+    ).then((icon) {
+      if (!mounted || _isDisposing) return;
+      _markerIconCache[key] = icon;
+      _loadingMarkerIconKey = null;
+      setState(() {
+        _activeMarkerIcon = icon;
+      });
+    }).catchError((_) {
+      if (!mounted || _isDisposing) return;
+      _loadingMarkerIconKey = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textScale = trackingTextScale(context);
     final iconScale = trackingIconScale(context);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    const infoBannerTop = 64.0;
-    const rulerBannerTop = 102.0;
+    const waitingBannerTop = 68.0;
+    const infoBannerTop = 92.0;
+    const rulerBannerTop = 130.0;
     final markerLogicalHeight = _adaptiveMarkerLogicalHeight(context);
     return ChangeNotifierProvider.value(
       value: provider,
@@ -311,6 +387,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
               );
             }
             final pos = LatLng(prov.latitude, prov.longitude);
+            final markerMotionStatus = prov.markerVisualStatus;
             if (prov.followVehicle) {
               final shouldAnimate = _lastCameraTarget == null ||
                   (pos.latitude - _lastCameraTarget!.latitude).abs() >
@@ -326,222 +403,197 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                 _lastCameraZoom = prov.currentZoom;
               }
             }
-            return FutureBuilder<BitmapDescriptor>(
-              future: _markerIcon(
-                prov.vehicleStatusText,
-                prov.vehicleType.trim().isNotEmpty
-                    ? prov.vehicleType
-                    : (widget.initialVehicleType ?? ''),
-                markerLogicalHeight: markerLogicalHeight,
+            final vehicleType = prov.vehicleType.trim().isNotEmpty
+                ? prov.vehicleType
+                : (widget.initialVehicleType ?? '');
+            _ensureMarkerIconLoaded(
+              status: markerMotionStatus,
+              vehicleType: vehicleType,
+              markerLogicalHeight: markerLogicalHeight,
+            );
+
+            final targetMarker = Marker(
+              markerId: const MarkerId("vehicle"),
+              position: pos,
+              rotation: prov.course,
+              flat: false,
+              anchor: const Offset(0.5, 0.5),
+              icon: _activeMarkerIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueAzure,
+                  ),
+            );
+            final userPosition = prov.userPosition;
+            final userMarker = userPosition == null
+                ? null
+                : Marker(
+                    markerId: const MarkerId("my_location"),
+                    position: LatLng(
+                      userPosition.latitude,
+                      userPosition.longitude,
+                    ),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueAzure,
+                    ),
+                    infoWindow: InfoWindow(title: l10n.yourLocation),
+                  );
+
+            final mapWidget = AnimatedMarker(
+              animatedMarkers: {targetMarker},
+              staticMarkers: {
+                ...prov.rulerMarkers,
+                if (userMarker != null) userMarker,
+              },
+              duration: Duration(
+                milliseconds: prov.markerAnimationDurationMs,
               ),
-              builder: (context, snap) {
-                if (!snap.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final targetMarker = Marker(
-                  markerId: const MarkerId("vehicle"),
-                  position: pos,
-                  rotation: prov.course,
-                  flat: true,
-                  anchor: const Offset(0.5, 0.5),
-                  icon: snap.data!,
+              fps: 30,
+              curve: Curves.linear,
+              builder: (context, animatedMarkers) {
+                return GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: pos,
+                    zoom: prov.currentZoom,
+                  ),
+                  markers: animatedMarkers,
+                  polylines: prov.rulerPolylines,
+                  mapType: prov.currentMapType,
+                  trafficEnabled: prov.enableTraffic,
+                  onMapCreated: _onMapCreated,
+                  onTap: prov.handleRulerTap,
+                  zoomControlsEnabled: false,
+                  myLocationEnabled: false,
+                  myLocationButtonEnabled: false,
+                  padding: EdgeInsets.only(
+                    bottom: 150 + bottomInset,
+                    right: 7,
+                  ),
                 );
-                final userPosition = prov.userPosition;
-                final userMarker = userPosition == null
-                    ? null
-                    : Marker(
-                        markerId: const MarkerId("my_location"),
-                        position: LatLng(
-                          userPosition.latitude,
-                          userPosition.longitude,
-                        ),
-                        icon: BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueAzure,
-                        ),
-                        infoWindow: InfoWindow(title: l10n.yourLocation),
-                      );
+              },
+            );
 
-                Widget mapWidget;
-                if (prov.status == 'online') {
-                  mapWidget = AnimatedMarker(
-                    animatedMarkers: {targetMarker},
-                    duration: const Duration(seconds: 15),
-                    fps: 20,
-                    curve: Curves.ease,
-                    builder: (context, animatedMarkers) {
-                      final mergedMarkers = <Marker>{
-                        ...animatedMarkers,
-                        ...prov.rulerMarkers,
-                        if (userMarker != null) userMarker,
-                      };
-                      return GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: pos,
-                          zoom: prov.currentZoom,
-                        ),
-                        markers: mergedMarkers,
-                        polylines: prov.rulerPolylines,
-                        mapType: prov.currentMapType,
-                        trafficEnabled: prov.enableTraffic,
-                        onMapCreated: _onMapCreated,
-                        onTap: prov.handleRulerTap,
-                        zoomControlsEnabled: false,
-                        myLocationEnabled: false,
-                        myLocationButtonEnabled: false,
-                        padding: EdgeInsets.only(
-                          bottom: 200 + bottomInset,
-                          right: 7,
-                          left: 15,
-                          top: 15,
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  mapWidget = GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: pos,
-                      zoom: prov.currentZoom,
+            return MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(textScale)),
+              child: IconTheme(
+                data: IconTheme.of(context).copyWith(size: 24 * iconScale),
+                child: Stack(
+                  children: [
+                    mapWidget,
+                    TopBar(
+                      status: prov.status,
+                      onResetNorth: () => _resetNorth(
+                        fallbackTarget: pos,
+                        zoom: prov.currentZoom,
+                      ),
+                      onLocateUser: () => _locateUserAndMeasure(prov),
+                      onOpenDirections: () => _openDirectionsToVehicle(prov),
                     ),
-                    markers: {
-                      targetMarker,
-                      ...prov.rulerMarkers,
-                      if (userMarker != null) userMarker,
-                    },
-                    polylines: prov.rulerPolylines,
-                    mapType: prov.currentMapType,
-                    trafficEnabled: prov.enableTraffic,
-                    onMapCreated: _onMapCreated,
-                    onTap: prov.handleRulerTap,
-                    zoomControlsEnabled: false,
-                    myLocationEnabled: false,
-                    myLocationButtonEnabled: false,
-                    padding: EdgeInsets.only(
-                      bottom: 150 + bottomInset,
-                      right: 7,
+                    Positioned(
+                      top: waitingBannerTop,
+                      left: 4.w,
+                      child: _WaitingPacketBanner(
+                        show: prov.shouldShowWaitingForPacket,
+                      ),
                     ),
-                  );
-                }
-
-                return MediaQuery(
-                  data: MediaQuery.of(context)
-                      .copyWith(textScaler: TextScaler.linear(textScale)),
-                  child: IconTheme(
-                    data: IconTheme.of(context).copyWith(size: 24 * iconScale),
-                    child: Stack(
-                      children: [
-                        mapWidget,
-                        TopBar(
-                          status: prov.status,
-                          onResetNorth: () => _resetNorth(
-                            fallbackTarget: pos,
-                            zoom: prov.currentZoom,
+                    if (_showUserDistanceBanner && prov.userPosition != null)
+                      Positioned(
+                        top: infoBannerTop,
+                        left: 4.w,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: .62),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          onLocateUser: () => _locateUserAndMeasure(prov),
-                          onOpenDirections: () =>
-                              _openDirectionsToVehicle(prov),
+                          child: Text(
+                            'Vehicle is ${prov.distanceToVehicleLabel}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                        if (_showUserDistanceBanner &&
-                            prov.userPosition != null)
-                          Positioned(
-                            top: infoBannerTop,
-                            left: 4.w,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: .62),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                'Vehicle is ${prov.distanceToVehicleLabel}',
+                      ),
+                    if (prov.isLocatingUser)
+                      Positioned(
+                        top: infoBannerTop,
+                        left: 4.w,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: .62),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            'Locating your phone...',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (prov.rulerMode)
+                      Positioned(
+                        top: rulerBannerTop,
+                        left: 4.w,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: .62),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Ruler: ${prov.rulerDistanceLabel}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                          ),
-                        if (prov.isLocatingUser)
-                          Positioned(
-                            top: infoBannerTop,
-                            left: 4.w,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: .62),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Text(
-                                'Locating your phone...',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (prov.rulerMode)
-                          Positioned(
-                            top: rulerBannerTop,
-                            left: 4.w,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: .62),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Ruler: ${prov.rulerDistanceLabel}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
+                              if (prov.rulerPoints.isNotEmpty) ...[
+                                const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: prov.clearRulerPoints,
+                                  child: const Text(
+                                    'Clear',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w700,
+                                      decoration: TextDecoration.underline,
                                     ),
                                   ),
-                                  if (prov.rulerPoints.isNotEmpty) ...[
-                                    const SizedBox(width: 10),
-                                    GestureDetector(
-                                      onTap: prov.clearRulerPoints,
-                                      child: const Text(
-                                        'Clear',
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontWeight: FontWeight.w700,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: VehicleBottomCard(
-                            deviceId: prov.deviceId,
-                            deviceName: prov.deviceName,
-                            deviceSpeed: prov.deviceSpeed,
-                            totalDistance: prov.totalDistance,
-                            vehicleOdometer: prov.odometer,
-                            deviceAddress: prov.address,
-                            deviceLatestUpdate: prov.lastUpdate,
-                            sensors: prov.sensors,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                      ],
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: VehicleBottomCard(
+                        deviceId: prov.deviceId,
+                        deviceName: prov.deviceName,
+                        deviceSpeed: prov.deviceSpeed,
+                        totalDistance: prov.totalDistance,
+                        vehicleOdometer: prov.odometer,
+                        deviceAddress: prov.address,
+                        deviceLatestUpdate: prov.lastUpdate,
+                        sensors: prov.sensors,
+                        param: prov.param,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  ],
+                ),
+              ),
             );
           },
         ),
@@ -576,7 +628,6 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
         if (!mounted || _isDisposing) return;
         provider.fetchDeviceLiveTracking(
           deviceId: widget.deviceId,
-          context: context,
           isRefresh: true,
         );
       });
@@ -615,6 +666,77 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
           ],
         ),
       ),
+    );
+  }
+}
+
+class _WaitingPacketBanner extends StatefulWidget {
+  final bool show;
+
+  const _WaitingPacketBanner({required this.show});
+
+  @override
+  State<_WaitingPacketBanner> createState() => _WaitingPacketBannerState();
+}
+
+class _WaitingPacketBannerState extends State<_WaitingPacketBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: .45, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: widget.show
+          ? FadeTransition(
+              key: const ValueKey('waiting-packet-banner'),
+              opacity: _opacity,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1FBF75).withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF1FBF75).withValues(alpha: .32),
+                  ),
+                ),
+                child: Text(
+                  'Waiting for new packet',
+                  style: TextStyle(
+                    color: const Color(0xFF138A53),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            )
+          : const SizedBox.shrink(
+              key: ValueKey('no-waiting-packet-banner'),
+            ),
     );
   }
 }

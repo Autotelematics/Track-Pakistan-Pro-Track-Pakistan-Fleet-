@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trackerapp/data/models/get_device_list_model.dart';
 import 'package:trackerapp/data/models/get_device_group_model.dart';
 import 'package:trackerapp/data/repositories/vehicle_repository.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 
 class GetDevicesListProvider with ChangeNotifier {
   final VehicleRepository repository;
@@ -81,6 +82,10 @@ class GetDevicesListProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return;
+      }
       if (!hasValidData) {
         _error = _friendlyErrorMessage(e);
         _filteredVehicles = [];

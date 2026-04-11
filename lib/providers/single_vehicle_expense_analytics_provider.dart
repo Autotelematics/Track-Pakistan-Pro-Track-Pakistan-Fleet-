@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trackerapp/data/repositories/device_expense_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 enum SingleExpenseRangePreset {
   today,
@@ -168,7 +169,7 @@ class SingleVehicleExpenseAnalyticsProvider extends ChangeNotifier {
       await _loadRangeAnalytics();
       await _loadMonthComparison();
     } catch (e) {
-      _error = e.toString();
+      _error = AppErrorMessage.normalize(e);
     } finally {
       if (!_disposed) {
         _isLoading = false;

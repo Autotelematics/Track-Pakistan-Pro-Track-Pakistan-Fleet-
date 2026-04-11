@@ -7,7 +7,9 @@ import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/device_expense_model.dart';
 import 'package:trackerapp/data/repositories/device_expense_repository.dart';
 import 'package:trackerapp/providers/device_expense_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/widgets/custom_button.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
@@ -24,7 +26,7 @@ Future<ExpenseFormData?> showExpenseFormDialog(
     types = await repository.getExpenseTypes();
   } catch (e) {
     if (context.mounted) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     }
     return null;
   }
@@ -142,8 +144,8 @@ class _SingleVehicleExpenseBody extends StatelessWidget {
                 final today = DateTime(now.year, now.month, now.day);
                 final fromBound = provider.fromDate == null
                     ? DateTime(2020)
-                    : DateTime(provider.fromDate!.year, provider.fromDate!.month,
-                        provider.fromDate!.day);
+                    : DateTime(provider.fromDate!.year,
+                        provider.fromDate!.month, provider.fromDate!.day);
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: provider.toDate ?? DateTime.now(),
@@ -594,6 +596,7 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
+    final l10n = context.l10n;
     final compactFieldHeight = 4.4.h;
     final compactTitleSize = 13.6.sp;
     final compactInputSize = 13.2.sp;
@@ -631,8 +634,8 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                       alignment: Alignment.topLeft,
                       child: Text(
                         widget.initialExpense == null
-                            ? "Add Expense"
-                            : "Edit Expense",
+                            ? l10n.addExpenseLabel
+                            : l10n.editExpenseLabel,
                         style: AppStyles.boldTextStyle(context).copyWith(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -645,7 +648,7 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
               ),
               verticalSpace(height: .4.h),
               Text(
-                "Type",
+                l10n.typeLabel,
                 style: TextStyle(
                   fontSize: compactTitleSize,
                   fontWeight: FontWeight.w500,
@@ -664,7 +667,7 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                     fontWeight: FontWeight.w500,
                   ),
                   hint: Text(
-                    "Select expense type",
+                    l10n.selectExpenseType,
                     style: TextStyle(
                       fontSize: compactInputSize,
                       color: onSurface.withValues(alpha: .58),
@@ -695,14 +698,14 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                       .toList(),
                   onChanged: (value) => setState(() => _typeId = value),
                   validator: (value) =>
-                      value == null ? "Select expense type" : null,
+                      value == null ? l10n.selectExpenseType : null,
                 ),
               ),
               verticalSpace(height: 1.0.h),
               MaintenanceField(
                 controller: _nameCtrl,
-                title: "Name",
-                hint: "Expense name",
+                title: l10n.nameLabel,
+                hint: l10n.expenseNameHint,
                 height: compactFieldHeight,
                 titleFontSize: compactTitleSize,
                 fieldFontSize: compactInputSize,
@@ -715,10 +718,10 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                 controller: _quantityCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: "Quantity"),
+                decoration: InputDecoration(labelText: l10n.quantityLabel),
                 validator: (value) {
                   final n = double.tryParse(value ?? "");
-                  if (n == null || n <= 0) return "Enter valid quantity";
+                  if (n == null || n <= 0) return l10n.enterValidQuantity;
                   return null;
                 },
               ),
@@ -727,16 +730,16 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                 controller: _unitCostCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: "Unit cost"),
+                decoration: InputDecoration(labelText: l10n.unitCostLabel),
                 validator: (value) {
                   final n = double.tryParse(value ?? "");
-                  if (n == null || n <= 0) return "Enter valid unit cost";
+                  if (n == null || n <= 0) return l10n.enterValidUnitCost;
                   return null;
                 },
               ),
               verticalSpace(height: 1.0.h),
               MaintenanceField(
-                title: "Date",
+                title: l10n.fromDate,
                 hint: DateFormat("dd MMM yyyy").format(_date),
                 height: compactFieldHeight,
                 titleFontSize: compactTitleSize,
@@ -759,8 +762,8 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
               verticalSpace(height: 1.0.h),
               MaintenanceField(
                 controller: _supplierCtrl,
-                title: "Supplier",
-                hint: "Optional supplier",
+                title: l10n.supplierLabel,
+                hint: l10n.optionalSupplier,
                 height: compactFieldHeight,
                 titleFontSize: compactTitleSize,
                 fieldFontSize: compactInputSize,
@@ -771,8 +774,8 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
               verticalSpace(height: 1.0.h),
               MaintenanceField(
                 controller: _commentCtrl,
-                title: "Description",
-                hint: "Optional notes",
+                title: l10n.descriptionLabel,
+                hint: l10n.optionalNotes,
                 height: compactFieldHeight,
                 titleFontSize: compactTitleSize,
                 fieldFontSize: compactInputSize,
@@ -785,7 +788,7 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                 children: [
                   Expanded(
                     child: CustomButton(
-                      text: "Cancel",
+                      text: l10n.cancel,
                       backgroundColor: Colors.transparent,
                       textColor: onSurface.withValues(alpha: .82),
                       height: 4.4.h,
@@ -795,7 +798,9 @@ class _AddExpenseSheetState extends State<_AddExpenseSheet> {
                   horizontalSpace(width: 3.w),
                   Expanded(
                     child: CustomButton(
-                      text: widget.initialExpense == null ? "Save" : "Update",
+                      text: widget.initialExpense == null
+                          ? l10n.save
+                          : l10n.update,
                       height: 4.4.h,
                       onPressed: () {
                         if (!_formKey.currentState!.validate()) return;

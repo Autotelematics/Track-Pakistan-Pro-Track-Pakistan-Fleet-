@@ -3,7 +3,6 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
-import 'package:trackerapp/white_labeling/colors.dart';
 import 'package:trackerapp/widgets/get_horizontal_space.dart';
 
 class HistoryFilterBar extends StatelessWidget {
@@ -40,7 +39,8 @@ class HistoryFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    const reportAccent = Color(0xFFE0A800);
+    const filterAccent = Color(0xFF2563EB);
+    const filterAccentSoft = Color(0xFFEFF4FF);
     final filters = const [
       "Today",
       "Yesterday",
@@ -81,14 +81,16 @@ class HistoryFilterBar extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: .9.h),
                         decoration: BoxDecoration(
                           color: selected
-                              ? reportAccent.withValues(alpha: .22)
+                              ? (isDark
+                                  ? filterAccent.withValues(alpha: .26)
+                                  : filterAccentSoft)
                               : (isDark
                                   ? Colors.white.withValues(alpha: .06)
                                   : Colors.white),
                           borderRadius: BorderRadius.circular(9),
                           border: Border.all(
                             color: selected
-                                ? reportAccent.withValues(alpha: .62)
+                                ? filterAccent.withValues(alpha: .55)
                                 : (isDark ? Colors.white12 : Colors.black12),
                           ),
                         ),
@@ -100,7 +102,7 @@ class HistoryFilterBar extends StatelessWidget {
                           style: AppStyles.semiboldTextStyle(context).copyWith(
                             fontSize: 10.9.sp,
                             color: selected
-                                ? reportAccent
+                                ? filterAccent
                                 : (isDark ? Colors.white70 : Colors.black87),
                           ),
                         ),
@@ -136,7 +138,7 @@ class HistoryFilterBar extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(Icons.calendar_month_rounded,
-                        size: 17.sp, color: ConstantColor.primaryColor),
+                        size: 17.sp, color: filterAccent),
                     horizontalSpace(width: 1.8.w),
                     Expanded(
                       child: Text(

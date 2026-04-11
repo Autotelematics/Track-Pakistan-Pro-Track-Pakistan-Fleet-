@@ -21,6 +21,7 @@ class AnalyticsGraphContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     final surface = isDark ? Colors.white.withValues(alpha: .06) : Colors.white;
     final border = isDark ? Colors.white12 : Colors.black12;
     final titleColor = isDark ? AppColors.white : AppColors.textBlack;
@@ -29,9 +30,21 @@ class AnalyticsGraphContainer extends StatelessWidget {
 
     return Container(
       height: 28.h,
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.6.w, vertical: 1.65.h),
       decoration: BoxDecoration(
-        color: surface,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? <Color>[
+                  surface,
+                  Colors.white.withValues(alpha: .03),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFF8FBFF),
+                ],
+        ),
         borderRadius: BorderRadius.circular(16.sp),
         border: Border.all(color: border),
         boxShadow: [
@@ -48,11 +61,21 @@ class AnalyticsGraphContainer extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 1.2.w,
-                height: 2.2.h,
+                width: 5.8.w,
+                height: 5.8.w,
                 decoration: BoxDecoration(
-                  color: AppColors.blueCyan,
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.query_stats_rounded,
+                  color: Colors.white,
+                  size: 10.8.sp,
                 ),
               ),
               SizedBox(width: 2.w),
@@ -60,18 +83,27 @@ class AnalyticsGraphContainer extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 15.5.sp,
+                    fontSize: 12.8.sp,
+                    fontWeight: FontWeight.w900,
                     color: titleColor,
                   ),
                 ),
               ),
               if (isEmpty)
-                Text(
-                  l10n.noData,
-                  style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 12.sp,
-                    color: subtitleColor,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 1.8.w, vertical: .28.h),
+                  decoration: BoxDecoration(
+                    color: onSurface.withValues(alpha: .08),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: onSurface.withValues(alpha: .14)),
+                  ),
+                  child: Text(
+                    l10n.noData,
+                    style: AppStyles.regularTextStyle(context).copyWith(
+                      fontSize: 10.8.sp,
+                      color: subtitleColor,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
             ],

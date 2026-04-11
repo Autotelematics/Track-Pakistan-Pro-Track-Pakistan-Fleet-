@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
 import 'package:trackerapp/data/repositories/alerts_repository.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
 class AlertsProvider with ChangeNotifier {
@@ -207,6 +208,10 @@ class AlertsProvider with ChangeNotifier {
         throw Exception("Unable to load alerts right now. Please try again.");
       }
     } catch (e) {
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return;
+      }
       _errorMessage = _friendlyErrorMessage(e);
     } finally {
       _isLoading = false;
@@ -256,6 +261,10 @@ class AlertsProvider with ChangeNotifier {
       notifyListeners();
       return success;
     } catch (e) {
+      if (SessionGuard.isSessionExpiredError(e)) {
+        await SessionGuard.forceLogout(message: e.toString());
+        return false;
+      }
       _isLoading = false;
       notifyListeners();
       return false;

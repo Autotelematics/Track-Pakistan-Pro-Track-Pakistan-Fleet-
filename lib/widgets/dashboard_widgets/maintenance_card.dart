@@ -59,10 +59,38 @@ class MaintenanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.maintenanceReminder,
-            style:
-                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+          Row(
+            children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.build_circle_rounded,
+                  color: Colors.white,
+                  size: _mSp(context, phone: 15.0),
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  context.l10n.maintenanceReminder,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: _mSp(context, phone: 12.8),
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: 1.3.h),
           Container(
@@ -106,7 +134,8 @@ class MaintenanceCard extends StatelessWidget {
                     items: valid,
                   ),
                 ),
-                Divider(height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
+                Divider(
+                    height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
                 _maintenanceRow(
                   context,
                   title: context.l10n.dueSoon,
@@ -118,7 +147,8 @@ class MaintenanceCard extends StatelessWidget {
                     items: due,
                   ),
                 ),
-                Divider(height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
+                Divider(
+                    height: 1.7.h, color: onSurface.withValues(alpha: 0.12)),
                 _maintenanceRow(
                   context,
                   title: context.l10n.overdue,
@@ -176,7 +206,7 @@ class MaintenanceCard extends StatelessWidget {
               child: Text(
                 title,
                 style: AppStyles.regularTextStyle(context).copyWith(
-                  fontSize: 14.sp,
+                  fontSize: _mSp(context, phone: 14.0),
                   fontWeight: isCritical ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
@@ -191,8 +221,10 @@ class MaintenanceCard extends StatelessWidget {
               ),
               child: Text(
                 context.l10n.itemsCount(count),
-                style: AppStyles.regularTextStyle(context)
-                    .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5.sp),
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: _mSp(context, phone: 11.5),
+                ),
               ),
             ),
             horizontalSpace(width: .7.h),
@@ -247,7 +279,8 @@ class MaintenanceCard extends StatelessWidget {
                 Text(
                   "$title (${items.length})",
                   style: AppStyles.semiboldTextStyle(context).copyWith(
-                    fontSize: 15.sp,
+                    fontSize: 16.6.sp,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
                 verticalSpace(height: 1.h),
@@ -257,7 +290,7 @@ class MaintenanceCard extends StatelessWidget {
                           child: Text(
                             "No maintenance items",
                             style: AppStyles.regularTextStyle(context)
-                                .copyWith(fontSize: 13.sp),
+                                .copyWith(fontSize: 14.2.sp),
                           ),
                         )
                       : ListView.separated(
@@ -296,101 +329,172 @@ class MaintenanceCard extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    "Maintenance #${i + 1}",
-                                    style: AppStyles.semiboldTextStyle(context)
-                                        .copyWith(
-                                      fontSize: 12.6.sp,
-                                      color: statusColor,
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Maintenance #${i + 1}",
+                                          style: AppStyles.semiboldTextStyle(
+                                                  context)
+                                              .copyWith(
+                                            fontSize: 13.8.sp,
+                                            color: statusColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 2.0.w,
+                                          vertical: .32.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withValues(
+                                              alpha: .14),
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                          border: Border.all(
+                                            color: statusColor.withValues(
+                                                alpha: .35),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          (item.status.isEmpty
+                                                  ? 'unknown'
+                                                  : item.status)
+                                              .toUpperCase(),
+                                          style: AppStyles.semiboldTextStyle(
+                                                  context)
+                                              .copyWith(
+                                            fontSize: 10.8.sp,
+                                            color: statusColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  verticalSpace(height: .7.h),
+                                  _infoSection(
+                                    context,
+                                    title: 'Basic Info',
+                                    child: Column(
+                                      children: [
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Vehicle",
+                                          leftValue: item.device.isEmpty
+                                              ? 'Unknown'
+                                              : item.device,
+                                          rightTitle: "Name",
+                                          rightValue: item.name.isEmpty
+                                              ? 'No title'
+                                              : item.name,
+                                        ),
+                                        verticalSpace(height: .45.h),
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Type",
+                                          leftValue: item.typeLabel.isEmpty
+                                              ? (item.expirationBy.isEmpty
+                                                  ? '-'
+                                                  : item.expirationBy)
+                                              : item.typeLabel,
+                                          rightTitle: "Unit",
+                                          rightValue: item.unit.isEmpty
+                                              ? '-'
+                                              : item.unit,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  verticalSpace(height: .6.h),
-                                  _detailRow(
+                                  verticalSpace(height: .55.h),
+                                  _infoSection(
                                     context,
-                                    leftTitle: "Vehicle",
-                                    leftValue: item.device.isEmpty
-                                        ? 'Unknown'
-                                        : item.device,
-                                    rightTitle: "Name",
-                                    rightValue: item.name.isEmpty
-                                        ? 'No title'
-                                        : item.name,
+                                    title: 'Usage Metrics',
+                                    child: Column(
+                                      children: [
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Interval",
+                                          leftValue:
+                                              item.interval.toStringAsFixed(0),
+                                          rightTitle: "Last Service",
+                                          rightValue: item.lastService.isEmpty
+                                              ? '-'
+                                              : item.lastService,
+                                        ),
+                                        verticalSpace(height: .45.h),
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Current",
+                                          leftValue:
+                                              item.current.toStringAsFixed(0),
+                                          rightTitle: "Percent",
+                                          rightValue:
+                                              "${item.percent.toStringAsFixed(0)}%",
+                                        ),
+                                        verticalSpace(height: .45.h),
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Left",
+                                          leftValue:
+                                              item.left.toStringAsFixed(0),
+                                          rightTitle: "Status",
+                                          rightValue: item.status.isEmpty
+                                              ? 'unknown'
+                                              : item.status,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  verticalSpace(height: .5.h),
-                                  _detailRow(
+                                  verticalSpace(height: .55.h),
+                                  _infoSection(
                                     context,
-                                    leftTitle: "Type",
-                                    leftValue: item.typeLabel.isEmpty
-                                        ? (item.expirationBy.isEmpty
-                                            ? '-'
-                                            : item.expirationBy)
-                                        : item.typeLabel,
-                                    rightTitle: "Unit",
-                                    rightValue:
-                                        item.unit.isEmpty ? '-' : item.unit,
-                                  ),
-                                  verticalSpace(height: .5.h),
-                                  _detailRow(
-                                    context,
-                                    leftTitle: "Interval",
-                                    leftValue: item.interval.toStringAsFixed(0),
-                                    rightTitle: "Last Service",
-                                    rightValue: item.lastService.isEmpty
-                                        ? '-'
-                                        : item.lastService,
-                                  ),
-                                  verticalSpace(height: .5.h),
-                                  _detailRow(
-                                    context,
-                                    leftTitle: "Current",
-                                    leftValue: item.current.toStringAsFixed(0),
-                                    rightTitle: "Percent",
-                                    rightValue:
-                                        "${item.percent.toStringAsFixed(0)}%",
-                                  ),
-                                  verticalSpace(height: .5.h),
-                                  _detailRow(
-                                    context,
-                                    leftTitle: "Left",
-                                    leftValue: item.left.toStringAsFixed(0),
-                                    rightTitle: "Status",
-                                    rightValue: item.status.isEmpty
-                                        ? 'unknown'
-                                        : item.status,
-                                  ),
-                                  verticalSpace(height: .45.h),
-                                  _detailRow(
-                                    context,
-                                    leftTitle: "Expires Date",
-                                    leftValue: item.expiresDate.isEmpty
-                                        ? '-'
-                                        : item.expiresDate,
-                                    rightTitle: "Remind Date",
-                                    rightValue: item.remindDate.isEmpty
-                                        ? '-'
-                                        : item.remindDate,
+                                    title: 'Dates',
+                                    child: Column(
+                                      children: [
+                                        _detailRow(
+                                          context,
+                                          leftTitle: "Expires Date",
+                                          leftValue: item.expiresDate.isEmpty
+                                              ? '-'
+                                              : item.expiresDate,
+                                          rightTitle: "Remind Date",
+                                          rightValue: item.remindDate.isEmpty
+                                              ? '-'
+                                              : item.remindDate,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   if (item.daysTotal != null ||
                                       item.daysElapsed != null ||
                                       item.daysLeft != null) ...[
-                                    verticalSpace(height: .45.h),
-                                    _detailRow(
+                                    verticalSpace(height: .55.h),
+                                    _infoSection(
                                       context,
-                                      leftTitle: "Days (Total/Elapsed)",
-                                      leftValue:
-                                          "${item.daysTotal ?? '-'} / ${item.daysElapsed ?? '-'}",
-                                      rightTitle: "Days Left",
-                                      rightValue:
-                                          item.daysLeft?.toString() ?? '-',
+                                      title: 'Day Tracking',
+                                      child: _detailRow(
+                                        context,
+                                        leftTitle: "Days (Total/Elapsed)",
+                                        leftValue:
+                                            "${item.daysTotal ?? '-'} / ${item.daysElapsed ?? '-'}",
+                                        rightTitle: "Days Left",
+                                        rightValue:
+                                            item.daysLeft?.toString() ?? '-',
+                                      ),
                                     ),
                                   ],
-                                  verticalSpace(height: .45.h),
-                                  _detailSingle(
+                                  verticalSpace(height: .55.h),
+                                  _infoSection(
                                     context,
-                                    title: "Description",
-                                    value: item.description.isEmpty
-                                        ? '-'
-                                        : item.description,
+                                    title: 'Description',
+                                    child: _detailSingle(
+                                      context,
+                                      title: "Description",
+                                      value: item.description.isEmpty
+                                          ? '-'
+                                          : item.description,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -444,7 +548,7 @@ class MaintenanceCard extends StatelessWidget {
       text: TextSpan(
         text: "$title: ",
         style: AppStyles.regularTextStyle(context).copyWith(
-          fontSize: 11.2.sp,
+          fontSize: 12.4.sp,
           fontWeight: FontWeight.w700,
           color: onSurface.withValues(alpha: .74),
         ),
@@ -452,7 +556,7 @@ class MaintenanceCard extends StatelessWidget {
           TextSpan(
             text: value,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.6.sp,
+              fontSize: 12.8.sp,
               fontWeight: FontWeight.w600,
               color: onSurface,
             ),
@@ -463,4 +567,46 @@ class MaintenanceCard extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
   }
+
+  Widget _infoSection(
+    BuildContext context, {
+    required String title,
+    required Widget child,
+  }) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 2.1.w, vertical: .55.h),
+      decoration: BoxDecoration(
+        color: onSurface.withValues(alpha: .04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: onSurface.withValues(alpha: .10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 11.2.sp,
+              color: onSurface.withValues(alpha: .82),
+            ),
+          ),
+          verticalSpace(height: .35.h),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+double _mSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

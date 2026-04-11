@@ -35,11 +35,14 @@ class HeaderWidget extends StatelessWidget {
     final profileFile = File(savedProfilePath);
     final hasLocalProfileImage =
         savedProfilePath.isNotEmpty && profileFile.existsSync();
+    final storedName = MySharedPreferences.getString(userNameKey).trim();
     final emailFromApi = data1.userEmail.trim();
     final storedEmail = MySharedPreferences.getString(userEmailKey).trim();
     final userEmail = emailFromApi.isNotEmpty ? emailFromApi : storedEmail;
+    final greetingName = storedName.isNotEmpty ? storedName : userEmail;
     final l10n = context.l10n;
-    final hiText = userEmail.isNotEmpty ? l10n.hiUser(userEmail) : l10n.hi;
+    final hiText =
+        greetingName.isNotEmpty ? l10n.hiUser(greetingName) : l10n.hi;
     final settingsIconColor =
         isDark ? const Color(0xFF93C5FD) : const Color(0xFF60A5FA);
     final alertIconColor =

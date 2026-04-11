@@ -47,6 +47,10 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     with TickerProviderStateMixin {
   static const double _vehicleMarkerLogicalHeight = 30.0;
   static const double _vehicleMarkerRenderScale = 3.0;
+  static const double _preferredPlaybackZoom = 15.5;
+  static const double _playbackSafeSidePadding = 36.0;
+  static const double _playbackSafeTopInset = 120.0;
+  static const double _playbackSafeBottomInset = 250.0;
   static String? _darkMapStyle;
   String selectedFilter = ""; // by default koi filter selected nahi
   bool showCustomPicker = false;
@@ -68,12 +72,11 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
   String _lastRouteSignature = '';
   bool _hasFittedHistoryBounds = false;
   bool _wasPlaying = false;
-  int? _pausedPlaybackIndex;
-  double _pausedPlaybackZoom = 17.0;
-  double _lastKnownZoom = 15.0;
+  bool _hasPrimedPlaybackViewport = false;
+  DateTime? _lastPlaybackCameraFollowAt;
   BitmapDescriptor? _initialLiveMarkerIcon;
-  LatLng? _lastFollowedPosition;
   bool _isDisposing = false;
+  bool _followPlaybackCamera = false;
   bool get _isTaskPlaybackMode =>
       widget.initialFromDateTime != null && widget.initialToDateTime != null;
 
@@ -130,7 +133,8 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
       final ui.Codec codec = await ui.instantiateImageCodec(
         data.buffer.asUint8List(),
         targetHeight:
-            (_vehicleMarkerLogicalHeight * _vehicleMarkerRenderScale).round(),
+            (_vehicleMarkerLogicalHeight * 1.22 * _vehicleMarkerRenderScale)
+                .round(),
       );
       final ui.FrameInfo frame = await codec.getNextFrame();
       final ByteData? bytes =
@@ -488,24 +492,6 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     return '${provider.routeList.length}:${first.lat},${first.lng}:${last.lat},${last.lng}';
   }
 
-  Future<void> _animateToRouteIndex(
-    DeviceHistoryProvider provider,
-    int index, {
-    required double zoom,
-  }) async {
-    if (_mapController == null || provider.routeList.isEmpty) return;
-    if (index < 0 || index >= provider.routeList.length) return;
-    final loc = provider.routeList[index];
-    await _mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(loc.lat, loc.lng),
-          zoom: zoom.clamp(8.0, 20.0),
-        ),
-      ),
-    );
-  }
-
   void _syncHistoryCamera(DeviceHistoryProvider provider) {
     if (_mapController == null) return;
 
@@ -513,8 +499,8 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     if (signature != _lastRouteSignature) {
       _lastRouteSignature = signature;
       _hasFittedHistoryBounds = false;
-      _pausedPlaybackIndex = null;
-      _lastFollowedPosition = null;
+      _hasPrimedPlaybackViewport = false;
+      _lastPlaybackCameraFollowAt = null;
     }
 
     if (_hasFilterApplied &&
@@ -528,41 +514,91 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     }
 
     if (_wasPlaying && !provider.isPlaying) {
-      _pausedPlaybackIndex = provider.currentSliderValue;
-      _pausedPlaybackZoom = _lastKnownZoom;
+      _lastPlaybackCameraFollowAt = null;
     }
 
     if (!_wasPlaying && provider.isPlaying && provider.routeList.isNotEmpty) {
-      final resumeIndex =
-          (_pausedPlaybackIndex ?? provider.currentSliderValue).clamp(
-        0,
-        provider.routeList.length - 1,
-      );
-      _pausedPlaybackIndex = null;
-      _animateToRouteIndex(
-        provider,
-        resumeIndex,
-        zoom: _pausedPlaybackZoom,
-      );
+      if (provider.carLat != 0 && provider.carLng != 0) {
+        final pos = LatLng(provider.carLat, provider.carLng);
+        if (!_hasPrimedPlaybackViewport) {
+          _hasPrimedPlaybackViewport = true;
+          unawaited(
+              _animatePlaybackCameraTo(pos, zoom: _preferredPlaybackZoom));
+        }
+      }
     } else if (provider.isPlaying &&
         provider.routeList.isNotEmpty &&
         provider.carLat != 0 &&
         provider.carLng != 0) {
       final pos = LatLng(provider.carLat, provider.carLng);
-      final shouldMove = _lastFollowedPosition == null ||
-          (pos.latitude - _lastFollowedPosition!.latitude).abs() > 0.00001 ||
-          (pos.longitude - _lastFollowedPosition!.longitude).abs() > 0.00001;
-      if (shouldMove) {
-        _lastFollowedPosition = pos;
-        _mapController!.moveCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(target: pos, zoom: _pausedPlaybackZoom),
-          ),
-        );
+      final now = DateTime.now();
+      final followIntervalMs = _followPlaybackCamera ? 140 : 110;
+      final canMoveCamera = _lastPlaybackCameraFollowAt == null ||
+          now.difference(_lastPlaybackCameraFollowAt!).inMilliseconds >=
+              followIntervalMs;
+      if (canMoveCamera) {
+        if (_followPlaybackCamera) {
+          _lastPlaybackCameraFollowAt = now;
+          unawaited(_animatePlaybackCameraTo(pos));
+        } else {
+          unawaited(() async {
+            final shouldRecenter = await _isPlaybackCarOutsideSafeViewport(pos);
+            if (!mounted || _isDisposing || !shouldRecenter) return;
+            _lastPlaybackCameraFollowAt = DateTime.now();
+            await _animatePlaybackCameraTo(pos);
+          }());
+        }
       }
     }
 
     _wasPlaying = provider.isPlaying;
+  }
+
+  Future<void> _animatePlaybackCameraTo(
+    LatLng target, {
+    double? zoom,
+  }) async {
+    final controller = _mapController;
+    if (controller == null || _isDisposing || !mounted) return;
+    try {
+      if (zoom != null) {
+        await controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: target, zoom: zoom),
+          ),
+        );
+      } else {
+        await controller.animateCamera(CameraUpdate.newLatLng(target));
+      }
+    } catch (_) {}
+  }
+
+  Future<bool> _isPlaybackCarOutsideSafeViewport(LatLng target) async {
+    final controller = _mapController;
+    if (controller == null || !mounted || _isDisposing) return true;
+    try {
+      final screenCoordinate = await controller.getScreenCoordinate(target);
+      if (!mounted || _isDisposing) return true;
+      final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+      final offset = Offset(
+        screenCoordinate.x.toDouble() / devicePixelRatio,
+        screenCoordinate.y.toDouble() / devicePixelRatio,
+      );
+      final size = MediaQuery.sizeOf(context);
+      final mediaQuery = MediaQuery.of(context);
+      final topLimit = mediaQuery.padding.top + _playbackSafeTopInset;
+      final bottomLimit = size.height - _playbackSafeBottomInset;
+      final leftLimit = _playbackSafeSidePadding;
+      final rightLimit = size.width - _playbackSafeSidePadding;
+
+      final isInside = offset.dx >= leftLimit &&
+          offset.dx <= rightLimit &&
+          offset.dy >= topLimit &&
+          offset.dy <= bottomLimit;
+      return !isInside;
+    } catch (_) {
+      return true;
+    }
   }
 
   @override
@@ -599,14 +635,9 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Consumer<DeviceHistoryProvider>(
         builder: (context, provider, _) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _syncHistoryCamera(provider);
-          });
-
           return Stack(
             children: [
               _buildMap(provider),
-              _buildBackButton(),
               if (provider.isLoading) _buildLoadingOverlay(),
               if (provider.errorMessage != null && !provider.isLoading)
                 _buildErrorBanner(provider.errorMessage!),
@@ -644,10 +675,10 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                                 return;
                               }
                               const filters = [
-                                "Today",
-                                "Yesterday",
-                                "Last 3 Days",
-                                "Last 7 Days",
+                                'Today',
+                                'Yesterday',
+                                'Last 3 Days',
+                                'Last 7 Days'
                               ];
                               _applyQuickFilter(filters[index]);
                             },
@@ -728,6 +759,12 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                     ),
                   ),
                 ),
+              if (_hasFilterApplied && provider.routeList.isNotEmpty)
+                Positioned(
+                  right: 4.w,
+                  top: showCustomPicker ? 28.h : 12.5.h,
+                  child: _buildPlaybackFollowControl(),
+                ),
 
               // Bottom Sheet
               if (provider.routeList.isNotEmpty && _hasFilterApplied)
@@ -752,73 +789,132 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
             ? LatLng(provider.routeList.first.lat, provider.routeList.first.lng)
             : const LatLng(24.8607, 67.0011));
 
-    return GoogleMap(
-      style: _googleMapStyle,
-      initialCameraPosition: CameraPosition(
-        target: livePos,
-        zoom: widget.initialLivePosition != null ? 15 : 12,
-      ),
-      zoomGesturesEnabled: true,
-      scrollGesturesEnabled: true,
-      rotateGesturesEnabled: true,
-      tiltGesturesEnabled: true,
-      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-        Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
-      },
-      myLocationEnabled: true,
-      mapType: _mapType,
-      onMapCreated: (controller) {
-        if (_isDisposing) {
-          try {
-            controller.dispose();
-          } catch (_) {}
-          return;
-        }
-        _mapController = controller;
-        _lastKnownZoom = widget.initialLivePosition != null ? 15 : 12;
-        if (_hasFilterApplied && provider.polyLatLng.isNotEmpty) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (!mounted || _isDisposing || _mapController != controller) {
+    return ValueListenableBuilder<Marker?>(
+      valueListenable: provider.carMarkerNotifier,
+      builder: (context, carMarker, _) {
+        _syncHistoryCamera(provider);
+        return GoogleMap(
+          style: _googleMapStyle,
+          initialCameraPosition: CameraPosition(
+            target: livePos,
+            zoom: widget.initialLivePosition != null ? 15 : 12,
+          ),
+          zoomGesturesEnabled: true,
+          scrollGesturesEnabled: true,
+          rotateGesturesEnabled: true,
+          tiltGesturesEnabled: true,
+          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+            Factory<OneSequenceGestureRecognizer>(
+                () => EagerGestureRecognizer()),
+          },
+          myLocationEnabled: true,
+          mapType: _mapType,
+          onMapCreated: (controller) {
+            if (_isDisposing) {
+              try {
+                controller.dispose();
+              } catch (_) {}
               return;
             }
-            final bounds = provider.calculateBounds();
-            if (bounds != null) {
+            _mapController = controller;
+            if (_hasFilterApplied && provider.polyLatLng.isNotEmpty) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (!mounted || _isDisposing || _mapController != controller) {
+                  return;
+                }
+                final bounds = provider.calculateBounds();
+                if (bounds != null) {
+                  try {
+                    controller.animateCamera(
+                        CameraUpdate.newLatLngBounds(bounds, 50));
+                  } catch (_) {}
+                }
+              });
+            } else if (widget.initialLivePosition != null) {
               try {
-                controller
-                    .animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+                controller.animateCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                        target: widget.initialLivePosition!, zoom: 15),
+                  ),
+                );
               } catch (_) {}
             }
-          });
-        } else if (widget.initialLivePosition != null) {
-          try {
-            controller.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(target: widget.initialLivePosition!, zoom: 15),
+          },
+          markers: {
+            if (_hasFilterApplied) ...provider.mapMarkers,
+            if (!_hasFilterApplied && widget.initialLivePosition != null)
+              Marker(
+                markerId: const MarkerId('current_live'),
+                position: widget.initialLivePosition!,
+                icon: _initialLiveMarkerIcon ??
+                    BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueBlue),
+                anchor: const Offset(0.5, 0.5),
+                infoWindow: InfoWindow(title: context.l10n.currentLiveLocation),
               ),
-            );
-          } catch (_) {}
-        }
+          },
+          polylines:
+              _hasFilterApplied ? provider.routePolyLine : const <Polyline>{},
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+        );
       },
-      onCameraMove: (position) {
-        _lastKnownZoom = position.zoom;
-      },
-      markers: {
-        if (_hasFilterApplied) ...provider.mapMarkers,
-        // Current live location marker (blue)
-        if (!_hasFilterApplied && widget.initialLivePosition != null)
-          Marker(
-            markerId: const MarkerId('current_live'),
-            position: widget.initialLivePosition!,
-            icon: _initialLiveMarkerIcon ??
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            anchor: const Offset(0.5, 0.5),
-            infoWindow: const InfoWindow(title: 'Current Live Location'),
+    );
+  }
+
+  Widget _buildPlaybackFollowControl() {
+    final theme = Theme.of(context);
+    final isEnabled = _followPlaybackCamera;
+    final Color activeColor = ConstantColor.primaryColor;
+    final isDark = theme.brightness == Brightness.dark;
+    final Color bgColor = isEnabled
+        ? activeColor
+        : (isDark
+            ? theme.cardColor.withValues(alpha: .9)
+            : Colors.white.withValues(alpha: .94));
+    final Color iconColor =
+        isEnabled ? Colors.white : theme.colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? .28 : .14),
+              blurRadius: 14,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: bgColor,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              setState(() {
+                _followPlaybackCamera = !_followPlaybackCamera;
+                _lastPlaybackCameraFollowAt = null;
+              });
+            },
+            child: SizedBox(
+              height: 5.1.h,
+              width: 5.1.h,
+              child: Icon(
+                isEnabled
+                    ? Icons.navigation_rounded
+                    : Icons.navigation_outlined,
+                size: 2.0.h,
+                color: iconColor,
+              ),
+            ),
           ),
-      },
-      polylines:
-          _hasFilterApplied ? provider.routePolyLine : const <Polyline>{},
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
+        ),
+      ),
     );
   }
 
@@ -861,7 +957,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Task Playback',
+                    context.l10n.taskPlayback,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
                       fontSize: 14.1.sp,
                       color: onSurface,
@@ -895,41 +991,6 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
     }
   }
 
-  Widget _buildBackButton() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 8,
-      left: 12,
-      child: Material(
-        color: const Color(0xFFFEE2E2).withValues(alpha: 0.96),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFFFCA5A5)),
-        ),
-        elevation: 2,
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
-            ),
-            visualDensity: VisualDensity.compact,
-            splashRadius: 18,
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(
-              Icons.arrow_back_rounded,
-              color: Color(0xFFB91C1C),
-              size: 20,
-            ),
-            tooltip: 'Back',
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDummyBottomSheet(DeviceHistoryProvider provider) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
@@ -954,7 +1015,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "Current Location",
+              context.l10n.currentLocation,
               style: AppStyles.semiboldTextStyle(context).copyWith(
                 fontSize: 17.sp,
                 color: onSurface,
@@ -962,7 +1023,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
             ),
             verticalSpace(height: 1.h),
             Text(
-              "This is Current Location of the Vehicle. To see History choose Filter or give date range",
+              context.l10n.currentVehicleLocationHistoryHint,
               textAlign: TextAlign.center,
               style: AppStyles.regularTextStyle(context).copyWith(
                 fontSize: 13.sp,
@@ -995,7 +1056,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
               CircularProgressIndicator(color: ConstantColor.primaryColor),
               verticalSpace(height: 2.h),
               Text(
-                'Loading history...',
+                context.l10n.loadingHistory,
                 style: AppStyles.semiboldTextStyle(context).copyWith(
                   fontSize: 16.sp,
                   color: onSurface,

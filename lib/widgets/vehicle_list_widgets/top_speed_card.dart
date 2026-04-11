@@ -5,6 +5,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_dashboard_history_model.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
+import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class TopSpeedCard extends StatefulWidget {
@@ -65,10 +66,38 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.topSpeedingVehicles,
-            style:
-                AppStyles.semiboldTextStyle(context).copyWith(fontSize: 15.sp),
+          Row(
+            children: [
+              Container(
+                width: 5.8.w,
+                height: 5.8.w,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[
+                      Color(0xFF22D3EE),
+                      Color(0xFF0284C7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.speed_rounded,
+                  color: Colors.white,
+                  size: 15.0.sp,
+                ),
+              ),
+              horizontalSpace(width: 2.w),
+              Expanded(
+                child: Text(
+                  context.l10n.topSpeedingVehicles,
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 12.8.sp,
+                    fontWeight: FontWeight.w900,
+                    color: onSurface.withValues(alpha: .92),
+                  ),
+                ),
+              ),
+            ],
           ),
           verticalSpace(height: 1.4.h),
           Container(
@@ -157,7 +186,8 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: gradient.first.withValues(alpha: 0.14),
-                  border: Border.all(color: gradient.first.withValues(alpha: 0.45)),
+                  border:
+                      Border.all(color: gradient.first.withValues(alpha: 0.45)),
                 ),
                 child: Text(
                   rankText,

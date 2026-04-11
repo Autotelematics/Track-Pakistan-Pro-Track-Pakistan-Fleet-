@@ -33,13 +33,133 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutConfirmation => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
 
   @override
+  String get myAccount => 'حسابي';
+
+  @override
   String get support => 'الدعم';
+
+  @override
+  String get driverOptions => 'خيارات السائق';
+
+  @override
+  String get manageDriversSubtitle => 'إضافة السائقين أو تحديثهم أو حذفهم';
+
+  @override
+  String get addNewDriver => 'إضافة سائق جديد';
+
+  @override
+  String get createNewDriver => 'إنشاء سائق جديد';
+
+  @override
+  String get editDriverLabel => 'تعديل السائق';
+
+  @override
+  String get updateDriverInfo => 'تحديث معلومات السائق';
+
+  @override
+  String get deleteDriverLabel => 'حذف السائق';
+
+  @override
+  String get permanentDeleteDriver => 'حذف السائق نهائيًا';
+
+  @override
+  String get addDriverLabel => 'إضافة سائق';
+
+  @override
+  String get assignDriverLabel => 'تعيين السائق';
+
+  @override
+  String get driverNameLabel => 'اسم السائق';
+
+  @override
+  String get enterDriverName => 'أدخل اسم السائق';
+
+  @override
+  String get rfidLabel => 'RFID';
+
+  @override
+  String get enterDriverRfid => 'أدخل RFID للسائق';
+
+  @override
+  String get selectDriverLabel => 'اختر السائق';
+
+  @override
+  String get searchAndSelectDriver => 'ابحث عن السائق واختره';
+
+  @override
+  String get pleaseSelectDriver => 'يرجى اختيار سائق';
+
+  @override
+  String get driverNameRequired => 'اسم السائق مطلوب';
+
+  @override
+  String get pleaseEnterValidEmail => 'يرجى إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get selectDrivers => 'اختر السائقين';
+
+  @override
+  String get useCheckboxToSelectDrivers =>
+      'استخدم مربع الاختيار لتحديد عدة سائقين';
+
+  @override
+  String get searchDriverName => 'ابحث عن اسم السائق';
+
+  @override
+  String get noDriversFound => 'لم يتم العثور على سائقين';
+
+  @override
+  String driversSelectedCount(Object count) {
+    return 'تم تحديد $count سائق';
+  }
+
+  @override
+  String get noDriverLabel => 'بدون سائق';
+
+  @override
+  String get pleaseSelectAtLeastOneDriver => 'يرجى اختيار سائق واحد على الأقل';
 
   @override
   String get password => 'كلمة المرور';
 
   @override
   String get drivers => 'السائقون';
+
+  @override
+  String get addExpenseLabel => 'إضافة مصروف';
+
+  @override
+  String get editExpenseLabel => 'تعديل المصروف';
+
+  @override
+  String get selectExpenseType => 'اختر نوع المصروف';
+
+  @override
+  String get expenseNameHint => 'اسم المصروف';
+
+  @override
+  String get quantityLabel => 'الكمية';
+
+  @override
+  String get unitCostLabel => 'تكلفة الوحدة';
+
+  @override
+  String get supplierLabel => 'المورد';
+
+  @override
+  String get descriptionLabel => 'الوصف';
+
+  @override
+  String get enterValidQuantity => 'أدخل كمية صحيحة';
+
+  @override
+  String get enterValidUnitCost => 'أدخل تكلفة وحدة صحيحة';
+
+  @override
+  String get optionalSupplier => 'مورد اختياري';
+
+  @override
+  String get optionalNotes => 'ملاحظات اختيارية';
 
   @override
   String get alertSetting => 'إعدادات التنبيه';
@@ -67,10 +187,108 @@ class AppLocalizationsAr extends AppLocalizations {
   String get delete => 'حذف';
 
   @override
+  String get loginEmail => 'البريد الإلكتروني للدخول';
+
+  @override
+  String get phoneNumberLabel => 'رقم الهاتف';
+
+  @override
+  String get deviceLimit => 'حد الأجهزة';
+
+  @override
+  String get accountExpiry => 'انتهاء الحساب';
+
+  @override
+  String get unlimited => 'غير محدود';
+
+  @override
   String get selectLanguage => 'اختر اللغة';
 
   @override
   String get languageUpdated => 'تم تحديث اللغة';
+
+  @override
+  String get companySupport => 'دعم الشركة';
+
+  @override
+  String get contactCompanyDetails => 'بيانات التواصل والشركة';
+
+  @override
+  String get liveChat => 'دردشة مباشرة';
+
+  @override
+  String get wereHereToHelp => 'نحن هنا لمساعدتك';
+
+  @override
+  String get callLabel => 'اتصال';
+
+  @override
+  String get messageLabel => 'رسالة';
+
+  @override
+  String get emailLabel => 'البريد الإلكتروني';
+
+  @override
+  String get websiteLabel => 'الموقع الإلكتروني';
+
+  @override
+  String get whatsAppLabel => 'واتساب';
+
+  @override
+  String get facebookLabel => 'فيسبوك';
+
+  @override
+  String get instagramLabel => 'إنستغرام';
+
+  @override
+  String get loadingDriverDetails => 'جارٍ تحميل تفاصيل السائق...';
+
+  @override
+  String get driverContactProfileDetails => 'تفاصيل تواصل السائق وملفه الشخصي';
+
+  @override
+  String get noDriverAssigned => 'لا يوجد سائق معيّن';
+
+  @override
+  String get assignDriverToVehicleToViewContactActions =>
+      'قم بتعيين سائق لهذه المركبة\nلعرض إجراءات التواصل';
+
+  @override
+  String get noPhoneNumber => 'لا يوجد رقم هاتف';
+
+  @override
+  String get noEmail => 'لا يوجد بريد إلكتروني';
+
+  @override
+  String get noDescriptionAvailable => 'لا يوجد وصف متاح';
+
+  @override
+  String get noContactInformationAvailable => 'لا تتوفر معلومات اتصال';
+
+  @override
+  String get officeAddress => 'عنوان المكتب';
+
+  @override
+  String get exploreLabel => 'استكشف';
+
+  @override
+  String get termsAndConditions => 'الشروط والأحكام';
+
+  @override
+  String get legalPoliciesAndUserAgreement =>
+      'السياسات القانونية واتفاقية المستخدم';
+
+  @override
+  String get privacyPolicyLabel => 'سياسة الخصوصية';
+
+  @override
+  String get howWeProtectYourData => 'كيف نحمي بياناتك';
+
+  @override
+  String get companyNews => 'أخبار الشركة';
+
+  @override
+  String get latestUpdatesAndAnnouncements => 'أحدث التحديثات والإعلانات';
 
   @override
   String get galleryPermissionRequired => 'مطلوب إذن المعرض';
@@ -85,11 +303,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String hiUser(Object email) {
-    return 'مرحبًا، $email';
+    return 'السلام عليكم، $email';
   }
 
   @override
-  String get hi => 'مرحبًا';
+  String get hi => 'السلام عليكم';
 
   @override
   String get statusTab => 'الحالة';
@@ -126,6 +344,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reset => 'إعادة تعيين';
+
+  @override
+  String get notificationFilters => 'عوامل تصفية الإشعارات';
+
+  @override
+  String get searchByVehicleAndType => 'ابحث حسب المركبة والنوع';
+
+  @override
+  String get searchByDateRange => 'ابحث حسب نطاق التاريخ';
+
+  @override
+  String get vehicleLabel => 'المركبة';
 
   @override
   String get dashboardCustomizeHint =>
@@ -275,6 +505,84 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noDescription => 'لا يوجد وصف';
 
   @override
+  String get addReminderLabel => 'إضافة تذكير';
+
+  @override
+  String get editReminderLabel => 'تعديل التذكير';
+
+  @override
+  String get selectType => 'اختر النوع';
+
+  @override
+  String get titleLabel => 'العنوان';
+
+  @override
+  String get reminderTitleHint => 'عنوان التذكير';
+
+  @override
+  String get dueDateLabel => 'تاريخ الاستحقاق';
+
+  @override
+  String get dueTimeLabel => 'وقت الاستحقاق';
+
+  @override
+  String get dateIgnoredForDailyRepeat => 'يتم تجاهل التاريخ للتكرار اليومي';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get reminderTitleRequired => 'عنوان التذكير مطلوب';
+
+  @override
+  String get pleaseSelectDueDate => 'يرجى اختيار تاريخ الاستحقاق';
+
+  @override
+  String get pleaseSelectDueTime => 'يرجى اختيار وقت الاستحقاق';
+
+  @override
+  String get reminderSavedSuccessfully => 'تم حفظ التذكير بنجاح';
+
+  @override
+  String get reminderUpdatedSuccessfully => 'تم تحديث التذكير بنجاح';
+
+  @override
+  String get oilChange => 'تغيير الزيت';
+
+  @override
+  String get tireRotation => 'تدوير الإطارات';
+
+  @override
+  String get brakeInspection => 'فحص الفرامل';
+
+  @override
+  String get airFilterReplacement => 'استبدال فلتر الهواء';
+
+  @override
+  String get sparkPlugsReplacement => 'استبدال شمعات الإشعال';
+
+  @override
+  String get batteryCheck => 'فحص البطارية';
+
+  @override
+  String get charging => 'قيد الشحن';
+
+  @override
+  String get insuranceRenewal => 'تجديد التأمين';
+
+  @override
+  String get registrationRenewal => 'تجديد التسجيل';
+
+  @override
+  String get emissionTest => 'اختبار الانبعاثات';
+
+  @override
+  String get generalService => 'خدمة عامة';
+
+  @override
+  String get coolantFlush => 'تنظيف سائل التبريد';
+
+  @override
   String get repeatOneTime => 'مرة واحدة';
 
   @override
@@ -288,6 +596,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noTasksAvailable => 'لا توجد مهام متاحة';
+
+  @override
+  String get allTasks => 'كل المهام';
+
+  @override
+  String get addTask => 'إضافة مهمة';
+
+  @override
+  String get noTasksFound => 'لم يتم العثور على مهام';
+
+  @override
+  String get searchTasksByTitleOrVehicle => 'ابحث بالعنوان أو المركبة';
+
+  @override
+  String showingTasksCount(Object count) {
+    return 'عرض $count مهمة';
+  }
+
+  @override
+  String showingTasksCountOfTotal(Object count, Object total) {
+    return 'عرض $count من أصل $total مهمة';
+  }
+
+  @override
+  String get loadMore => 'تحميل المزيد';
 
   @override
   String get latestTasks => 'أحدث المهام';
@@ -306,6 +639,53 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get taskFailed => 'فشل';
+
+  @override
+  String get hasStops => 'يتضمن محطات';
+
+  @override
+  String get yes => 'نعم';
+
+  @override
+  String get no => 'لا';
+
+  @override
+  String get routePlayback => 'إعادة تشغيل المسار';
+
+  @override
+  String get deleteTask => 'حذف المهمة';
+
+  @override
+  String get deleteTaskConfirmation => 'هل أنت متأكد أنك تريد حذف هذه المهمة؟';
+
+  @override
+  String get assignTask => 'إسناد المهمة';
+
+  @override
+  String recreateTaskForVehicle(Object vehicleName) {
+    return 'هل أنت متأكد أنك تريد إعادة إنشاء هذه المهمة للمركبة \"$vehicleName\"؟';
+  }
+
+  @override
+  String get selectVehicleToRecreateTask =>
+      'اختر مركبة لإعادة إنشاء هذه المهمة.';
+
+  @override
+  String get pickup => 'الاستلام';
+
+  @override
+  String get reachedAt => 'تم الوصول في';
+
+  @override
+  String get leftAt => 'غادر في';
+
+  @override
+  String taskStop(Object index) {
+    return 'المحطة $index';
+  }
+
+  @override
+  String get delivery => 'التسليم';
 
   @override
   String get completionRate => 'معدل الإنجاز';
@@ -327,6 +707,71 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get tasksNotCompletedWithin10Days =>
       'المهام غير المكتملة خلال 10 أيام';
+
+  @override
+  String vehicleTasksTitle(Object vehicleName) {
+    return 'مهام $vehicleName';
+  }
+
+  @override
+  String get successRate => 'معدل النجاح';
+
+  @override
+  String get avgCompletion => 'متوسط الإكمال';
+
+  @override
+  String get createdToDeliveryLeft => 'من الإنشاء حتى مغادرة التسليم';
+
+  @override
+  String get pickupResponse => 'استجابة الاستلام';
+
+  @override
+  String get createdToPickupReached => 'من الإنشاء حتى الوصول للاستلام';
+
+  @override
+  String get pickupDwell => 'مكث الاستلام';
+
+  @override
+  String get pickupLeftMinusReached => 'مغادرة الاستلام ناقص الوصول';
+
+  @override
+  String get stopDwell => 'مكث التوقف';
+
+  @override
+  String get averageAcrossAllStops => 'المتوسط عبر كل التوقفات';
+
+  @override
+  String get deliveryDwell => 'مكث التسليم';
+
+  @override
+  String get deliveryLeftMinusReached => 'مغادرة التسليم ناقص الوصول';
+
+  @override
+  String get stopComplexityTrend => 'اتجاه تعقيد التوقفات';
+
+  @override
+  String get directJobs => 'المهام المباشرة';
+
+  @override
+  String get noStops => 'بدون توقفات';
+
+  @override
+  String get multiStopJobs => 'مهام متعددة التوقفات';
+
+  @override
+  String get oneOrMoreStops => 'توقف واحد أو أكثر';
+
+  @override
+  String get recentFailedTasks => 'المهام الفاشلة الأخيرة';
+
+  @override
+  String get noRecentFailedTasksForVehicle =>
+      'لا توجد مهام فاشلة حديثة لهذه المركبة';
+
+  @override
+  String taskNumber(Object id) {
+    return 'المهمة #$id';
+  }
 
   @override
   String get vehicleWorkloadDistribution => 'توزيع عبء عمل المركبات';
@@ -646,6 +1091,153 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reportTab => 'التقرير';
 
   @override
+  String get formatLabel => 'التنسيق';
+
+  @override
+  String get speedLimitKmh => 'حد السرعة (كم/س)';
+
+  @override
+  String get ignitionOffDurationMin => 'مدة إيقاف الإشعال (دقيقة)';
+
+  @override
+  String get stopsMinutes => 'التوقفات (دقائق)';
+
+  @override
+  String get geofenceIdsCommaSeparated =>
+      'معرّفات السياج الجغرافي (مفصولة بفواصل)';
+
+  @override
+  String get showAddresses => 'إظهار العناوين';
+
+  @override
+  String get zonesInstead => 'استخدام المناطق بدلًا من ذلك';
+
+  @override
+  String get noGeofencesFound => 'لم يتم العثور على أسوار جغرافية';
+
+  @override
+  String get reloadGeofences => 'إعادة تحميل الأسوار الجغرافية';
+
+  @override
+  String geofencesSelectedCount(Object count) {
+    return 'تم اختيار $count سياج جغرافي';
+  }
+
+  @override
+  String reportFieldsLabel(Object fields) {
+    return 'الحقول: $fields';
+  }
+
+  @override
+  String get generateLabel => 'إنشاء';
+
+  @override
+  String get pleaseSelectBothDates => 'يرجى اختيار التاريخين';
+
+  @override
+  String get noReportsAvailable => 'لا توجد تقارير متاحة';
+
+  @override
+  String get reportTypesLabel => 'أنواع التقارير';
+
+  @override
+  String get showLess => 'إظهار أقل';
+
+  @override
+  String get moreReports => 'مزيد من التقارير';
+
+  @override
+  String get dailyTravelReport => 'تقرير السفر اليومي';
+
+  @override
+  String get travelSummaryWithPlaybackImage => 'ملخص السفر مع صورة التشغيل';
+
+  @override
+  String get travelSummary => 'ملخص السفر';
+
+  @override
+  String get stopsMoveSummary => 'ملخص التوقفات والحركة';
+
+  @override
+  String get eventsReport => 'الأحداث';
+
+  @override
+  String get alertsReport => 'تقرير التنبيهات';
+
+  @override
+  String get tripReport => 'تقرير الرحلة';
+
+  @override
+  String get playbackLabel => 'إعادة التشغيل';
+
+  @override
+  String tripsCountLabel(Object count) {
+    return 'الرحلات ($count)';
+  }
+
+  @override
+  String parkedCountLabel(Object count) {
+    return 'التوقف ($count)';
+  }
+
+  @override
+  String alertsCountLabel(Object count) {
+    return 'التنبيهات ($count)';
+  }
+
+  @override
+  String get noTripsFound => 'لم يتم العثور على رحلات';
+
+  @override
+  String get noParkedIntervals => 'لا توجد فترات توقف';
+
+  @override
+  String get noHistoryAlertsFound => 'لم يتم العثور على تنبيهات';
+
+  @override
+  String get playingRouteHighlightedGreen =>
+      'جارٍ التشغيل - المسار مميز باللون الأخضر';
+
+  @override
+  String get pausedLabel => 'متوقف مؤقتًا';
+
+  @override
+  String get totalTrips => 'إجمالي الرحلات';
+
+  @override
+  String get moveTime => 'وقت الحركة';
+
+  @override
+  String get fuelLtr => 'الوقود (LTR)';
+
+  @override
+  String get totalSpent => 'إجمالي الإنفاق';
+
+  @override
+  String get topSpeed => 'أعلى سرعة';
+
+  @override
+  String rsAmount(Object amount) {
+    return 'ر.س $amount';
+  }
+
+  @override
+  String get taskPlayback => 'تشغيل المهمة';
+
+  @override
+  String get currentLocation => 'الموقع الحالي';
+
+  @override
+  String get currentVehicleLocationHistoryHint =>
+      'هذا هو الموقع الحالي للمركبة. لعرض السجل اختر فلترًا أو حدّد نطاقًا زمنيًا';
+
+  @override
+  String get loadingHistory => 'جارٍ تحميل السجل...';
+
+  @override
+  String get currentLiveLocation => 'الموقع المباشر الحالي';
+
+  @override
   String get historyTab => 'السجل';
 
   @override
@@ -716,6 +1308,89 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get maintenance => 'الصيانة';
+
+  @override
+  String get addServiceLabel => 'إضافة خدمة';
+
+  @override
+  String get enterServiceName => 'أدخل اسم الخدمة';
+
+  @override
+  String get expirationByLabel => 'انتهاء الصلاحية حسب';
+
+  @override
+  String get selectExpirationType => 'اختر نوع انتهاء الصلاحية';
+
+  @override
+  String get enterInterval => 'أدخل الفترة';
+
+  @override
+  String get enterLastValueDate => 'أدخل آخر قيمة/تاريخ';
+
+  @override
+  String get triggerEventWhenLeftLabel => 'تشغيل الحدث عند المتبقي';
+
+  @override
+  String get triggerEventWhenLeftHint => 'مثال: 1000 كم';
+
+  @override
+  String get renewAfterExpirationLabel => 'التجديد بعد انتهاء الصلاحية';
+
+  @override
+  String get odometerLabel => 'عداد المسافة';
+
+  @override
+  String get engineHoursLabel => 'ساعات المحرك';
+
+  @override
+  String get notificationEmailHint => 'notification@email.com';
+
+  @override
+  String get dateLabel => 'التاريخ';
+
+  @override
+  String get searchVehicleByName => 'ابحث عن المركبة بالاسم';
+
+  @override
+  String get noVehiclesFoundForSearch => 'لم يتم العثور على مركبة';
+
+  @override
+  String get defaultMapStyle => 'افتراضي';
+
+  @override
+  String get satelliteMapStyle => 'قمر صناعي';
+
+  @override
+  String get loadingDevices => 'جارٍ تحميل الأجهزة...';
+
+  @override
+  String get noDevicesFound => 'لم يتم العثور على أجهزة.';
+
+  @override
+  String get noVehiclesFound => 'لم يتم العثور على مركبات.';
+
+  @override
+  String noVehiclesFoundForStatus(Object status) {
+    return 'لم يتم العثور على مركبات بحالة $status.';
+  }
+
+  @override
+  String updatedSecondsAgo(Object seconds) {
+    return 'تم التحديث • قبل $seconds ث';
+  }
+
+  @override
+  String speedKmhValue(Object speed) {
+    return 'السرعة: $speed كم/س';
+  }
+
+  @override
+  String updateValue(Object value) {
+    return 'التحديث: $value';
+  }
+
+  @override
+  String get openDetails => 'فتح التفاصيل';
 
   @override
   String get expenses => 'المصروفات';

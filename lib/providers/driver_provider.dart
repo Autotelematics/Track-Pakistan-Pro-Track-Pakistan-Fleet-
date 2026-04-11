@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:trackerapp/data/models/get_driver_model.dart';
 import 'package:trackerapp/data/repositories/driver_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 class DriverProvider with ChangeNotifier {
   final DriverRepository driverRepository = DriverRepository();
@@ -34,7 +35,7 @@ class DriverProvider with ChangeNotifier {
       AppSnackBar.success(message: "Driver Added Successfully");
     } catch (e) {
       log("Error in Provider${e.toString()}");
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     }
 
     isLoading = false;
@@ -63,10 +64,32 @@ class DriverProvider with ChangeNotifier {
       AppSnackBar.success(message: "Driver Updated Successfully");
     } catch (e) {
       log("Error in Provider${e.toString()}");
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     }
     isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> deleteDrivers({
+    required List<int> driverIds,
+  }) async {
+    if (driverIds.isEmpty) return;
+
+    isLoading = true;
+    notifyListeners();
+    try {
+      for (final driverId in driverIds) {
+        await driverRepository.deleteDriverMethod(
+          driverId: driverId.toString(),
+        );
+      }
+      await getDriverUser(deviceId: "");
+    } catch (e) {
+      log("Error in Provider${e.toString()}");
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// GET DRIVERS
@@ -129,7 +152,7 @@ class DriverProvider with ChangeNotifier {
               : "Driver assigned successfully");
     } catch (e) {
       log("Error in Provider${e.toString()}");
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     }
 
     isLoading = false;

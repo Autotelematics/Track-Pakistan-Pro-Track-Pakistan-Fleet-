@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'common_widgets.dart';
 
@@ -22,6 +23,7 @@ class HistoryTripsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final trips = provider.tripSegments;
 
     if (trips.isEmpty) {
@@ -31,9 +33,9 @@ class HistoryTripsTab extends StatelessWidget {
           children: [
             Icon(Icons.route, size: 40.sp, color: Colors.grey.shade400),
             verticalSpace(height: 1.h),
-            Text('No trips found',
-                style: AppStyles.regularTextStyle(context).copyWith(
-                    fontSize: 15.sp, color: Colors.grey.shade500)),
+            Text(l10n.noTripsFound,
+                style: AppStyles.regularTextStyle(context)
+                    .copyWith(fontSize: 15.sp, color: Colors.grey.shade500)),
           ],
         ),
       );
@@ -54,8 +56,8 @@ class HistoryTripsTab extends StatelessWidget {
             provider.selectTrip(i);
             final bounds = provider.calculateTripBounds(trip);
             if (bounds != null && mapController != null) {
-              mapController!.animateCamera(
-                  CameraUpdate.newLatLngBounds(bounds, 60));
+              mapController!
+                  .animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
             }
           },
           onPlay: () {

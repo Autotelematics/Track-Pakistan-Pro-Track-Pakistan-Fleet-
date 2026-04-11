@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/data/models/get_device_history_model.dart';
 import 'package:trackerapp/data/repositories/get_device_history_repository.dart';
+import 'package:trackerapp/utils/error_message.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Trip model for the bottom-sheet trip list
@@ -15,6 +16,7 @@ class TripSegment {
   final int tripIndex;
   final String startTime;
   final String endTime;
+  final bool? isInProgress;
   final dynamic distance;
   final String duration;
   final dynamic topSpeed;
@@ -27,6 +29,7 @@ class TripSegment {
     required this.tripIndex,
     required this.startTime,
     required this.endTime,
+    this.isInProgress,
     required this.distance,
     required this.duration,
     required this.topSpeed,
@@ -99,6 +102,11 @@ class DeviceHistoryProvider extends ChangeNotifier {
   static const double _vehicleMarkerLogicalHeight = 30.0;
   static const double _statusMarkerLogicalSize = 34.0;
   static const double _markerRenderScale = 3.0;
+  static BitmapDescriptor? _cachedStartIcon;
+  static BitmapDescriptor? _cachedEndIcon;
+  static BitmapDescriptor? _cachedParkingIcon;
+  static BitmapDescriptor? _cachedEventsIcon;
+  static BitmapDescriptor? _cachedCarIcon;
 
   // ── State ──────────────────────────────────────────────────────────────────
   GetDeviceHistoryModel? _deviceHistoryModel;
@@ -107,6 +115,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   // ── Map ────────────────────────────────────────────────────────────────────
   final List<Marker> _mapMarkers = [];
+  Marker? _carMarker;
+  final ValueNotifier<Marker?> carMarkerNotifier = ValueNotifier<Marker?>(null);
   final List<LatLng> _polyLatLng = [];
   final List<LatLng> _parkedLatLngs = [];
   final List<LatLng> _eventsLatLngs = [];
@@ -118,12 +128,12 @@ class DeviceHistoryProvider extends ChangeNotifier {
   // ── Playback ───────────────────────────────────────────────────────────────
   final List<LocationItem> _routeList = [];
   int _currentSliderValue = 0;
+  final ValueNotifier<int> playbackSliderNotifier = ValueNotifier<int>(0);
   int _sliderValueMax = 0;
   bool _isPlaying = false;
-  Timer? _playbackTimer;
   Timer? _segmentFrameTimer;
-  static const int _baseSegmentDurationMs = 1000; // 1x speed baseline
-  static const List<double> _playbackSpeedFactors = [0.5, 1.0, 1.5, 2.0, 3.0];
+  static const int _baseSegmentDurationMs = 1600; // 1x speed baseline
+  static const List<double> _playbackSpeedFactors = [0.25, 0.5, 1.0, 1.5, 2.0];
   int _selectedPlayBackSpeed = 0;
   int _segmentFromIndex = 0;
   double _segmentProgress = 0.0;
@@ -133,6 +143,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
   double _carLat = 0.0;
   double _carLng = 0.0;
   double _carRotation = 0.0;
+  double? _playbackSmoothedRotation;
 
   // ── Icons ──────────────────────────────────────────────────────────────────
   BitmapDescriptor? _startIcon;
@@ -161,7 +172,9 @@ class DeviceHistoryProvider extends ChangeNotifier {
   GetDeviceHistoryModel? get deviceHistoryModel => _deviceHistoryModel;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  List<Marker> get mapMarkers => _mapMarkers;
+  List<Marker> get mapMarkers =>
+      _carMarker == null ? _mapMarkers : [..._mapMarkers, _carMarker!];
+  List<Marker> get staticMapMarkers => _mapMarkers;
   Set<Polyline> get routePolyLine => _routePolyLine;
   int get currentSliderValue => _currentSliderValue;
   int get sliderValueMax => _sliderValueMax;
@@ -218,7 +231,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _isLoading = false;
-      _errorMessage = e.toString();
+      _errorMessage = AppErrorMessage.normalize(e);
       notifyListeners();
     }
   }
@@ -302,6 +315,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
             tripIndex: tripIdx++,
             startTime: startItem.rawTime ?? startItem.time ?? '—',
             endTime: endItem.rawTime ?? endItem.time ?? '—',
+            isInProgress: false,
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
             topSpeed: activeTripTopSpeed,
@@ -352,6 +366,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
             tripIndex: tripIdx++,
             startTime: startItem.rawTime ?? startItem.time ?? '—',
             endTime: endItem.rawTime ?? endItem.time ?? '—',
+            isInProgress: true,
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
             topSpeed: activeTripTopSpeed,
@@ -384,6 +399,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
         tripIndex: tripIdx++,
         startTime: startItem.rawTime ?? startItem.time ?? '—',
         endTime: endItem.rawTime ?? endItem.time ?? '—',
+        isInProgress: true,
         distance: activeTripDistanceKm.toStringAsFixed(2),
         duration: _formatDuration(activeTripDurationSec),
         topSpeed: activeTripTopSpeed,
@@ -632,28 +648,35 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   // ── Icons ──────────────────────────────────────────────────────────────────
   Future<void> _loadMapIcons() async {
-    _startIcon = await _buildStatusMarker(
+    _cachedStartIcon ??= await _buildStatusMarker(
       bgColor: Colors.green,
       letter: 'S',
       letterColor: Colors.white,
     );
-    _endIcon = await _buildStatusMarker(
+    _cachedEndIcon ??= await _buildStatusMarker(
       bgColor: Colors.blue,
       letter: 'E',
       letterColor: Colors.white,
     );
-    _parkingIcon = await _buildStatusMarker(
+    _cachedParkingIcon ??= await _buildStatusMarker(
       bgColor: Colors.red,
       letter: 'P',
       letterColor: Colors.white,
     );
-    _eventsIcon = await _buildStatusMarker(
+    _cachedEventsIcon ??= await _buildStatusMarker(
       bgColor: Colors.red,
       icon: Icons.notifications_active_rounded,
       letterColor: Colors.white,
     );
     // Always use car_green.png for history playback car
-    _carIcon = await _buildVehicleIconFromAsset('assets/images/car_green.png');
+    _cachedCarIcon ??=
+        await _buildVehicleIconFromAsset('assets/images/car_green.png');
+
+    _startIcon = _cachedStartIcon;
+    _endIcon = _cachedEndIcon;
+    _parkingIcon = _cachedParkingIcon;
+    _eventsIcon = _cachedEventsIcon;
+    _carIcon = _cachedCarIcon;
   }
 
   Future<BitmapDescriptor> _buildVehicleIconFromAsset(String assetPath) async {
@@ -661,7 +684,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     final ui.Codec codec = await ui.instantiateImageCodec(
       data.buffer.asUint8List(),
       targetHeight:
-          (_vehicleMarkerLogicalHeight * _markerRenderScale).round(),
+          (_vehicleMarkerLogicalHeight * 1.22 * _markerRenderScale).round(),
     );
     final ui.FrameInfo frame = await codec.getNextFrame();
     final ByteData? bytes =
@@ -758,15 +781,18 @@ class DeviceHistoryProvider extends ChangeNotifier {
     if (index >= _routeList.length || _carIcon == null) return;
 
     final location = _routeList[index];
+    final resolvedRotation = _resolvedPlaybackRotationForIndex(index);
+    _playbackSmoothedRotation = resolvedRotation;
     _setCarMarkerPosition(
       lat: location.lat,
       lng: location.lng,
-      rotation: location.course?.toDouble() ?? 0.0,
+      rotation: resolvedRotation,
       speed: location.speed,
       snippet: location.time ?? '',
     );
 
     _currentSliderValue = index;
+    playbackSliderNotifier.value = _currentSliderValue;
     _segmentFromIndex = index.clamp(0, _sliderValueMax);
     _segmentProgress = 0.0;
     _segmentStartTime = null;
@@ -781,27 +807,42 @@ class DeviceHistoryProvider extends ChangeNotifier {
     required String snippet,
   }) {
     if (_carIcon == null) return;
-    _mapMarkers.removeWhere((m) => m.markerId == const MarkerId('car'));
+    const carMarkerId = MarkerId('car');
+    final latDelta = (lat - _carLat).abs();
+    final lngDelta = (lng - _carLng).abs();
+    final angleDelta = _rotationDelta(rotation, _carRotation);
+    if (latDelta < 0.0000008 && lngDelta < 0.0000008 && angleDelta < 0.6) {
+      return;
+    }
 
     _carLat = lat;
     _carLng = lng;
     _carRotation = rotation;
 
-    _mapMarkers.add(
-      Marker(
-        markerId: const MarkerId('car'),
-        position: LatLng(_carLat, _carLng),
-        icon: _carIcon!,
-        anchor: const Offset(0.5, 0.5),
-        rotation: _carRotation,
-        flat: true,
-        zIndexInt: 10,
-        infoWindow: InfoWindow(
-          title: 'Speed: $speed km/h',
-          snippet: snippet,
-        ),
+    final nextPosition = LatLng(_carLat, _carLng);
+    if (_carMarker != null) {
+      _carMarker = _carMarker!.copyWith(
+        positionParam: nextPosition,
+        rotationParam: _carRotation,
+      );
+      carMarkerNotifier.value = _carMarker;
+      return;
+    }
+
+    _carMarker = Marker(
+      markerId: carMarkerId,
+      position: nextPosition,
+      icon: _carIcon!,
+      anchor: const Offset(0.5, 0.5),
+      rotation: _carRotation,
+      flat: false,
+      zIndexInt: 10,
+      infoWindow: InfoWindow(
+        title: 'Speed: $speed km/h',
+        snippet: snippet,
       ),
     );
+    carMarkerNotifier.value = _carMarker;
   }
 
   double _interpolateRotation(double start, double end, double t) {
@@ -809,6 +850,29 @@ class DeviceHistoryProvider extends ChangeNotifier {
     if (diff > 180) diff -= 360;
     if (diff < -180) diff += 360;
     return (start + diff * t) % 360;
+  }
+
+  double _rotationDelta(double a, double b) {
+    var diff = (a - b).abs() % 360;
+    if (diff > 180) diff = 360 - diff;
+    return diff;
+  }
+
+  double _resolvedPlaybackRotationForIndex(int index) {
+    final current = _routeList[index];
+    final currentCourse = (current.course ?? 0).toDouble();
+    final hasUsableCourse = currentCourse > 0.1;
+    final isStopped = current.speed <= 0;
+
+    if (hasUsableCourse) {
+      return currentCourse;
+    }
+
+    if (isStopped) {
+      return _playbackSmoothedRotation ?? _carRotation;
+    }
+
+    return _playbackSmoothedRotation ?? _carRotation;
   }
 
   Future<BitmapDescriptor> _buildStatusMarker({
@@ -893,9 +957,9 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _setCompleteRoutePolyline(isPlaying: true);
     notifyListeners();
 
-    _playbackTimer?.cancel();
     _segmentFrameTimer?.cancel();
     _segmentFromIndex = _currentSliderValue.clamp(0, _sliderValueMax);
+    _playbackSmoothedRotation ??= _carRotation;
     final segmentMs = _currentSegmentDurationMs;
     _segmentStartTime = DateTime.now().subtract(
       Duration(
@@ -904,8 +968,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     );
 
     // Smoothly interpolate between route points to avoid visible marker jumps.
-    _playbackTimer?.cancel();
-    _segmentFrameTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
+    _segmentFrameTimer = Timer.periodic(const Duration(milliseconds: 36), (_) {
       if (!_isPlaying || _routeList.length < 2) return;
       if (_segmentFromIndex >= _sliderValueMax) {
         pausePlayback();
@@ -923,9 +986,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
       final lat = from.lat + ((to.lat - from.lat) * t);
       final lng = from.lng + ((to.lng - from.lng) * t);
-      final fromCourse = (from.course ?? 0).toDouble();
-      final toCourse = (to.course ?? from.course ?? 0).toDouble();
-      final rotation = _interpolateRotation(fromCourse, toCourse, t);
+      final fromCourse = _resolvedPlaybackRotationForIndex(_segmentFromIndex);
+      final toCourse = _resolvedPlaybackRotationForIndex(_segmentFromIndex + 1);
+      final interpolatedCourse = _interpolateRotation(fromCourse, toCourse, t);
+      final previousRotation = _playbackSmoothedRotation ?? interpolatedCourse;
+      final rotation =
+          _interpolateRotation(previousRotation, interpolatedCourse, 0.22);
+      _playbackSmoothedRotation = rotation;
       final speed = (from.speed + ((to.speed - from.speed) * t)).round();
       final snippet = t < 0.5 ? (from.time ?? '') : (to.time ?? '');
 
@@ -939,18 +1006,16 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
       if (t >= 1.0) {
         _currentSliderValue = _segmentFromIndex + 1;
+        playbackSliderNotifier.value = _currentSliderValue;
         _segmentFromIndex = _currentSliderValue;
         _segmentProgress = 0.0;
         _segmentStartTime = DateTime.now();
       }
-
-      notifyListeners();
     });
   }
 
   void pausePlayback() {
     _isPlaying = false;
-    _playbackTimer?.cancel();
     _segmentFrameTimer?.cancel();
     _setCompleteRoutePolyline(isPlaying: false);
     notifyListeners();
@@ -958,12 +1023,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   void stopPlayback() {
     _isPlaying = false;
-    _playbackTimer?.cancel();
     _segmentFrameTimer?.cancel();
     _currentSliderValue = 0;
+    playbackSliderNotifier.value = _currentSliderValue;
     _segmentFromIndex = 0;
     _segmentProgress = 0.0;
     _segmentStartTime = null;
+    _playbackSmoothedRotation = null;
     _setCompleteRoutePolyline(isPlaying: false);
     _updateCarMarker(0);
   }
@@ -971,8 +1037,10 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void seekTo(int value) {
     if (value < 0 || value > _sliderValueMax) return;
     _segmentFromIndex = value.clamp(0, _sliderValueMax);
+    playbackSliderNotifier.value = value.clamp(0, _sliderValueMax);
     _segmentProgress = 0.0;
     _segmentStartTime = null;
+    _playbackSmoothedRotation = null;
     _updateCarMarker(value);
   }
 
@@ -987,7 +1055,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
   }
 
   String get playbackSpeedLabel {
-    const speeds = ['0.5x', '1x', '1.5x', '2x', '3x'];
+    const speeds = ['0.25x', '0.5x', '1x', '1.5x', '2x'];
     return speeds[_selectedPlayBackSpeed];
   }
 
@@ -1057,6 +1125,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   void _resetAllData() {
     _mapMarkers.clear();
+    _carMarker = null;
+    carMarkerNotifier.value = null;
     _polyLatLng.clear();
     _parkedLatLngs.clear();
     _eventsLatLngs.clear();
@@ -1067,6 +1137,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _parkedSegments.clear();
     _timelineEntries.clear();
     _currentSliderValue = 0;
+    playbackSliderNotifier.value = 0;
     _sliderValueMax = 0;
     _tripCount = 0;
     _stopCount = 0;
@@ -1083,14 +1154,14 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _startPacketLatLng = null;
     _endPacketLatLng = null;
     _isPlaying = false;
-    _playbackTimer?.cancel();
     _segmentFrameTimer?.cancel();
   }
 
   @override
   void dispose() {
-    _playbackTimer?.cancel();
     _segmentFrameTimer?.cancel();
+    carMarkerNotifier.dispose();
+    playbackSliderNotifier.dispose();
     super.dispose();
   }
 }

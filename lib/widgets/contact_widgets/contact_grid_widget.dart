@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/white_labeling/contacts.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,13 +20,14 @@ class ContactGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> contactTiles = [];
+    final l10n = context.l10n;
 
     // Phone
     if (CompanyInfo.companyPhone.trim().isNotEmpty) {
       contactTiles.add(
         _ContactTile(
           icon: Icons.call,
-          label: "Call",
+          label: l10n.callLabel,
           color: Colors.green,
           onTap: () => _launchUrl('tel:${CompanyInfo.companyPhone}'),
         ),
@@ -37,7 +39,7 @@ class ContactGrid extends StatelessWidget {
       contactTiles.add(
         _ContactTile(
           icon: Icons.email_outlined,
-          label: "Email",
+          label: l10n.emailLabel,
           color: Colors.blue,
           onTap: () => _launchUrl('mailto:${CompanyInfo.companyGmail}'),
         ),
@@ -49,7 +51,7 @@ class ContactGrid extends StatelessWidget {
       contactTiles.add(
         _ContactTile(
           icon: Icons.language,
-          label: "Website",
+          label: l10n.websiteLabel,
           color: Colors.purple,
           onTap: () => _launchUrl(CompanyInfo.website),
         ),
@@ -61,7 +63,7 @@ class ContactGrid extends StatelessWidget {
       contactTiles.add(
         _ContactTile(
           icon: FontAwesomeIcons.whatsapp,
-          label: "WhatsApp",
+          label: l10n.whatsAppLabel,
           color: Colors.green[700]!,
           onTap: () => _launchUrl('https://wa.me/${CompanyInfo.whatsApp}'),
         ),
@@ -73,7 +75,7 @@ class ContactGrid extends StatelessWidget {
       contactTiles.add(
         _ContactTile(
           icon: Icons.facebook,
-          label: "Facebook",
+          label: l10n.facebookLabel,
           color: Colors.indigo,
           onTap: () => _launchUrl(CompanyInfo.facebook),
         ),
@@ -85,7 +87,7 @@ class ContactGrid extends StatelessWidget {
       contactTiles.add(
         _ContactTile(
           icon: FontAwesomeIcons.instagram,
-          label: "Instagram",
+          label: l10n.instagramLabel,
           color: Colors.pinkAccent,
           onTap: () => _launchUrl(CompanyInfo.instagram),
         ),
@@ -97,7 +99,7 @@ class ContactGrid extends StatelessWidget {
         children: [
           verticalSpace(height: 2.h),
           Text(
-            "No contact information available",
+            l10n.noContactInformationAvailable,
             style: AppStyles.lightTextStyle(context).copyWith(fontSize: 14.sp),
           ),
           verticalSpace(height: 2.h),

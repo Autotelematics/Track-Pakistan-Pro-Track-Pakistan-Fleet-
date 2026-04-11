@@ -60,10 +60,23 @@ class _SingleVehicleExpenseAnalyticsCardState
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.05.h),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF101A2A) : Colors.white,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? <Color>[
+                        const Color(0xFF101A2A).withValues(alpha: .98),
+                        const Color(0xFF101A2A).withValues(alpha: .90),
+                      ]
+                    : <Color>[
+                        Colors.white,
+                        const Color(0xFFF6FBFF),
+                      ],
+              ),
               borderRadius: BorderRadius.circular(14.sp),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black12,
+                color: const Color(0xFF0EA5E9)
+                    .withValues(alpha: isDark ? .24 : .14),
               ),
               boxShadow: [
                 BoxShadow(
@@ -86,11 +99,33 @@ class _SingleVehicleExpenseAnalyticsCardState
                         children: [
                           Row(
                             children: [
+                              Container(
+                                width: 5.8.w,
+                                height: 5.8.w,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: <Color>[
+                                      Color(0xFF22D3EE),
+                                      Color(0xFF0284C7),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                                child: Icon(
+                                  Icons.receipt_long_rounded,
+                                  color: Colors.white,
+                                  size: _sveSp(context, phone: 15.0),
+                                ),
+                              ),
+                              horizontalSpace(width: 2.w),
                               Expanded(
                                 child: Text(
                                   l10n.expenseAnalytics,
-                                  style: AppStyles.boldTextStyle(context)
-                                      .copyWith(fontSize: 14.6.sp),
+                                  style:
+                                      AppStyles.boldTextStyle(context).copyWith(
+                                    fontSize: _sveSp(context, phone: 12.8),
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
                               IconButton(
@@ -177,7 +212,7 @@ class _PresetBar extends StatelessWidget {
                   label: Text(
                     item.$2,
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 12.9.sp,
+                      fontSize: _sveSp(context, phone: 12.9),
                       fontWeight: provider.preset == item.$1
                           ? FontWeight.w700
                           : FontWeight.w500,
@@ -277,7 +312,7 @@ class _DatePickButton extends StatelessWidget {
                   ? l10n.fromValue(DateFormat('dd/MM/yy').format(value))
                   : l10n.toValue(DateFormat('dd/MM/yy').format(value)),
               style: AppStyles.regularTextStyle(context).copyWith(
-                fontSize: 12.8.sp,
+                fontSize: _sveSp(context, phone: 12.8),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -361,7 +396,7 @@ class _MiniKpi extends StatelessWidget {
           Text(
             title,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 12.sp,
+              fontSize: _sveSp(context, phone: 12.0),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -369,7 +404,7 @@ class _MiniKpi extends StatelessWidget {
           Text(
             value,
             style: AppStyles.boldTextStyle(context).copyWith(
-              fontSize: 13.5.sp,
+              fontSize: _sveSp(context, phone: 13.5),
             ),
           ),
         ],
@@ -405,7 +440,7 @@ class _InnerCard extends StatelessWidget {
           Text(
             title,
             style: AppStyles.semiboldTextStyle(context)
-                .copyWith(fontSize: 12.4.sp),
+                .copyWith(fontSize: _sveSp(context, phone: 12.4)),
           ),
           verticalSpace(height: .45.h),
           child,
@@ -448,7 +483,7 @@ class _TrendChart extends StatelessWidget {
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: _sveSp(context, phone: 12.0),
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -470,7 +505,7 @@ class _TrendChart extends StatelessWidget {
                     child: Text(
                       DateFormat('dd').format(points[i].date),
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: _sveSp(context, phone: 12.0),
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
@@ -544,7 +579,7 @@ class _TypeBar extends StatelessWidget {
                 getTitlesWidget: (value, _) => Text(
                   value.toInt().toString(),
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: _sveSp(context, phone: 12.0),
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -566,7 +601,7 @@ class _TypeBar extends StatelessWidget {
                     child: Text(
                       text.length > 8 ? "${text.substring(0, 8)}..." : text,
                       style: TextStyle(
-                        fontSize: 11.8.sp,
+                        fontSize: _sveSp(context, phone: 11.8),
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
@@ -633,7 +668,7 @@ class _RecentList extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 12.sp,
+                          fontSize: _sveSp(context, phone: 12.0),
                         ),
                       ),
                     ),
@@ -657,7 +692,7 @@ class _RecentList extends StatelessWidget {
                       child: Text(
                         "Rs ${e.amount.toStringAsFixed(0)}",
                         style: AppStyles.semiboldTextStyle(context).copyWith(
-                          fontSize: 11.8.sp,
+                          fontSize: _sveSp(context, phone: 11.8),
                         ),
                       ),
                     ),
@@ -682,8 +717,8 @@ class _EmptyLine extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style:
-              AppStyles.regularTextStyle(context).copyWith(fontSize: 11.8.sp),
+          style: AppStyles.regularTextStyle(context)
+              .copyWith(fontSize: _sveSp(context, phone: 11.8)),
         ),
       ),
     );
@@ -708,7 +743,7 @@ class _ErrorBlock extends StatelessWidget {
             error,
             textAlign: TextAlign.center,
             style: AppStyles.regularTextStyle(context).copyWith(
-              fontSize: 11.5.sp,
+              fontSize: _sveSp(context, phone: 11.5),
               color: Theme.of(context).colorScheme.error,
             ),
           ),
@@ -722,4 +757,15 @@ class _ErrorBlock extends StatelessWidget {
       ),
     );
   }
+}
+
+double _sveSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

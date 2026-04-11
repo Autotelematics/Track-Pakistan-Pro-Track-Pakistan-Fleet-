@@ -14,6 +14,7 @@ class AnalyticsStatCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final isCompactPhone = MediaQuery.sizeOf(context).width <= 360;
     final items = [
       (
         icon: Icons.straighten,
@@ -59,10 +60,10 @@ class AnalyticsStatCards extends StatelessWidget {
       padding: EdgeInsets.zero,
       itemCount: items.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: isCompactPhone ? 1 : 2,
         mainAxisSpacing: .8.h,
         crossAxisSpacing: 2.2.w,
-        childAspectRatio: 2.9,
+        childAspectRatio: isCompactPhone ? 3.2 : 2.9,
       ),
       itemBuilder: (_, index) {
         final item = items[index];
@@ -102,7 +103,19 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 2.4.w, vertical: .7.h),
       decoration: BoxDecoration(
-        color: cardColor,
+        gradient: LinearGradient(
+          colors: isDark
+              ? <Color>[
+                  cardColor,
+                  Colors.white.withValues(alpha: .03),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFF8FBFF),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12.sp),
         border: Border.all(color: border),
         boxShadow: [
@@ -119,10 +132,21 @@ class _StatCard extends StatelessWidget {
             width: 9.0.w,
             height: 4.3.h,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: .14),
+              gradient: LinearGradient(
+                colors: <Color>[
+                  color.withValues(alpha: .24),
+                  color.withValues(alpha: .12),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(9.sp),
             ),
-            child: Icon(icon, color: color, size: 17.sp),
+            child: Icon(
+              icon,
+              color: color,
+              size: _svasSp(context, phone: 17.0),
+            ),
           ),
           Expanded(
             child: Padding(
@@ -136,7 +160,7 @@ class _StatCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 11.4.sp,
+                      fontSize: _svasSp(context, phone: 11.4),
                       color: secondaryText,
                       fontWeight: FontWeight.w700,
                       height: 1.0,
@@ -148,7 +172,7 @@ class _StatCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.semiboldTextStyle(context).copyWith(
-                      fontSize: 13.2.sp,
+                      fontSize: _svasSp(context, phone: 13.2),
                       color: primaryText,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
@@ -162,4 +186,15 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+double _svasSp(
+  BuildContext context, {
+  required double phone,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= 360) return (phone * 1.08).sp;
+  if (width <= 393) return (phone * 1.10).sp;
+  if (width <= 430) return (phone * 1.06).sp;
+  return (phone * 1.03).sp;
 }

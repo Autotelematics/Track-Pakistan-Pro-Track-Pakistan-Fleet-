@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trackerapp/data/repositories/auth_repository.dart';
 import 'package:trackerapp/utils/app_snackbar.dart';
+import 'package:trackerapp/utils/error_message.dart';
 import 'package:trackerapp/utils/motion_bottom_navigation_bar.dart';
+import 'package:trackerapp/utils/session_guard.dart';
 
 class AuthProvider extends ChangeNotifier {
   final _repo = AuthRepository();
@@ -33,7 +35,7 @@ class AuthProvider extends ChangeNotifier {
                     MotionBottomNavigationBar()));
       }
     } catch (e) {
-      final message = e.toString().replaceFirst("Exception: ", "").trim();
+      final message = AppErrorMessage.normalize(e);
       final isMobileAccessDenied =
           message == AuthRepository.mobileAccessDeniedMessage;
       AppSnackBar.error(
@@ -52,15 +54,21 @@ class AuthProvider extends ChangeNotifier {
     required BuildContext context,
     required String oldPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
     isLoading = true;
     notifyListeners();
     try {
-      String message = await _repo.changePasswordApi(
-          oldPassword: oldPassword, newPassword: newPassword);
-      AppSnackBar.success(message: message);
+      await _repo.changePasswordApi(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+      await SessionGuard.forceLogout(
+        message: 'Session expired. Please login again.',
+      );
     } catch (e) {
-      AppSnackBar.error(message: e.toString());
+      AppSnackBar.error(message: AppErrorMessage.normalize(e));
     }
     isLoading = false;
     notifyListeners();
