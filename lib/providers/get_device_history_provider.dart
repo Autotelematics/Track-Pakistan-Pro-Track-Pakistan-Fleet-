@@ -161,6 +161,9 @@ class DeviceHistoryProvider extends ChangeNotifier {
   String _topSpeed = '';
   double _totalFuelSpent = 0.0;
   double _totalFuelCost = 0.0;
+  double _averagePerLiter = 0.0;
+  double _appliedFuelPrice = 0.0;
+  String _appliedFuelType = '';
 
   // ── Trip segments ──────────────────────────────────────────────────────────
   final List<TripSegment> _tripSegments = [];
@@ -188,6 +191,9 @@ class DeviceHistoryProvider extends ChangeNotifier {
   String get topSpeed => _topSpeed;
   double get totalFuelSpent => _totalFuelSpent;
   double get totalFuelCost => _totalFuelCost;
+  double get averagePerLiter => _averagePerLiter;
+  double get appliedFuelPrice => _appliedFuelPrice;
+  String get appliedFuelType => _appliedFuelType;
   List<LatLng> get polyLatLng => _polyLatLng;
   List<LocationItem> get routeList => _routeList;
   List<int> get playBackTimeSpeeds => _playbackSpeedFactors
@@ -212,6 +218,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
     required String toDate,
     required String toTime,
     bool snapToRoad = false,
+    String? fallbackAveragePerLiter,
+    String? fallbackEngineType,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -226,7 +234,10 @@ class DeviceHistoryProvider extends ChangeNotifier {
         toTime: toTime,
         snapToRoad: snapToRoad,
       );
-      await _processHistoryData();
+      await _processHistoryData(
+        fallbackAveragePerLiter: fallbackAveragePerLiter,
+        fallbackEngineType: fallbackEngineType,
+      );
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -237,18 +248,35 @@ class DeviceHistoryProvider extends ChangeNotifier {
   }
 
   // ── Process ────────────────────────────────────────────────────────────────
-  Future<void> _processHistoryData() async {
+  Future<void> _processHistoryData({
+    String? fallbackAveragePerLiter,
+    String? fallbackEngineType,
+  }) async {
     if (_deviceHistoryModel == null) return;
     _resetAllData();
 
     final summary = _deviceHistoryModel!.summary;
-    _totalDistance =
-        double.tryParse(summary.totalDistance.replaceAll(' Km', '')) ?? 0.0;
+    final device = _deviceHistoryModel!.device;
+    final resolvedEngineType = _resolveFuelType(
+      device.engineType,
+      fallbackValue: fallbackEngineType,
+    );
+    _totalDistance = summary.distanceSum > 0
+        ? summary.distanceSum
+        : _extractNumericValue(summary.totalDistance);
     _moveDuration = summary.moveDuration;
     _topSpeed = summary.topSpeed;
     _totalFuelSpent = summary.fuelSpent.totalFuelSpent;
     _totalFuelCost = summary.fuelSpent.totalFuelCost;
     _stopDuration = summary.stopDuration1;
+    _averagePerLiter = _extractNumericValue(
+      device.fuelQuantity,
+      fallbackValue: fallbackAveragePerLiter,
+    );
+    _appliedFuelType = resolvedEngineType;
+    _appliedFuelPrice = _appliedFuelType.toLowerCase() == 'diesel'
+        ? summary.fuelPrices.dieselPrice
+        : summary.fuelPrices.petrolPrice;
 
     int tripIdx = 0;
     int? activeTripStartIndex;
@@ -423,6 +451,30 @@ class DeviceHistoryProvider extends ChangeNotifier {
       _setEventsMarkers();
       _updateCarMarker(0);
     }
+  }
+
+  double _extractNumericValue(String raw, {String? fallbackValue}) {
+    final normalized = raw.trim().replaceAll(',', '');
+    final match = RegExp(r'-?\d+(\.\d+)?').firstMatch(normalized);
+    if (match != null) {
+      return double.tryParse(match.group(0)!) ?? 0.0;
+    }
+    if (fallbackValue == null) return 0.0;
+    final fallbackNormalized = fallbackValue.trim().replaceAll(',', '');
+    final fallbackMatch =
+        RegExp(r'-?\d+(\.\d+)?').firstMatch(fallbackNormalized);
+    if (fallbackMatch == null) return 0.0;
+    return double.tryParse(fallbackMatch.group(0)!) ?? 0.0;
+  }
+
+  String _resolveFuelType(String engineType, {String? fallbackValue}) {
+    final normalized = engineType.trim().toLowerCase();
+    if (normalized.contains('diesel')) return 'Diesel';
+    if (normalized.contains('petrol')) return 'Petrol';
+    final fallbackNormalized = fallbackValue?.trim().toLowerCase() ?? '';
+    if (fallbackNormalized.contains('diesel')) return 'Diesel';
+    if (fallbackNormalized.contains('petrol')) return 'Petrol';
+    return 'Petrol';
   }
 
   void _processMovingItems(List<LocationItem> items) {
@@ -1147,6 +1199,9 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _topSpeed = '';
     _totalFuelSpent = 0.0;
     _totalFuelCost = 0.0;
+    _averagePerLiter = 0.0;
+    _appliedFuelPrice = 0.0;
+    _appliedFuelType = '';
     _carLat = 0.0;
     _carLng = 0.0;
     _carRotation = 0.0;

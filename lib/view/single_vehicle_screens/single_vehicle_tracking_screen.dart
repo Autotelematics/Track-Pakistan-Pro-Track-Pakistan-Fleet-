@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -40,10 +41,13 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   bool _isCameraAnimating = false;
   LatLng? _pendingCameraTarget;
   double? _pendingCameraZoom;
+  DateTime? _lastFollowCameraAt;
   bool _showUserDistanceBanner = false;
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   String? _loadingMarkerIconKey;
   BitmapDescriptor? _activeMarkerIcon;
+  bool get _useFlatVehicleMarker =>
+      defaultTargetPlatform == TargetPlatform.android;
   @override
   void initState() {
     super.initState();
@@ -105,6 +109,21 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
         }
       }
     }
+  }
+
+  bool _shouldFollowCameraUpdate(LatLng target, double zoom) {
+    final now = DateTime.now();
+    final minFollowIntervalMs = _useFlatVehicleMarker ? 220 : 140;
+    final movedEnough = _lastCameraTarget == null ||
+        (target.latitude - _lastCameraTarget!.latitude).abs() > 0.00004 ||
+        (target.longitude - _lastCameraTarget!.longitude).abs() > 0.00004 ||
+        zoom != _lastCameraZoom;
+    final intervalPassed = _lastFollowCameraAt == null ||
+        now.difference(_lastFollowCameraAt!).inMilliseconds >=
+            minFollowIntervalMs;
+    if (!movedEnough || !intervalPassed) return false;
+    _lastFollowCameraAt = now;
+    return true;
   }
 
   Future<void> _resetNorth({
@@ -351,9 +370,9 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     final textScale = trackingTextScale(context);
     final iconScale = trackingIconScale(context);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    const waitingBannerTop = 68.0;
-    const infoBannerTop = 92.0;
-    const rulerBannerTop = 130.0;
+    const waitingBannerTop = 84.0;
+    const infoBannerTop = 108.0;
+    const rulerBannerTop = 146.0;
     final markerLogicalHeight = _adaptiveMarkerLogicalHeight(context);
     return ChangeNotifierProvider.value(
       value: provider,
@@ -388,21 +407,6 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
             }
             final pos = LatLng(prov.latitude, prov.longitude);
             final markerMotionStatus = prov.markerVisualStatus;
-            if (prov.followVehicle) {
-              final shouldAnimate = _lastCameraTarget == null ||
-                  (pos.latitude - _lastCameraTarget!.latitude).abs() >
-                      0.00001 ||
-                  (pos.longitude - _lastCameraTarget!.longitude).abs() >
-                      0.00001 ||
-                  _lastCameraZoom != prov.currentZoom;
-              if (shouldAnimate) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _animateCameraToLocation(pos, prov.currentZoom);
-                });
-                _lastCameraTarget = pos;
-                _lastCameraZoom = prov.currentZoom;
-              }
-            }
             final vehicleType = prov.vehicleType.trim().isNotEmpty
                 ? prov.vehicleType
                 : (widget.initialVehicleType ?? '');
@@ -416,8 +420,9 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
               markerId: const MarkerId("vehicle"),
               position: pos,
               rotation: prov.course,
-              flat: false,
+              flat: _useFlatVehicleMarker,
               anchor: const Offset(0.5, 0.5),
+              zIndexInt: 1,
               icon: _activeMarkerIcon ??
                   BitmapDescriptor.defaultMarkerWithHue(
                     BitmapDescriptor.hueAzure,
@@ -447,9 +452,31 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
               duration: Duration(
                 milliseconds: prov.markerAnimationDurationMs,
               ),
-              fps: 30,
+              fps: _useFlatVehicleMarker ? 20 : 30,
+              animateRotation: true,
+              debugLogKey: 'SVT-ANIM',
               curve: Curves.linear,
               builder: (context, animatedMarkers) {
+                final animatedVehicleMarker = animatedMarkers
+                    .where((marker) => marker.markerId.value == 'vehicle')
+                    .cast<Marker?>()
+                    .firstOrNull;
+                final followTarget = animatedVehicleMarker?.position ?? pos;
+                if (prov.followVehicle) {
+                  if (_shouldFollowCameraUpdate(
+                    followTarget,
+                    prov.currentZoom,
+                  )) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _animateCameraToLocation(
+                        followTarget,
+                        prov.currentZoom,
+                      );
+                    });
+                    _lastCameraTarget = followTarget;
+                    _lastCameraZoom = prov.currentZoom;
+                  }
+                }
                 return GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: pos,

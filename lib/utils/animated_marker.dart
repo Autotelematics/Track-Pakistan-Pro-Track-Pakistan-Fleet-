@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trackerapp/utils/extensions.dart';
@@ -12,6 +13,8 @@ class AnimatedMarker extends StatefulWidget {
     this.duration = const Duration(seconds: 1),
     this.curve = Curves.ease,
     this.fps = 30,
+    this.animateRotation = true,
+    this.debugLogKey,
   })  : staticMarkersMap = {
     for (var marker in staticMarkers) marker.markerId: marker
   },
@@ -25,6 +28,8 @@ class AnimatedMarker extends StatefulWidget {
   final Duration duration;
   final Curve curve;
   final int fps;
+  final bool animateRotation;
+  final String? debugLogKey;
   final Map<MarkerId, Marker> staticMarkersMap;
   final Map<MarkerId, Marker> animatedMarkersMap;
   @override
@@ -32,9 +37,16 @@ class AnimatedMarker extends StatefulWidget {
 }
 
 class _AnimatedMarkerState extends State<AnimatedMarker> {
+  static const double _deferredHandoffProgress = 0.78;
   late final StreamController<Set<Marker>> _markersStreamController;
   late final Map<MarkerId, Marker> _transitioningMarkers;
   Timer? _tickerTimer;
+  bool _hasDeferredWidgetUpdate = false;
+  void _animLog(String message) {
+    final key = widget.debugLogKey;
+    if (!kDebugMode || key == null || key.isEmpty) return;
+    debugPrint('[$key] $message');
+  }
 
   @override
   void initState() {
@@ -63,7 +75,16 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
   @override
   void didUpdateWidget(covariant AnimatedMarker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Cancel any active timer before starting a new one.
+    if (_tickerTimer?.isActive ?? false) {
+      _hasDeferredWidgetUpdate = true;
+      _animLog('defer widget update until current animation completes');
+      return;
+    }
+
+    _syncAnimatedMarkers(fallbackOldMarkers: oldWidget.animatedMarkersMap);
+  }
+
+  void _syncAnimatedMarkers({Map<MarkerId, Marker>? fallbackOldMarkers}) {
     _tickerTimer?.cancel();
 
     final Map<MarkerId, Marker> sameAnimatedMarkers = {};
@@ -73,7 +94,7 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
     // Compare current markers with previous markers to find updated positions.
     for (final marker in widget.animatedMarkers) {
       final oldMarker = _transitioningMarkers[marker.markerId] ??
-          oldWidget.animatedMarkersMap[marker.markerId];
+          fallbackOldMarkers?[marker.markerId];
       if (oldMarker != null && oldMarker != marker) {
         updatedMarkerPairs[marker.markerId] =
             (oldMarker: oldMarker, newMarker: marker);
@@ -89,6 +110,7 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
 
     // If there are no marker changes, update the stream with static markers only.
     if (updatedMarkerPairs.isEmpty) {
+      _animLog('no animated marker delta; emit stable markers only');
       _markersStreamController.add(allStaticMarkers);
       return;
     }
@@ -103,9 +125,40 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
             .clamp(1, 100000)
             .toDouble();
     final Duration animationInterval = widget.duration ~/ animationSteps.round();
+    _animLog(
+      'start durationMs=${widget.duration.inMilliseconds} fps=${widget.fps} '
+      'steps=${animationSteps.round()} intervalMs=${animationInterval.inMilliseconds} '
+      'animateRotation=${widget.animateRotation} markers=${updatedMarkerPairs.length}',
+    );
+    for (final markerPair in updatedMarkerPairs.entries) {
+      final oldMarker = markerPair.value.oldMarker;
+      final newMarker = markerPair.value.newMarker;
+      _animLog(
+        'marker=${markerPair.key.value} '
+        'from=(${oldMarker.position.latitude.toStringAsFixed(6)},${oldMarker.position.longitude.toStringAsFixed(6)}) '
+        'to=(${newMarker.position.latitude.toStringAsFixed(6)},${newMarker.position.longitude.toStringAsFixed(6)}) '
+        'fromRot=${oldMarker.rotation.toStringAsFixed(1)} '
+        'toRot=${newMarker.rotation.toStringAsFixed(1)}',
+      );
+    }
 
     // Start a timer to interpolate marker positions over the specified duration.
     _tickerTimer = Timer.periodic(animationInterval, (timer) {
+      final double fraction = (timer.tick / animationSteps).clamp(0, 1);
+
+      if (_hasDeferredWidgetUpdate && fraction >= _deferredHandoffProgress) {
+        _hasDeferredWidgetUpdate = false;
+        _animLog(
+          'handoff deferred update atProgress=${fraction.toStringAsFixed(2)}',
+        );
+        timer.cancel();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _syncAnimatedMarkers();
+        });
+        return;
+      }
+
       if (timer.tick >= animationSteps) {
         // Animation complete: Update with final positions and cancel the timer.
         for (final pair in updatedMarkerPairs.entries) {
@@ -114,10 +167,18 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
         final allMarkers =
             allStaticMarkers.followedBy(_transitioningMarkers.values).toSet();
         _markersStreamController.add(allMarkers);
+        _animLog('complete ticks=${timer.tick}');
         timer.cancel();
+        if (_hasDeferredWidgetUpdate && mounted) {
+          _hasDeferredWidgetUpdate = false;
+          _animLog('run deferred widget update after animation completion');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _syncAnimatedMarkers();
+          });
+        }
         return;
       }
-      final double fraction = (timer.tick / animationSteps).clamp(0, 1);
       final curveFraction = widget.curve.transform(fraction);
 
       // Calculate interpolated positions for each updated marker.
@@ -130,8 +191,9 @@ class _AnimatedMarkerState extends State<AnimatedMarker> {
 
         // Interpolates position and angle based on the animation curve.
         final newLatLng = oldPosition.lerp(newPosition, step: curveFraction);
-        final newRotation =
-        oldMarker.rotation.lerp(newMarker.rotation, step: curveFraction);
+        final newRotation = widget.animateRotation
+            ? oldMarker.rotation.lerp(newMarker.rotation, step: curveFraction)
+            : newMarker.rotation;
 
         // Create a new marker at the interpolated position.
         final newMarkerCopy = newMarker.copyWith(

@@ -26,23 +26,45 @@ class HistoryBottomSheet extends StatefulWidget {
 }
 
 class _HistoryBottomSheetState extends State<HistoryBottomSheet> {
-  static const double _minSize = 0.13;
+  static const double _minSize = 0.36;
   static const double _midSize = 0.38;
   static const double _maxSize = 0.88;
+  static const double _summaryCardsThreshold = _midSize;
 
   int _bottomTabIndex = 0;
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
   bool _isExpanded = false;
+  double _currentExtent = _midSize;
 
   Future<void> _toggleSheet() async {
     if (!_sheetController.isAttached) return;
     final target = _isExpanded ? _minSize : _maxSize;
+    await _animateSheetTo(target);
+  }
+
+  Future<void> _animateSheetTo(double target) async {
+    if (!_sheetController.isAttached) return;
     await _sheetController.animateTo(
       target,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  Future<void> _handleHeaderDragEnd(DragEndDetails details) async {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 120) {
+      final target =
+          _currentExtent > (_midSize + _minSize) / 2 ? _maxSize : _minSize;
+      await _animateSheetTo(target);
+      return;
+    }
+    if (velocity < 0) {
+      await _animateSheetTo(_maxSize);
+      return;
+    }
+    await _animateSheetTo(_minSize);
   }
 
   @override
@@ -53,6 +75,7 @@ class _HistoryBottomSheetState extends State<HistoryBottomSheet> {
     final safeBottomInset = MediaQuery.viewPaddingOf(context).bottom;
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (notification) {
+        _currentExtent = notification.extent;
         final expandedNow = notification.extent > (_midSize + _minSize) / 2;
         if (expandedNow != _isExpanded) {
           setState(() => _isExpanded = expandedNow);
@@ -89,69 +112,76 @@ class _HistoryBottomSheetState extends State<HistoryBottomSheet> {
               padding: EdgeInsets.only(bottom: safeBottomInset),
               child: Column(
                 children: [
-                  // Handle (tap to toggle full/collapsed)
-                  Padding(
-                    padding: EdgeInsets.only(top: 1.h),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _toggleSheet,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 0.8.h),
-                        child: Container(
-                          width: 9.w,
-                          height: 0.5.h,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: .24),
-                            borderRadius: BorderRadius.circular(4),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _toggleSheet,
+                    onVerticalDragEnd: _handleHeaderDragEnd,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(top: 1.h),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 0.8.h),
+                            child: Container(
+                              width: 9.w,
+                              height: 0.5.h,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: .24),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  // Tab row
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 3.w, vertical: .8.h),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          SheetTab(
-                            label: l10n.playbackLabel,
-                            icon: Icons.play_circle_outline_rounded,
-                            isSelected: _bottomTabIndex == 0,
-                            onTap: () => setState(() => _bottomTabIndex = 0),
-                          ),
-                          horizontalSpace(width: .7.w),
-                          SheetTab(
-                            label: l10n.tripsCountLabel(
-                              widget.provider.tripSegments.length,
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 3.w, vertical: .8.h),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                SheetTab(
+                                  label: l10n.playbackLabel,
+                                  icon: Icons.play_circle_outline_rounded,
+                                  isSelected: _bottomTabIndex == 0,
+                                  onTap: () =>
+                                      setState(() => _bottomTabIndex = 0),
+                                ),
+                                horizontalSpace(width: .7.w),
+                                SheetTab(
+                                  label: l10n.tripsCountLabel(
+                                    widget.provider.tripSegments.length,
+                                  ),
+                                  icon: Icons.route_outlined,
+                                  isSelected: _bottomTabIndex == 1,
+                                  onTap: () =>
+                                      setState(() => _bottomTabIndex = 1),
+                                ),
+                                horizontalSpace(width: .7.w),
+                                SheetTab(
+                                  label: l10n.parkedCountLabel(
+                                    widget.provider.parkedSegments.length,
+                                  ),
+                                  icon: Icons.local_parking_rounded,
+                                  isSelected: _bottomTabIndex == 2,
+                                  onTap: () =>
+                                      setState(() => _bottomTabIndex = 2),
+                                ),
+                                horizontalSpace(width: .7.w),
+                                SheetTab(
+                                  label: l10n.alertsCountLabel(
+                                    widget.provider.alertSegments.length,
+                                  ),
+                                  icon: Icons.notifications_active_rounded,
+                                  isSelected: _bottomTabIndex == 3,
+                                  onTap: () =>
+                                      setState(() => _bottomTabIndex = 3),
+                                ),
+                              ],
                             ),
-                            icon: Icons.route_outlined,
-                            isSelected: _bottomTabIndex == 1,
-                            onTap: () => setState(() => _bottomTabIndex = 1),
                           ),
-                          horizontalSpace(width: .7.w),
-                          SheetTab(
-                            label: l10n.parkedCountLabel(
-                              widget.provider.parkedSegments.length,
-                            ),
-                            icon: Icons.local_parking_rounded,
-                            isSelected: _bottomTabIndex == 2,
-                            onTap: () => setState(() => _bottomTabIndex = 2),
-                          ),
-                          horizontalSpace(width: .7.w),
-                          SheetTab(
-                            label: l10n.alertsCountLabel(
-                              widget.provider.alertSegments.length,
-                            ),
-                            icon: Icons.notifications_active_rounded,
-                            isSelected: _bottomTabIndex == 3,
-                            onTap: () => setState(() => _bottomTabIndex = 3),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
@@ -172,6 +202,8 @@ class _HistoryBottomSheetState extends State<HistoryBottomSheet> {
                             provider: widget.provider,
                             scrollController: scrollController,
                             mapController: widget.mapController,
+                            showSummaryCards:
+                                _currentExtent >= _summaryCardsThreshold,
                           )
                         : _bottomTabIndex == 1
                             ? HistoryTripsTab(

@@ -15,12 +15,14 @@ class HistoryPlaybackTab extends StatelessWidget {
   final DeviceHistoryProvider provider;
   final ScrollController scrollController;
   final GoogleMapController? mapController;
+  final bool showSummaryCards;
 
   const HistoryPlaybackTab({
     super.key,
     required this.provider,
     required this.scrollController,
     required this.mapController,
+    this.showSummaryCards = true,
   });
 
   static const double _playbackZoom = 15.5;
@@ -220,37 +222,72 @@ class HistoryPlaybackTab extends StatelessWidget {
                 ),
               ],
             ),
-            verticalSpace(height: 1.1.h),
-            Wrap(
-              spacing: 2.w,
-              runSpacing: .8.h,
-              children: [
-                StatCard(
-                  l10n.totalTrips,
-                  provider.tripCount.toString(),
-                  ConstantColor.primaryColor,
-                  width: 44.w,
-                ),
-                StatCard(l10n.moveTime, provider.moveDuration, AppColors.purple,
-                    width: 44.w),
-                StatCard(
-                    l10n.fuelLtr,
-                    provider.totalFuelSpent.toStringAsFixed(2),
-                    AppColors.yellow,
-                    width: 44.w),
-                StatCard(l10n.stopTime, provider.stopDuration, Colors.orange,
-                    width: 44.w),
-                StatCard(
-                  l10n.totalSpent,
-                  l10n.rsAmount(provider.totalFuelCost.toStringAsFixed(0)),
-                  AppColors.green,
-                  width: 44.w,
-                ),
-                StatCard(l10n.topSpeed, provider.topSpeed, AppColors.red,
-                    width: 44.w),
-              ],
-            ),
-            verticalSpace(height: 1.2.h),
+            if (showSummaryCards) ...[
+              verticalSpace(height: 1.1.h),
+              Wrap(
+                spacing: 2.w,
+                runSpacing: .8.h,
+                children: [
+                  StatCard(
+                    l10n.totalTrips,
+                    provider.tripCount.toString(),
+                    ConstantColor.primaryColor,
+                    width: 44.w,
+                  ),
+                  StatCard(
+                    l10n.totalDistance,
+                    '${provider.totalDistance.toStringAsFixed(2)} km',
+                    const Color(0xFF0EA5E9),
+                    width: 44.w,
+                  ),
+                  StatCard(l10n.moveTime, provider.moveDuration,
+                      AppColors.purple,
+                      width: 44.w),
+                  StatCard(
+                      l10n.stopTime, provider.stopDuration, Colors.orange,
+                      width: 44.w),
+                  StatCard(
+                      l10n.topSpeed, provider.topSpeed, AppColors.red,
+                      width: 44.w),
+                  StatCard(
+                    l10n.totalSpent,
+                    l10n.rsAmount(provider.totalFuelCost.toStringAsFixed(0)),
+                    AppColors.green,
+                    width: 44.w,
+                  ),
+                  StatCard(
+                      l10n.fuelLtr,
+                      provider.totalFuelSpent.toStringAsFixed(2),
+                      AppColors.yellow,
+                      width: 44.w),
+                  StatCard(
+                    l10n.averagePerLiter,
+                    provider.averagePerLiter > 0
+                        ? '${provider.averagePerLiter.toStringAsFixed(2)} km/L'
+                        : '—',
+                    const Color(0xFF8B5CF6),
+                    width: 44.w,
+                  ),
+                  StatCard(
+                    l10n.engineType,
+                    provider.appliedFuelType.isNotEmpty
+                        ? provider.appliedFuelType
+                        : '—',
+                    const Color(0xFF6366F1),
+                    width: 44.w,
+                  ),
+                  StatCard(
+                    'Fuel Price',
+                    provider.appliedFuelPrice > 0
+                        ? '${provider.appliedFuelType}: ${l10n.rsAmount(provider.appliedFuelPrice.toStringAsFixed(2))}'
+                        : '—',
+                    const Color(0xFFF97316),
+                    width: 44.w,
+                  ),
+                ],
+              ),
+              verticalSpace(height: 1.2.h),
+            ],
           ],
         );
       },

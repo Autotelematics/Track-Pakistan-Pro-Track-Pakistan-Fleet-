@@ -26,12 +26,15 @@ class SingleVehicleDateFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     const filterAccent = Color(0xFF2563EB);
     const filterAccentSoft = Color(0xFFEFF4FF);
-    final cardColor =
-        isDark ? Colors.white.withValues(alpha: .06) : AppColors.white;
-    final borderColor = isDark ? Colors.white12 : Colors.black12;
+    final darkSurface = const Color(0xFF182235);
+    final darkSurfaceAlt = const Color(0xFF111A2B);
+    final cardColor = isDark ? darkSurface : AppColors.white;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: .14) : Colors.black12;
     final textColor = isDark ? AppColors.white : AppColors.textBlack;
     final selectedLabel =
         selectedFilterIndex >= 0 && selectedFilterIndex < filterLabels.length
@@ -48,7 +51,7 @@ class SingleVehicleDateFilterBar extends StatelessWidget {
               colors: isDark
                   ? <Color>[
                       cardColor,
-                      Colors.white.withValues(alpha: .03),
+                      darkSurfaceAlt,
                     ]
                   : <Color>[
                       Colors.white,
@@ -61,9 +64,9 @@ class SingleVehicleDateFilterBar extends StatelessWidget {
             border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? .18 : .07),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: isDark ? .28 : .07),
+                blurRadius: isDark ? 18 : 12,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -127,6 +130,9 @@ class SingleVehicleDateFilterBar extends StatelessWidget {
                 itemBuilder: (_) => List.generate(filterLabels.length, (i) {
                   final selected = selectedFilterIndex == i;
                   return PopupMenuItem<int>(
+                    textStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: textColor,
+                    ),
                     value: i,
                     child: Row(
                       children: [
@@ -199,6 +205,8 @@ class SingleVehicleDateRangePickerCard extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     const filterAccent = Color(0xFF2563EB);
     const filterAccentSoft = Color(0xFFEFF4FF);
+    final darkSurface = const Color(0xFF182235);
+    final darkSurfaceAlt = const Color(0xFF111A2B);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.8.w, vertical: 1.4.h),
@@ -208,18 +216,20 @@ class SingleVehicleDateRangePickerCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: isDark
               ? [
-                  Colors.white.withValues(alpha: .08),
-                  Colors.white.withValues(alpha: .04),
+                  darkSurface,
+                  darkSurfaceAlt,
                 ]
               : [AppColors.white, Colors.grey.shade50],
         ),
         borderRadius: BorderRadius.circular(14.sp),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: .14) : Colors.black12,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? .18 : .07),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? .28 : .07),
+            blurRadius: isDark ? 18 : 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -357,11 +367,13 @@ class _RangePickerTile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 2.2.w, vertical: .75.h),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: .05)
-              : Colors.grey.shade50,
+          color: isDark ? const Color(0xFF0F1725) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: filterAccent.withValues(alpha: .32)),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: .12)
+                : filterAccent.withValues(alpha: .32),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

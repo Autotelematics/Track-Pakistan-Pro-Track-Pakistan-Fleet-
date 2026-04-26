@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:trackerapp/l10n/app_localizations.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
+import 'package:trackerapp/l10n/app_localizations.dart';
 import 'package:trackerapp/providers/alerts_provider.dart';
 import 'package:trackerapp/providers/contact_us_provider.dart';
 import 'package:trackerapp/providers/dashboard_layout_provider.dart';
@@ -76,9 +76,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await _ensureFirebaseInitialized();
   final hasVisibleNotification =
       (message.notification?.title ?? '').trim().isNotEmpty ||
-      (message.notification?.body ?? '').trim().isNotEmpty;
+          (message.notification?.body ?? '').trim().isNotEmpty;
   final hasUsableData = message.data.entries.any(
-    (entry) => entry.key.trim().isNotEmpty && entry.value.toString().trim().isNotEmpty,
+    (entry) =>
+        entry.key.trim().isNotEmpty && entry.value.toString().trim().isNotEmpty,
   );
   if (!hasVisibleNotification && !hasUsableData) {
     return;

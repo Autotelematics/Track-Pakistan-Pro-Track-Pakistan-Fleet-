@@ -399,6 +399,8 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                   child: SingleVehicleHistoryScreen(
                     deviceId: widget.deviceId,
                     deviceTitle: widget.deviceName,
+                    initialKmPerLiter: widget.initialKmPerLiter,
+                    initialEngineType: widget.initialEngineType,
                     initialLivePosition: (widget.initialLiveLat != null &&
                             widget.initialLiveLng != null &&
                             widget.initialLiveLat != 0 &&

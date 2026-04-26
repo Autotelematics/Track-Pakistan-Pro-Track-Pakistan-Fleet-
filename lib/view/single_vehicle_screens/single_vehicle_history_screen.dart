@@ -27,6 +27,8 @@ class SingleVehicleHistoryScreen extends StatefulWidget {
   final String? initialLiveStatus;
   final DateTime? initialFromDateTime;
   final DateTime? initialToDateTime;
+  final String? initialKmPerLiter;
+  final String? initialEngineType;
 
   const SingleVehicleHistoryScreen({
     super.key,
@@ -36,6 +38,8 @@ class SingleVehicleHistoryScreen extends StatefulWidget {
     this.initialLiveStatus,
     this.initialFromDateTime,
     this.initialToDateTime,
+    this.initialKmPerLiter,
+    this.initialEngineType,
   });
 
   @override
@@ -224,6 +228,8 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
           toDate: toDate,
           toTime: toTime,
           snapToRoad: false,
+          fallbackAveragePerLiter: widget.initialKmPerLiter,
+          fallbackEngineType: widget.initialEngineType,
         );
   }
 

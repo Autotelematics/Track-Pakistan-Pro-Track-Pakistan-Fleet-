@@ -15,6 +15,7 @@ import 'package:trackerapp/utils/session_guard.dart';
 
 class VehicleTrackingProvider extends ChangeNotifier {
   static const bool _kEnableMotionDebugLogs = false;
+  static const bool _kEnableAnimationDebugLogs = true;
 
   final GetDeviceLiveTrackingRepository repository =
       GetDeviceLiveTrackingRepository();
@@ -459,6 +460,10 @@ class VehicleTrackingProvider extends ChangeNotifier {
         // end-points and waiting for the configured duration between them.
         const int tailToTailMs = _pollIntervalSeconds * 1000;
         _markerAnimationDurationMs = tailToTailMs;
+        _animationLog(
+          'tail-start from=tail[-2] to=tail[-1] durationMs=$tailToTailMs '
+          'speed=$speed',
+        );
         await Future<void>.delayed(const Duration(milliseconds: 30));
         if (_isDisposed) return false;
         deviceLat = lat2;
@@ -471,6 +476,10 @@ class VehicleTrackingProvider extends ChangeNotifier {
         if (lat2 != liveLat || lng2 != liveLng) {
           final endRotation = liveCourse == 0.0 ? tailBearing : liveCourse;
           _markerAnimationDurationMs = 900;
+          _animationLog(
+            'tail-finish from=tail[-1] to=live durationMs=900 '
+            'fromLat=$lat2 fromLng=$lng2 toLat=$liveLat toLng=$liveLng',
+          );
           await Future<void>.delayed(const Duration(milliseconds: 30));
           if (_isDisposed) return false;
           deviceLat = liveLat;
@@ -575,8 +584,29 @@ class VehicleTrackingProvider extends ChangeNotifier {
     final shouldAnimateOnRefresh =
         isRefresh && (status == 'online' || speed > 0 || distanceMeters >= 15);
     if (shouldAnimateOnRefresh) {
+      final isDuplicateZeroDistanceRefresh =
+          timeDiffSeconds == 0 &&
+          distanceMeters < 1.2 &&
+          (deviceRotation - course).abs() < 0.1 &&
+          deviceSpeed == speed;
+      if (isDuplicateZeroDistanceRefresh) {
+        _animationLog(
+          'refresh-skip duplicate-zero-distance '
+          'packetGapSec=$timeDiffSeconds distanceM=${distanceMeters.toStringAsFixed(2)} '
+          'lat=${lat.toStringAsFixed(6)} lng=${lng.toStringAsFixed(6)} '
+          'course=${course.toStringAsFixed(1)} speed=$speed status=$status',
+        );
+        return;
+      }
+
       int durationMs;
-      if (timeDiffSeconds > 0 && timeDiffSeconds <= 40) {
+      if (timeDiffSeconds >= 10 && timeDiffSeconds <= 15) {
+        durationMs = 12000;
+      } else if (timeDiffSeconds > 15 && timeDiffSeconds <= 25) {
+        durationMs = 20000;
+      } else if (timeDiffSeconds > 25) {
+        durationMs = 30000;
+      } else if (timeDiffSeconds > 0 && timeDiffSeconds < 10) {
         durationMs = timeDiffSeconds * 1000;
       } else {
         // Late packet fallback: derive a longer smooth duration from distance
@@ -586,8 +616,16 @@ class VehicleTrackingProvider extends ChangeNotifier {
             timeDiffSeconds > 0 ? (timeDiffSeconds * 220) : 3000;
         durationMs = max(byDistanceMs, byTimeGapMs);
       }
-      durationMs = durationMs.clamp(700, 12000);
+      durationMs = durationMs.clamp(700, 30000);
       _markerAnimationDurationMs = durationMs;
+      _animationLog(
+        'refresh-start packetGapSec=$timeDiffSeconds durationMs=$durationMs '
+        'distanceM=${distanceMeters.toStringAsFixed(2)} '
+        'fromLat=${deviceLat.toStringAsFixed(6)} fromLng=${deviceLng.toStringAsFixed(6)} '
+        'toLat=${lat.toStringAsFixed(6)} toLng=${lng.toStringAsFixed(6)} '
+        'fromCourse=${deviceRotation.toStringAsFixed(1)} toCourse=${course.toStringAsFixed(1)} '
+        'speed=$speed status=$status',
+      );
       _motionLog(
         'refresh animate decision distanceM=${distanceMeters.toStringAsFixed(2)} '
         'durationMs=$durationMs shouldAnimate=$shouldAnimateOnRefresh',
@@ -885,6 +923,12 @@ class VehicleTrackingProvider extends ChangeNotifier {
     if (!kDebugMode || !_kEnableMotionDebugLogs) return;
     final id = _activeDeviceId?.toString() ?? '-';
     debugPrint('[SVT][device:$id] $message');
+  }
+
+  void _animationLog(String message) {
+    if (!kDebugMode || !_kEnableAnimationDebugLogs) return;
+    final id = _activeDeviceId?.toString() ?? '-';
+    debugPrint('[SVT-ANIM][device:$id] $message');
   }
 
   void stopPeriodicRefresh() {

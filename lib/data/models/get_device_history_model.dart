@@ -71,6 +71,7 @@ class Device {
 }
 
 class HistorySummary {
+  final double distanceSum;
   final String totalDistance;
   final String topSpeed;
   final String moveDuration;
@@ -81,6 +82,7 @@ class HistorySummary {
   final FuelSpent fuelSpent;
 
   HistorySummary({
+    required this.distanceSum,
     required this.totalDistance,
     required this.topSpeed,
     required this.moveDuration,
@@ -92,6 +94,7 @@ class HistorySummary {
   });
 
   factory HistorySummary.fromJson(Map<String, dynamic> json) => HistorySummary(
+    distanceSum: _asDouble(json["distance_sum"]),
     totalDistance: _asString(json["Total Distance"]),
     topSpeed: _asString(json["Top Speed"]),
     moveDuration: _asString(json["Move Duration"]),
@@ -107,6 +110,7 @@ class HistorySummary {
   );
 
   Map<String, dynamic> toJson() => {
+    "distance_sum": distanceSum,
     "Total Distance": totalDistance,
     "Top Speed": topSpeed,
     "Move Duration": moveDuration,
