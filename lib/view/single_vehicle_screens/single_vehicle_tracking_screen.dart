@@ -46,6 +46,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   String? _loadingMarkerIconKey;
   BitmapDescriptor? _activeMarkerIcon;
+  String? _activeMarkerIconKey;
   bool get _useFlatVehicleMarker =>
       defaultTargetPlatform == TargetPlatform.android;
   @override
@@ -342,6 +343,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     final cached = _markerIconCache[key];
     if (cached != null) {
       _activeMarkerIcon = cached;
+      _activeMarkerIconKey = key;
       return;
     }
 
@@ -357,6 +359,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       _loadingMarkerIconKey = null;
       setState(() {
         _activeMarkerIcon = icon;
+        _activeMarkerIconKey = key;
       });
     }).catchError((_) {
       if (!mounted || _isDisposing) return;
@@ -415,19 +418,27 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
               vehicleType: vehicleType,
               markerLogicalHeight: markerLogicalHeight,
             );
-
-            final targetMarker = Marker(
-              markerId: const MarkerId("vehicle"),
-              position: pos,
-              rotation: prov.course,
-              flat: _useFlatVehicleMarker,
-              anchor: const Offset(0.5, 0.5),
-              zIndexInt: 1,
-              icon: _activeMarkerIcon ??
-                  BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueAzure,
-                  ),
+            final markerIconKey = _markerIconCacheKey(
+              status: markerMotionStatus,
+              vehicleType: vehicleType,
+              markerLogicalHeight: markerLogicalHeight,
             );
+            final markerIcon = _markerIconCache[markerIconKey] ??
+                (_activeMarkerIconKey == markerIconKey
+                    ? _activeMarkerIcon
+                    : null);
+
+            final targetMarker = markerIcon == null
+                ? null
+                : Marker(
+                    markerId: const MarkerId("vehicle"),
+                    position: pos,
+                    rotation: prov.course,
+                    flat: _useFlatVehicleMarker,
+                    anchor: const Offset(0.5, 0.5),
+                    zIndexInt: 1,
+                    icon: markerIcon,
+                  );
             final userPosition = prov.userPosition;
             final userMarker = userPosition == null
                 ? null
@@ -444,7 +455,9 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                   );
 
             final mapWidget = AnimatedMarker(
-              animatedMarkers: {targetMarker},
+              animatedMarkers: {
+                if (targetMarker != null) targetMarker,
+              },
               staticMarkers: {
                 ...prov.rulerMarkers,
                 if (userMarker != null) userMarker,
