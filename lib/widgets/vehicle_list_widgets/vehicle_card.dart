@@ -371,7 +371,6 @@ class VehicleCard extends StatelessWidget {
                         verticalSpace(height: .5.h),
                         SizedBox(
                           width: 25.w,
-                          height: 11.6.h,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -379,10 +378,9 @@ class VehicleCard extends StatelessWidget {
                                 opacity: isBlocked ? 0.40 : 1,
                                 child: Transform.scale(
                                   scale: 1.4,
-                                  child: FittedBox(
-                                    fit: BoxFit.contain,
-                                    child: vehicleImage,
-                                  ),
+                                  child: SizedBox(
+                                      height: 26.w,
+                                      child: vehicleImage),
                                 ),
                               ),
                               if (isBlocked)
@@ -391,8 +389,8 @@ class VehicleCard extends StatelessWidget {
                                   children: [
                                     SvgPicture.asset(
                                       'assets/images/lock.svg',
-                                      width: 20.2.w,
-                                      height: 20.2.w,
+                                      width: 20.w,
+                                      height: 20.w,
                                       colorFilter: const ColorFilter.mode(
                                         Color.fromARGB(255, 255, 86, 86),
                                         BlendMode.srcIn,
@@ -402,8 +400,8 @@ class VehicleCard extends StatelessWidget {
                                     Text(
                                       context.l10n.engineKilled,
                                       style:
-                                          AppStyles.semiboldTextStyle(context)
-                                              .copyWith(
+                                      AppStyles.semiboldTextStyle(context)
+                                          .copyWith(
                                         fontSize: (10.8 * textScale).sp,
                                         color: theme.colorScheme.onSurface
                                             .withValues(alpha: .65),
