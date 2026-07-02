@@ -117,6 +117,8 @@ class _NewDashboardState extends State<NewDashboard>
                         currentTime: provider.getTimePeriod(),
                         data1: data1,
                       ),
+
+                      /// Scrollable Part of Dashboard Screen
                       Expanded(
                         child: SingleChildScrollView(
                           padding: EdgeInsets.zero,
@@ -190,15 +192,13 @@ class _NewDashboardState extends State<NewDashboard>
       'maintenance_analytics': MaintenanceAnalyticsCard(data: data1),
       'local_reminder': const LocalReminderCard(),
       'fuel_price': FuelPriceCard(data: data1),
-      'history_pair': historyData != null
-          ? Column(
+      'history_pair': Column(
               children: [
                 DistanceTravelledCard(historyData: historyData),
                 verticalSpace(height: 1.h),
                 TopSpeedCard(historyData: historyData),
               ],
-            )
-          : const _HistoryCardsLoadingPlaceholder(),
+            ),
       'offline_24h': OfflineOver24hCard(
         vehicles: provider.offlineVehiclesOver24h,
       ),
@@ -565,7 +565,7 @@ class _DashboardShimmer extends StatelessWidget {
               ],
             ),
           ),
-          // Greeting
+          ///Greeting
           Container(
             margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 1.h),
             decoration: BoxDecoration(
@@ -583,12 +583,14 @@ class _DashboardShimmer extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          // Scrollable Content
+
+          /// Scrollable Content
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
+
                   // Alert Grid Placeholder
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 6.w),
@@ -612,7 +614,7 @@ class _DashboardShimmer extends StatelessWidget {
                     ),
                   ),
                   verticalSpace(height: 2.h),
-                  // Maintenance Card Placeholder
+                  /// Maintenance Card Placeholder
                   Container(
                     height: 15.h,
                     margin: EdgeInsets.symmetric(horizontal: 6.w),
@@ -622,7 +624,7 @@ class _DashboardShimmer extends StatelessWidget {
                     ),
                   ),
                   verticalSpace(height: 2.h),
-                  // Distance Travelled Card Placeholder
+                  ///Distance Travelled Card Placeholder
                   Container(
                     height: 20.h,
                     margin: EdgeInsets.symmetric(horizontal: 6.w),
@@ -632,7 +634,7 @@ class _DashboardShimmer extends StatelessWidget {
                     ),
                   ),
                   verticalSpace(height: 2.h),
-                  // Fuel Price Card Placeholder
+                  /// Fuel Price Card Placeholder
                   Container(
                     height: 15.h,
                     margin: EdgeInsets.symmetric(horizontal: 6.w),

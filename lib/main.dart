@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,7 @@ import 'providers/theme_provider.dart';
 import 'providers/vehicle_list_provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
+GlobalKey<ScaffoldMessengerState>();
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<FirebaseApp> _ensureFirebaseInitialized() async {
@@ -75,11 +74,20 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await LocalNotificationService.instance.init(requestPermissions: false);
   await _ensureFirebaseInitialized();
   final hasVisibleNotification =
-      (message.notification?.title ?? '').trim().isNotEmpty ||
-          (message.notification?.body ?? '').trim().isNotEmpty;
+      (message.notification?.title ?? '')
+          .trim()
+          .isNotEmpty ||
+          (message.notification?.body ?? '')
+              .trim()
+              .isNotEmpty;
   final hasUsableData = message.data.entries.any(
-    (entry) =>
-        entry.key.trim().isNotEmpty && entry.value.toString().trim().isNotEmpty,
+        (entry) =>
+    entry.key
+        .trim()
+        .isNotEmpty && entry.value
+        .toString()
+        .trim()
+        .isNotEmpty,
   );
   if (!hasVisibleNotification && !hasUsableData) {
     return;
@@ -239,12 +247,12 @@ class MyApp extends StatelessWidget {
         reminderProvider != null
             ? ChangeNotifierProvider.value(value: reminderProvider!)
             : ChangeNotifierProvider(
-                create: (_) {
-                  final provider = ReminderProvider();
-                  provider.initialize();
-                  return provider;
-                },
-              ),
+          create: (_) {
+            final provider = ReminderProvider();
+            provider.initialize();
+            return provider;
+          },
+        ),
       ],
       child: ResponsiveSizer(
         builder: (context, orientation, screenType) {
@@ -267,8 +275,9 @@ class MyApp extends StatelessWidget {
                 darkTheme: _buildDarkTheme(),
                 themeMode: themeProvider.themeMode,
                 home: SplashScreen(),
-                builder: (context, child) => _ReminderTapListener(
-                    child: child ?? const SizedBox.shrink()),
+                builder: (context, child) =>
+                    _ReminderTapListener(
+                        child: child ?? const SizedBox.shrink()),
               );
             },
           );
@@ -342,6 +351,7 @@ class MyApp extends StatelessWidget {
 
 class _ReminderTapListener extends StatefulWidget {
   final Widget child;
+
   const _ReminderTapListener({required this.child});
 
   @override

@@ -165,7 +165,7 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                             Text(
                               l10n.reset,
                               style:
-                                  AppStyles.semiboldTextStyle(context).copyWith(
+                              AppStyles.semiboldTextStyle(context).copyWith(
                                 fontSize: 13.5.sp,
                                 color: Colors.white.withValues(alpha: .9),
                               ),
@@ -185,89 +185,89 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
             child: _isCollapsed
                 ? const SizedBox.shrink()
                 : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      verticalSpace(height: 1.1.h),
-                      if (widget.compactMode) verticalSpace(height: .2.h),
-                      Text(
-                        l10n.searchByVehicleAndType,
-                        style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 12.sp,
-                          color: Colors.white.withValues(alpha: .82),
-                        ),
-                      ),
-                      verticalSpace(height: .55.h),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _DropdownBox(
-                              hint: l10n.vehicleLabel,
-                              items: widget.vehicles,
-                              selectedValue: widget.selectedVehicle,
-                              icon: Icons.directions_car_rounded,
-                              onChanged: widget.onVehicleChanged,
-                              iconColor: iconColor,
-                              backgroundColor: backgroundColor,
-                            ),
-                          ),
-                          SizedBox(width: 1.8.w),
-                          Expanded(
-                            child: _DropdownBoxWithCount(
-                              hint: l10n.typeLabel,
-                              items: widget.alertTypes,
-                              counts: widget.alertCounts,
-                              selectedValue: widget.selectedAlertType,
-                              icon: Icons.notifications_active_outlined,
-                              onChanged: widget.onAlertTypeChanged,
-                              iconColor: iconColor,
-                              backgroundColor: backgroundColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      verticalSpace(height: widget.compactMode ? .75.h : 1.0.h),
-                      Text(
-                        l10n.searchByDateRange,
-                        style: AppStyles.regularTextStyle(context).copyWith(
-                          fontSize: 12.sp,
-                          color: Colors.white.withValues(alpha: .82),
-                        ),
-                      ),
-                      verticalSpace(height: widget.compactMode ? .4.h : .55.h),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _DateTile(
-                              label: widget.fromDateLabel ?? 'From Date',
-                              icon: Icons.event,
-                              iconColor: iconColor,
-                              backgroundColor: backgroundColor,
-                              onTap: widget.onFromDateTap,
-                              isDark: isDark,
-                            ),
-                          ),
-                          SizedBox(width: 1.8.w),
-                          Expanded(
-                            child: _DateTile(
-                              label: widget.toDateLabel ?? 'To Date',
-                              icon: Icons.event_available,
-                              iconColor: iconColor,
-                              backgroundColor: backgroundColor,
-                              onTap: widget.onToDateTap,
-                              isDark: isDark,
-                            ),
-                          ),
-                          SizedBox(width: 1.8.w),
-                          _QuickFilterButton(
-                            selectedPreset: widget.selectedPreset,
-                            onPresetSelected: widget.onPresetSelected,
-                            isDark: isDark,
-                          ),
-                        ],
-                      ),
-                      verticalSpace(height: sectionGap),
-                    ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                verticalSpace(height: 1.1.h),
+                if (widget.compactMode) verticalSpace(height: .2.h),
+                Text(
+                  l10n.searchByVehicleAndType,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 12.sp,
+                    color: Colors.white.withValues(alpha: .82),
                   ),
+                ),
+                verticalSpace(height: .55.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DropdownBox(
+                        hint: l10n.vehicleLabel,
+                        items: widget.vehicles,
+                        selectedValue: widget.selectedVehicle,
+                        icon: Icons.directions_car_rounded,
+                        onChanged: widget.onVehicleChanged,
+                        iconColor: iconColor,
+                        backgroundColor: backgroundColor,
+                      ),
+                    ),
+                    SizedBox(width: 1.8.w),
+                    Expanded(
+                      child: _DropdownBoxWithCount(
+                        hint: l10n.typeLabel,
+                        items: widget.alertTypes,
+                        counts: widget.alertCounts,
+                        selectedValue: widget.selectedAlertType,
+                        icon: Icons.notifications_active_outlined,
+                        onChanged: widget.onAlertTypeChanged,
+                        iconColor: iconColor,
+                        backgroundColor: backgroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+                verticalSpace(height: widget.compactMode ? .75.h : 1.0.h),
+                Text(
+                  l10n.searchByDateRange,
+                  style: AppStyles.regularTextStyle(context).copyWith(
+                    fontSize: 12.sp,
+                    color: Colors.white.withValues(alpha: .82),
+                  ),
+                ),
+                verticalSpace(height: widget.compactMode ? .4.h : .55.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DateTile(
+                        label: widget.fromDateLabel ?? 'From Date',
+                        icon: Icons.event,
+                        iconColor: iconColor,
+                        backgroundColor: backgroundColor,
+                        onTap: widget.onFromDateTap,
+                        isDark: isDark,
+                      ),
+                    ),
+                    SizedBox(width: 1.8.w),
+                    Expanded(
+                      child: _DateTile(
+                        label: widget.toDateLabel ?? 'To Date',
+                        icon: Icons.event_available,
+                        iconColor: iconColor,
+                        backgroundColor: backgroundColor,
+                        onTap: widget.onToDateTap,
+                        isDark: isDark,
+                      ),
+                    ),
+                    SizedBox(width: 1.8.w),
+                    _QuickFilterButton(
+                      selectedPreset: widget.selectedPreset,
+                      onPresetSelected: widget.onPresetSelected,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+                verticalSpace(height: sectionGap),
+              ],
+            ),
           ),
         ],
       ),
@@ -320,8 +320,8 @@ class _QuickFilterButton extends StatelessWidget {
           border: Border.all(
             color: selectedPreset == null
                 ? (isDark
-                    ? Colors.white.withValues(alpha: .14)
-                    : Colors.black.withValues(alpha: .08))
+                ? Colors.white.withValues(alpha: .14)
+                : Colors.black.withValues(alpha: .08))
                 : AppColors.red.withValues(alpha: .75),
           ),
           boxShadow: [
@@ -431,6 +431,16 @@ class _DropdownBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Create ValueNotifier for the selected value
+    final selectedValueNotifier = ValueNotifier<String?>(selectedValue);
+
+    // Update notifier when external value changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (selectedValueNotifier.value != selectedValue) {
+        selectedValueNotifier.value = selectedValue;
+      }
+    });
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -446,7 +456,7 @@ class _DropdownBox extends StatelessWidget {
       child: DropdownButtonHideUnderline(
         child: DropdownButton2<String>(
           isExpanded: true,
-          value: selectedValue,
+          valueListenable: selectedValueNotifier, // Changed from value
           hint: Row(
             children: [
               Icon(icon, color: iconColor, size: 19.sp),
@@ -461,35 +471,43 @@ class _DropdownBox extends StatelessWidget {
             ],
           ),
           items: items
-              .map((item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(
-                      item,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyles.lightTextStyle(context).copyWith(
-                        color: isDark ? Colors.white : Colors.black87,
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ))
+              .map((item) => DropdownItem<String>( // Changed from DropdownMenuItem
+            value: item,
+            height: 4.5.h, // Moved height here
+            child: Text(
+              item,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.lightTextStyle(context).copyWith(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 14.sp,
+              ),
+            ),
+          ))
               .toList(),
           selectedItemBuilder: (context) => items
               .map(
                 (item) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    item,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppStyles.lightTextStyle(context).copyWith(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 14.sp,
-                    ),
-                  ),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                item,
+                overflow: TextOverflow.ellipsis,
+                style: AppStyles.lightTextStyle(context).copyWith(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 14.sp,
                 ),
-              )
+              ),
+            ),
+          )
               .toList(),
-          onChanged: onChanged,
-          buttonStyleData: ButtonStyleData(height: 4.5.h),
+          onChanged: (newValue) {
+            if (newValue == null) return;
+            selectedValueNotifier.value = newValue; // Update notifier
+            if (onChanged != null) onChanged?.call(newValue); // Call parent callback
+          },
+          buttonStyleData: ButtonStyleData(
+            height: 4.5.h,
+            // width can be added here if needed
+          ),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
             offset: const Offset(0, -4),
@@ -508,6 +526,10 @@ class _DropdownBox extends StatelessWidget {
                 size: 18.sp,
               ),
             ),
+          ),
+          menuItemStyleData: MenuItemStyleData(
+            // height removed from here
+            padding: EdgeInsets.symmetric(horizontal: 1.w), // Optional: add padding if needed
           ),
         ),
       ),
@@ -542,9 +564,19 @@ class _DropdownBoxWithCount extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final allLabel = context.l10n.vehicleStatusAll;
 
+    // Create ValueNotifier for the selected value
+    final selectedValueNotifier = ValueNotifier<String?>(selectedValue);
+
+    // Update notifier when external value changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (selectedValueNotifier.value != selectedValue) {
+        selectedValueNotifier.value = selectedValue;
+      }
+    });
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor,
+        // color: backgroundColor,
         borderRadius: BorderRadius.circular(12.px),
         boxShadow: [
           BoxShadow(
@@ -557,7 +589,7 @@ class _DropdownBoxWithCount extends StatelessWidget {
       child: DropdownButtonHideUnderline(
         child: DropdownButton2<String>(
           isExpanded: true,
-          value: selectedValue,
+          valueListenable: selectedValueNotifier, // Changed from value
           hint: Row(
             children: [
               Icon(icon, color: iconColor, size: 19.sp),
@@ -572,63 +604,68 @@ class _DropdownBoxWithCount extends StatelessWidget {
             ],
           ),
           items: items
-              .map((item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: RichText(
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: item,
-                            style: AppStyles.lightTextStyle(context).copyWith(
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          TextSpan(
-                            text: " (${counts[item] ?? 0})",
-                            style: AppStyles.lightTextStyle(context).copyWith(
-                              color:
-                                  item == allLabel ? Colors.blue : Colors.green,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ],
-                      ),
+              .map((item) => DropdownItem<String>( // Changed from DropdownMenuItem
+            value: item,
+            height: 4.5.h, // Moved height here
+            child: RichText(
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: item,
+                    style: AppStyles.lightTextStyle(context).copyWith(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 14.sp,
                     ),
-                  ))
+                  ),
+                  TextSpan(
+                    text: " (${counts[item] ?? 0})",
+                    style: AppStyles.lightTextStyle(context).copyWith(
+                      color: item == allLabel ? Colors.blue : Colors.green,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ))
               .toList(),
           selectedItemBuilder: (context) => items
               .map(
                 (item) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: RichText(
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: item,
-                          style: AppStyles.lightTextStyle(context).copyWith(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                        TextSpan(
-                          text: " (${counts[item] ?? 0})",
-                          style: AppStyles.lightTextStyle(context).copyWith(
-                            color:
-                                item == allLabel ? Colors.blue : Colors.green,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ],
+              alignment: Alignment.centerLeft,
+              child: RichText(
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: item,
+                      style: AppStyles.lightTextStyle(context).copyWith(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 14.sp,
+                      ),
                     ),
-                  ),
+                    TextSpan(
+                      text: " (${counts[item] ?? 0})",
+                      style: AppStyles.lightTextStyle(context).copyWith(
+                        color: item == allLabel ? Colors.blue : Colors.green,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
                 ),
-              )
+              ),
+            ),
+          )
               .toList(),
-          onChanged: onChanged,
-          buttonStyleData: ButtonStyleData(height: 4.5.h),
+          onChanged: (newValue) {
+            if (newValue == null) return;
+            selectedValueNotifier.value = newValue; // Update notifier
+            if (onChanged != null) onChanged?.call(newValue); // Call parent callback
+          },
+          buttonStyleData: ButtonStyleData(
+            height: 4.5.h,
+          ),
           dropdownStyleData: DropdownStyleData(
             padding: EdgeInsets.zero,
             offset: const Offset(0, -4),
@@ -647,6 +684,10 @@ class _DropdownBoxWithCount extends StatelessWidget {
                 size: 18.sp,
               ),
             ),
+          ),
+          menuItemStyleData: MenuItemStyleData(
+            // height removed from here (now on DropdownItem)
+            padding: EdgeInsets.symmetric(horizontal: 1.w), // Optional: adjust as needed
           ),
         ),
       ),

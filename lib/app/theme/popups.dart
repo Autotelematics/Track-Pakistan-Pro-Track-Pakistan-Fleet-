@@ -3647,7 +3647,7 @@ Future<void> _launchDriverWhatsApp(String phone) async {
 
 Widget _driverActionChip({
   required BuildContext context,
-  required IconData icon,
+  required dynamic icon,
   required String label,
   required Color color,
   VoidCallback? onTap,

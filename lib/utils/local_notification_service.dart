@@ -27,7 +27,7 @@ class LocalNotificationService {
   static final LocalNotificationService instance = LocalNotificationService._();
 
   final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   final AlertsRepository _alertsRepository = AlertsRepository();
   bool _isInitialized = false;
   int? _pendingReminderId;
@@ -49,13 +49,13 @@ class LocalNotificationService {
     tzdata.initializeTimeZones();
     try {
       final localTimeZone = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(localTimeZone));
+      tz.setLocalLocation(tz.getLocation(localTimeZone.toString()));
     } catch (_) {
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
 
     const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -68,7 +68,7 @@ class LocalNotificationService {
     );
 
     await _plugin.initialize(
-      initSettings,
+     settings:  initSettings,
       onDidReceiveNotificationResponse: (response) {
         _setPendingTapFromPayload(response.payload);
         unawaited(processPendingNotificationTap());
@@ -77,21 +77,22 @@ class LocalNotificationService {
 
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
     if (requestPermissions) {
+      // ✅ Correct: Use IOSFlutterLocalNotificationsPlugin
       await _plugin
           .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
+          IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+        alert: true,
+        badge: true,
+        sound: true,
+      );
       await _plugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     }
 
@@ -104,7 +105,6 @@ class LocalNotificationService {
 
     _isInitialized = true;
   }
-
   void setNavigatorKey(GlobalKey<NavigatorState> navigatorKey) {
     _navigatorKey = navigatorKey;
   }
@@ -156,7 +156,7 @@ class LocalNotificationService {
 
     _pendingReminderId = null;
     final reminder =
-        navContext.read<ReminderProvider>().reminderById(reminderId);
+    navContext.read<ReminderProvider>().reminderById(reminderId);
     if (reminder == null) return;
     final ttsBody = reminder.description.trim().isEmpty
         ? '${reminder.type} reminder is due now'
@@ -177,9 +177,9 @@ class LocalNotificationService {
         return Dialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 26),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor:
-              isDark ? Theme.of(ctx).scaffoldBackgroundColor : Colors.white,
+          isDark ? Theme.of(ctx).scaffoldBackgroundColor : Colors.white,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
             child: Column(
@@ -446,12 +446,13 @@ class LocalNotificationService {
 
     if (reminder.repeatType == "daily") {
       final scheduled = _nextTrigger(reminder.dueAt);
+      // Updated: zonedSchedule now uses named parameters
       await _plugin.zonedSchedule(
-        reminder.id,
-        title,
-        body,
-        scheduled,
-        _details(),
+        id: reminder.id,
+        title: title,
+        body: body,
+        scheduledDate: scheduled,
+        notificationDetails: _details(),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         payload: "reminder:${reminder.id}",
         matchDateTimeComponents: DateTimeComponents.time,
@@ -470,12 +471,13 @@ class LocalNotificationService {
       }
       for (var i = 0; i < occurrences; i++) {
         final fireAt = scheduled.add(Duration(days: intervalDays * i));
+        // Updated: zonedSchedule now uses named parameters
         await _plugin.zonedSchedule(
-          _occurrenceId(reminder.id, i),
-          title,
-          body,
-          fireAt,
-          _details(),
+          id: _occurrenceId(reminder.id, i),
+          title: title,
+          body: body,
+          scheduledDate: fireAt,
+          notificationDetails: _details(),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           payload: "reminder:${reminder.id}",
         );
@@ -484,21 +486,22 @@ class LocalNotificationService {
     }
 
     final scheduled = _nextTrigger(reminder.dueAt);
+    // Updated: zonedSchedule now uses named parameters
     await _plugin.zonedSchedule(
-      reminder.id,
-      title,
-      body,
-      scheduled,
-      _details(),
+      id: reminder.id,
+      title: title,
+      body: body,
+      scheduledDate: scheduled,
+      notificationDetails: _details(),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: "reminder:${reminder.id}",
     );
   }
 
   Future<void> cancelReminder(int reminderId) async {
-    await _plugin.cancel(reminderId);
+    await _plugin.cancel(id: reminderId);
     for (var i = 0; i < 120; i++) {
-      await _plugin.cancel(_occurrenceId(reminderId, i));
+      await _plugin.cancel(id:_occurrenceId(reminderId, i));
     }
     _foregroundTtsTimers.remove(reminderId)?.cancel();
   }
@@ -509,7 +512,7 @@ class LocalNotificationService {
     for (final req in pending) {
       final payload = req.payload ?? '';
       if (payload.startsWith('reminder:')) {
-        await _plugin.cancel(req.id);
+        await _plugin.cancel(id: req.id);
       }
     }
     _pendingReminderId = null;
@@ -539,13 +542,14 @@ class LocalNotificationService {
 
     final payloadMap = _extractRemoteAlertPayload(message);
     final payload =
-        payloadMap == null ? null : 'alert:${jsonEncode(payloadMap)}';
+    payloadMap == null ? null : 'alert:${jsonEncode(payloadMap)}';
 
+    // Updated: show now uses named parameters
     await _plugin.show(
-      DateTime.now().millisecondsSinceEpoch.remainder(1 << 31),
-      resolvedTitle,
-      resolvedBody,
-      _remoteAlertDetails(iosSound: iosSound),
+      id: DateTime.now().millisecondsSinceEpoch.remainder(1 << 31),
+      title: resolvedTitle,
+      body: resolvedBody,
+      notificationDetails: _remoteAlertDetails(iosSound: iosSound),
       payload: payload,
     );
   }
@@ -619,9 +623,9 @@ class LocalNotificationService {
   String? _resolveIosSoundFile(RemoteMessage message) {
     final data = message.data;
     final explicitSound = (data['ios_sound'] ??
-            data['sound'] ??
-            data['notification_sound'] ??
-            '')
+        data['sound'] ??
+        data['notification_sound'] ??
+        '')
         .toString()
         .trim();
     if (explicitSound.isNotEmpty) {
@@ -692,10 +696,10 @@ class LocalNotificationService {
   }
 
   void _scheduleForegroundReminderTts(
-    LocalReminder reminder,
-    String title,
-    String body,
-  ) {
+      LocalReminder reminder,
+      String title,
+      String body,
+      ) {
     _foregroundTtsTimers.remove(reminder.id)?.cancel();
     final now = DateTime.now();
     final nextFire = _nextTrigger(reminder.dueAt).toLocal();

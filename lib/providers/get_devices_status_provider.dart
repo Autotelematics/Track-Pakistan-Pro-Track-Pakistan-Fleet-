@@ -12,7 +12,7 @@ import 'package:trackerapp/utils/session_guard.dart';
 class VehicleMapProvider extends ChangeNotifier {
   final VehicleRepository repository = VehicleRepository();
   bool _isDisposed = false;
-  static const double _sharedMarkerIconPx = 30.0;
+  static const double _sharedMarkerIconPx = 50.0;
   static const double _labelScale = 0.65;
   static const double _markerRenderScale = 3.0;
   static const double _clusterIconBasePx = 42.0;

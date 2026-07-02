@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:564804113447:android:eac88cbf6313b3e0292a02",
+        "android_client_info": {
+          "package_name": "com.autotel_fleet.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:564804113447:android:8ab5148038996997292a02",
         "android_client_info": {
           "package_name": "com.autotel_lite.android"
@@ -29,25 +48,6 @@
         "mobilesdk_app_id": "1:564804113447:android:ce2b61e28613f3b3292a02",
         "android_client_info": {
           "package_name": "com.autotel_platform.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:fc4c848bc82c7cce292a02",
-        "android_client_info": {
-          "package_name": "com.autotelfleet.android"
         }
       },
       "oauth_client": [],

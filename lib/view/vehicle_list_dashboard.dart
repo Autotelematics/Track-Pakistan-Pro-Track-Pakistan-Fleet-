@@ -320,7 +320,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
       height: 6.9.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 1.w, vertical: .8.h),
+        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: .8.h),
         itemCount: statuses.length,
         itemBuilder: (context, index) => StatusBox(
           statusKey: statuses[index].key,
@@ -369,7 +369,7 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
     }
     return Expanded(
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 2.6.w, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0),
         itemCount: provider.filteredVehicles.length,
         itemBuilder: (_, i) {
           final item = provider.filteredVehicles[i];

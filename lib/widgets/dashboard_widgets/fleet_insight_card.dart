@@ -101,8 +101,7 @@ class _FleetInsightCardState extends State<FleetInsightCard> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color:
-                    displayInsight.color.withValues(alpha: isDark ? .22 : .14),
+                color: displayInsight.color.withValues(alpha: isDark ? .22 : .14),
               ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,

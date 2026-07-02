@@ -10,9 +10,10 @@ import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class DistanceTravelledCard extends StatefulWidget {
-  final GetDashboardHistoryModel historyData;
 
-  const DistanceTravelledCard({super.key, required this.historyData});
+  final GetDashboardHistoryModel? historyData;
+
+  const DistanceTravelledCard({super.key,  this.historyData});
 
   @override
   State<DistanceTravelledCard> createState() => _DistanceTravelledCardState();
@@ -31,7 +32,15 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
   }
 
   void _initializeData() {
-    final topDistances = widget.historyData.summary.topDistance;
+    // ✅ ADD THIS CHECK
+    if (widget.historyData == null) {
+      _barValues = [];
+      _barLabels = [];
+      _isVisible = [];
+      return;
+    }
+
+    final topDistances = widget.historyData!.summary.topDistance;
     _barValues = topDistances.map((td) => td.distanceKm).toList();
     _barLabels = topDistances.map((td) => td.deviceName).toList();
     _isVisible = List.generate(_barValues.length, (_) => false);
@@ -65,6 +74,19 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
 
   @override
   Widget build(BuildContext context) {
+
+    // ✅ ADD THIS AT THE START
+    if (widget.historyData == null) {
+      return Container(
+        height: 20.h,
+        margin: EdgeInsets.symmetric(horizontal: 5.w),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      );
+    }
+
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
     final cardColor = theme.cardColor;
@@ -178,20 +200,20 @@ class _DistanceTravelledCardState extends State<DistanceTravelledCard> {
   }
 
   Widget _buildStatRow(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _statColumn(
-            context,
-            context.l10n.totalDistance,
-            "${widget.historyData.summary.totalDistanceKm} km",
-          ),
-          _statColumn(
-            context,
-            context.l10n.averageDistance,
-            "${widget.historyData.summary.averageDistanceKm} km",
-          ),
-        ],
-      );
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      _statColumn(
+        context,
+        context.l10n.totalDistance,
+        "${widget.historyData?.summary.totalDistanceKm ?? 0} km",  // ✅ Added null check
+      ),
+      _statColumn(
+        context,
+        context.l10n.averageDistance,
+        "${widget.historyData?.summary.averageDistanceKm ?? 0} km",  // ✅ Added null check
+      ),
+    ],
+  );
 
   Widget _statColumn(BuildContext context, String label, String value) =>
       Column(

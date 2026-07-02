@@ -59,51 +59,54 @@ class _SettingsMenuTileState extends State<SettingsMenuTile> {
         ],
       ),
       duration: const Duration(milliseconds: 400),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: Container(
-          width: 9.5.w,
-          height: 9.5.w,
-          decoration: BoxDecoration(
-            color: iconTint,
-            borderRadius: BorderRadius.circular(11),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Container(
+            width: 9.5.w,
+            height: 9.5.w,
+            decoration: BoxDecoration(
+              color: iconTint,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(widget.icon, color: tileTextColor, size: 19.sp),
           ),
-          child: Icon(widget.icon, color: tileTextColor, size: 19.sp),
+          title: Text(widget.title,
+              style: AppStyles.regularTextStyle(context).copyWith(
+                  color: tileTextColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.6.sp)),
+          trailing: widget.switchValue != null && widget.onSwitchChanged != null
+              ? Transform.scale(
+                  scale: .9,
+                  child: Switch(
+                    value: widget.switchValue ?? false,
+                    activeThumbColor: ConstantColor.primaryColor,
+                    activeTrackColor:
+                        ConstantColor.primaryColor.withValues(alpha: .45),
+                    onChanged: widget.onSwitchChanged,
+                  ),
+                )
+              : Container(
+                  width: 7.4.w,
+                  height: 7.4.w,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: AppColors.black,
+                  ),
+                ),
+          onTap: () {
+            widget.onTap();
+          },
         ),
-        title: Text(widget.title,
-            style: AppStyles.regularTextStyle(context).copyWith(
-                color: tileTextColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14.6.sp)),
-        trailing: widget.switchValue != null && widget.onSwitchChanged != null
-            ? Transform.scale(
-                scale: .9,
-                child: Switch(
-                  value: widget.switchValue ?? false,
-                  activeThumbColor: ConstantColor.primaryColor,
-                  activeTrackColor:
-                      ConstantColor.primaryColor.withValues(alpha: .45),
-                  onChanged: widget.onSwitchChanged,
-                ),
-              )
-            : Container(
-                width: 7.4.w,
-                height: 7.4.w,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.black.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: AppColors.black,
-                ),
-              ),
-        onTap: () {
-          widget.onTap();
-        },
       ),
     );
   }

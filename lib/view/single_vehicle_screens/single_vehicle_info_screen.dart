@@ -939,6 +939,17 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     final horizontalInset = 2.6.w;
     final innerWidth = fieldWidth - (horizontalInset * 2);
+
+    // Create a ValueNotifier for the selected value
+    final selectedValue = ValueNotifier<String?>(value);
+
+    // Update the notifier when value changes externally
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (selectedValue.value != value) {
+        selectedValue.value = value;
+      }
+    });
+
     return Container(
       height: 4.6.h,
       decoration: _dialogControlDecoration(isDark: isDark),
@@ -946,7 +957,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton2<String>(
           isExpanded: true,
-          value: value,
+          valueListenable: selectedValue, // Changed from value
           hint: Text(
             hintText,
             style: AppStyles.regularTextStyle(context).copyWith(
@@ -961,21 +972,23 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           ),
           items: items
               .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppStyles.regularTextStyle(context).copyWith(
-                      fontSize: 13.2.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                (item) => DropdownItem<String>( // Changed from DropdownMenuItem
+              value: item,
+              height: 4.6.h, // Moved height here
+              child: Text(
+                item,
+                overflow: TextOverflow.ellipsis,
+                style: AppStyles.regularTextStyle(context).copyWith(
+                  fontSize: 13.2.sp,
+                  fontWeight: FontWeight.w500,
                 ),
-              )
+              ),
+            ),
+          )
               .toList(),
           onChanged: (newValue) {
             if (newValue == null) return;
+            selectedValue.value = newValue; // Update the notifier
             onChanged(newValue);
           },
           buttonStyleData: ButtonStyleData(
@@ -1002,7 +1015,7 @@ class _UpdateVehicleInfoCardState extends State<_UpdateVehicleInfoCard> {
           ),
           menuItemStyleData: MenuItemStyleData(
             padding: EdgeInsets.symmetric(horizontal: 3.w),
-            height: 4.6.h,
+            // height removed from here
           ),
         ),
       ),

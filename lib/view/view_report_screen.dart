@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pdfrx/pdfrx.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:trackerapp/data/models/initial_reports.dart';
 import 'package:trackerapp/providers/get_device_reports_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,12 +33,16 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
   bool _resolvedIsImage = false;
   bool _resolvedIsHtml = false;
   Uint8List? _resolvedBytes;
+  final PdfViewerController _pdfController = PdfViewerController();
 
   @override
   void initState() {
     super.initState();
+    // Initialize pdfrx for Flutter
+    pdfrxFlutterInitialize();
     context.read<ReportTypeProvider>().generateReport(widget.reportData);
   }
+
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -51,12 +55,14 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       }
     }
   }
+
   bool _isImageUrl(String url) {
     final lowerUrl = url.toLowerCase();
     return lowerUrl.endsWith('.png') ||
         lowerUrl.endsWith('.jpg') ||
         lowerUrl.endsWith('.jpeg') ||
-        lowerUrl.endsWith('.gif');
+        lowerUrl.endsWith('.gif') ||
+        lowerUrl.endsWith('.webp');
   }
 
   bool _isHtmlContent() {
@@ -209,6 +215,52 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
           widget.reportName,
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp),
         ),
+        actions: [
+          // Zoom controls for PDF
+          if (_resolvedIsPdf && _resolvedBytes != null)
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.zoom_out, color: Colors.black),
+                  onPressed: () {
+                    // Zoom out by 0.1
+                    final currentZoom = _pdfController.currentZoom;
+                    _pdfController.setZoom(
+                      _pdfController.centerPosition,
+                      currentZoom - 0.1,
+                      duration: const Duration(milliseconds: 200),
+                    );
+                  },
+                  tooltip: 'Zoom Out',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.zoom_in, color: Colors.black),
+                  onPressed: () {
+                    // Zoom in by 0.1
+                    final currentZoom = _pdfController.currentZoom;
+                    _pdfController.setZoom(
+                      _pdfController.centerPosition, // position to zoom around
+                      currentZoom + 0.1,
+                      duration: const Duration(milliseconds: 200),
+                    );
+                  },
+                  tooltip: 'Zoom In',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.fit_screen, color: Colors.black),
+                  onPressed: () {
+                    // Fit to page - use goToPage with anchor
+                    _pdfController.goToPage(
+                      pageNumber: _pdfController.pageNumber ?? 1,
+                      anchor: PdfPageAnchor.all,
+                      duration: const Duration(milliseconds: 200),
+                    );
+                  },
+                  tooltip: 'Fit to Page',
+                ),
+              ],
+            ),
+        ],
       ),
       body: Consumer<ReportTypeProvider>(
         builder: (context, provider, _) {
@@ -264,10 +316,10 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                   await _launchURL(url);
                   await Future.delayed(const Duration(milliseconds: 500));
                   if (!mounted) return;
-                  Navigator.pop(this.context);
+                  Navigator.pop(context);
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(this.context).showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to open report: $e')),
                   );
                   setState(() => _hasLaunchedBrowser = false);
@@ -307,10 +359,10 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                   await _launchURL(url);
                   await Future.delayed(const Duration(seconds: 1));
                   if (!mounted) return;
-                  Navigator.pop(this.context);
+                  Navigator.pop(context);
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(this.context).showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to open browser: $e')),
                   );
                   setState(() {
@@ -387,7 +439,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
               setState(() => _hasLaunchedBrowser = true);
               await _launchURL(url);
               if (!mounted) return;
-              Navigator.pop(this.context);
+              Navigator.pop(context);
             });
           }
 
@@ -398,17 +450,17 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                 Center(
                   child: _resolvedBytes != null
                       ? Image.memory(
-                          _resolvedBytes!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => Center(
-                            child: Text(
-                              'Failed to load image',
-                              style: TextStyle(fontSize: 14.sp, color: Colors.red),
-                            ),
-                          ),
-                        )
+                    _resolvedBytes!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Text(
+                        'Failed to load image',
+                        style: TextStyle(fontSize: 14.sp, color: Colors.red),
+                      ),
+                    ),
+                  )
                       : Image.network(
-                          url,
+                    url,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => Center(
                       child: Text(
@@ -458,7 +510,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                   Text(
                     'Unsupported report format',
                     style:
-                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -475,23 +527,18 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
             );
           }
 
-          // Default: PDF viewer
+          // PDF viewer using pdfrx - use PdfViewer.data with sourceName
           return Stack(
             alignment: Alignment.topCenter,
             children: [
-              SfPdfViewer.memory(
+              PdfViewer.data(
                 _resolvedBytes!,
-                initialZoomLevel: 0,
-                pageSpacing: 0,
-                enableDoubleTapZooming: true,
-                pageLayoutMode: PdfPageLayoutMode.continuous,
-                onDocumentLoadFailed: (details) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to load PDF: ${details.description}'),
-                    ),
-                  );
-                },
+                controller: _pdfController,
+                sourceName: 'report.pdf', // Required parameter
+                params: const PdfViewerParams(
+                  backgroundColor: Colors.white,
+                  margin: 0,
+                ),
               ),
               Positioned(
                 top: 3.h,

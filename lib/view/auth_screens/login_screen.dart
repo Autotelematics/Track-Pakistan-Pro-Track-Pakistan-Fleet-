@@ -6,6 +6,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/providers/auth_provider.dart';
+import 'package:trackerapp/providers/motion_bottom_bar_provider.dart';
 import 'package:trackerapp/utils/app_loading.dart';
 import 'package:trackerapp/utils/app_validators.dart';
 import 'package:trackerapp/white_labeling/colors.dart';
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _onLoginPressed(BuildContext context) {
     if (_formKey.currentState!.validate()) {
+      context.read<MotionBottomBarProvider>().setIndex(2);
       _authProvider.loginProvider(
         context: context,
         email: _emailController.text.trim(),

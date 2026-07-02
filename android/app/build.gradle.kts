@@ -11,19 +11,19 @@ plugins {
 
 android {
     compileSdk = 36
+
     ndkVersion = if (extra.has("flutter.ndkVersion")) {
         extra["flutter.ndkVersion"] as String
     } else {
         "29.0.13599879"
     }
 
-    namespace = "com.autotelfleet.android"
+    namespace = "com.autotel_fleet.android"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
-
     }
 
     sourceSets {
@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.autotelfleet.android"
+        applicationId = "com.autotel_fleet.android"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = System.getenv("FLUTTER_VERSION_CODE")?.toIntOrNull() ?: 1
@@ -41,48 +41,45 @@ android {
         multiDexEnabled = true
     }
 
-    var hasValidReleaseSigning = false
+    // Load keystore
+    val keystoreProperties = Properties()
+    val keystorePropertiesFile = rootProject.file("key.properties")
+
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
 
     signingConfigs {
         create("release") {
-            val keystorePropertiesFile = file("key.properties")
-            if (keystorePropertiesFile.exists()) {
-                val properties = Properties().apply {
-                    load(FileInputStream(keystorePropertiesFile))
-                }
-                val storeFilePath = properties["storeFile"] as? String
-                val resolvedStoreFile = if (storeFilePath.isNullOrBlank()) null else file(storeFilePath)
+            val keystorePropertiesFile = rootProject.file("key.properties")
 
-                if (resolvedStoreFile != null && resolvedStoreFile.exists()) {
-                    keyAlias = properties["keyAlias"] as String
-                    keyPassword = properties["keyPassword"] as String
-                    storeFile = resolvedStoreFile
-                    storePassword = properties["storePassword"] as String
-                    hasValidReleaseSigning = true
-                } else {
-                    println("⚠️ Warning: Release keystore file not found at '$storeFilePath'. Building unsigned release APK.")
-                }
+            if (keystorePropertiesFile.exists()) {
+                val properties = Properties()
+                properties.load(FileInputStream(keystorePropertiesFile))
+
+                storeFile = file(properties["storeFile"] as String)
+                keyAlias = properties["keyAlias"] as String
+                keyPassword = properties["keyPassword"] as String
+                storePassword = properties["storePassword"] as String
             } else {
-                println("⚠️ Warning: key.properties file not found. Building unsigned release APK.")
+                throw GradleException("key.properties not found")
             }
         }
     }
-
 
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
             isShrinkResources = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasValidReleaseSigning) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+
+            signingConfig = signingConfigs.getByName("release")
         }
     }
-
 }
 
 kotlin {

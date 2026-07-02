@@ -86,7 +86,7 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 335;
+        final isCompact = constraints.maxWidth < 320;
         final chartSize = isCompact ? 14.6.h : 16.2.h;
         return Container(
           padding: EdgeInsets.symmetric(
@@ -111,8 +111,8 @@ class _VehicleSummaryCardState extends State<VehicleSummaryCard>
                 ),
             ],
           ),
-          child: isCompact
-              ? Column(
+          child:
+          isCompact ? Column(
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,

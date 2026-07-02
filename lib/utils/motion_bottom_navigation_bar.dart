@@ -144,7 +144,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
         Provider.of<MotionBottomBarProvider>(context, listen: false);
     _bottomBarProvider = provider;
     _tabs = const [];
-    final initialIndex = _safeTabIndex(provider.currentIndex, 5);
+    final initialIndex = _safeTabIndex(provider.currentIndex, 2);
     _tabController = TabController(
       initialIndex: initialIndex,
       length: 5,
@@ -358,6 +358,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 tab.icon,
@@ -366,7 +367,7 @@ class _MotionBottomNavigationBarState extends State<MotionBottomNavigationBar>
                                     ? ConstantColor.primaryColor
                                     : AppColors.white,
                               ),
-                              SizedBox(height: isHighResPortrait ? 6 : 4),
+                              //SizedBox(height: isHighResPortrait ? 6 : 4),
                               SizedBox(
                                 width: double.infinity,
                                 child: FittedBox(

@@ -117,7 +117,7 @@ class ContactGrid extends StatelessWidget {
 }
 
 class _ContactTile extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String label;
   final Color color;
   final VoidCallback onTap;

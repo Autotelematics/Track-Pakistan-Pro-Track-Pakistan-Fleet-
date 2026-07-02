@@ -9,8 +9,8 @@ import 'package:trackerapp/widgets/get_horizontal_space.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 
 class TopSpeedCard extends StatefulWidget {
-  final GetDashboardHistoryModel historyData;
-  const TopSpeedCard({super.key, required this.historyData});
+  final GetDashboardHistoryModel? historyData;
+  const TopSpeedCard({super.key,  this.historyData});
   @override
   State<TopSpeedCard> createState() => _TopSpeedCardState();
 }
@@ -22,14 +22,14 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
   void initState() {
     super.initState();
     _visibleBars = List.generate(
-      widget.historyData.summary.topSpeeds.length,
-      (_) => false,
+      widget.historyData?.summary.topSpeeds.length ?? 0,  // ✅ Added ?
+          (_) => false,
     );
     _animateBars();
   }
 
   void _animateBars() {
-    for (int i = 0; i < _visibleBars.length; i++) {
+    for (int i = 0; i < (_visibleBars.length); i++) {
       Timer(Duration(milliseconds: i * 300), () {
         if (mounted) {
           setState(() => _visibleBars[i] = true);
@@ -40,10 +40,23 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (widget.historyData == null) {
+      return Container(
+        height: 17.h,
+        margin: EdgeInsets.symmetric(horizontal: 5.w),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      );
+    }
+
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
-    final topSpeeds = widget.historyData.summary.topSpeeds;
+    final topSpeeds = widget.historyData!.summary.topSpeeds;
     if (topSpeeds.isEmpty) return const SizedBox.shrink();
     final maxSpeed = _getMaxSpeed(topSpeeds);
     final observedMaxSpeed = _getObservedMaxSpeed(topSpeeds);
@@ -235,6 +248,21 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
           verticalSpace(height: 0.7.h),
           LayoutBuilder(
             builder: (context, constraints) {
+              // Prevent RangeError when index is out of range
+              final bool isVisible =
+                  index >= 0 &&
+                      index < _visibleBars.length &&
+                      _visibleBars[index];
+
+              // Ensure gradient always has at least 2 colors
+              final List<Color> safeGradient =
+              gradient.length >= 2
+                  ? gradient
+                  : [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withOpacity(0.7),
+              ];
+
               return Stack(
                 children: [
                   Container(
@@ -248,19 +276,19 @@ class _TopSpeedCardState extends State<TopSpeedCard> {
                     duration: const Duration(milliseconds: 700),
                     curve: Curves.easeOutCubic,
                     height: 1.45.h,
-                    width: _visibleBars[index]
-                        ? constraints.maxWidth * percent
+                    width: isVisible
+                        ? constraints.maxWidth * percent.clamp(0.0, 1.0)
                         : 0,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: gradient,
+                        colors: safeGradient,
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: gradient.last.withValues(alpha: 0.30),
+                          color: safeGradient.last.withValues(alpha: 0.30),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),

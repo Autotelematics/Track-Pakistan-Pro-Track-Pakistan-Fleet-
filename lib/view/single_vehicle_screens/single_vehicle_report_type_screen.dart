@@ -964,24 +964,27 @@ class _SingleReportTypesScreenState extends State<SingleReportTypesScreen> {
                                             ? Colors.white12
                                             : Colors.black12),
                                   ),
-                                  child: ListTile(
-                                    leading: Icon(Icons.description_outlined,
-                                        color: ConstantColor.primaryColor),
-                                    title: Text(
-                                      _localizedReportName(
-                                        context,
-                                        item.name ?? '',
-                                        item.type ?? 0,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: ListTile(
+                                      leading: Icon(Icons.description_outlined,
+                                          color: ConstantColor.primaryColor),
+                                      title: Text(
+                                        _localizedReportName(
+                                          context,
+                                          item.name ?? '',
+                                          item.type ?? 0,
+                                        ),
+                                        style:
+                                            AppStyles.semiboldTextStyle(context)
+                                                .copyWith(
+                                          fontSize: 12.8.sp,
+                                        ),
                                       ),
-                                      style:
-                                          AppStyles.semiboldTextStyle(context)
-                                              .copyWith(
-                                        fontSize: 12.8.sp,
-                                      ),
+                                      trailing:
+                                          const Icon(Icons.chevron_right_rounded),
+                                      onTap: () => _onReportTap(item),
                                     ),
-                                    trailing:
-                                        const Icon(Icons.chevron_right_rounded),
-                                    onTap: () => _onReportTap(item),
                                   ),
                                 ),
                               ),
