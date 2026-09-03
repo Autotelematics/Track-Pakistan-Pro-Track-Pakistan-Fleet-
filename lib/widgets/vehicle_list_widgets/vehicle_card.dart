@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -176,7 +177,10 @@ class VehicleCard extends StatelessWidget {
     final statusColor = _getStatusColor();
     final statusKey = _getStatusKey();
     final statusLabel = _localizedStatus(context, statusKey);
+    final durationText = _formatStatusDuration(context);
     final isRunning = statusKey == 'running';
+    final isExpired = statusKey == 'expired';
+    final isNoData = statusKey == 'nodata';
     final isBlocked = _isEngineKilled();
     final String? localAsset = _getLocalAssetPath();
     final textScale = vehicleListTextScale(context);
@@ -327,13 +331,43 @@ class VehicleCard extends StatelessWidget {
                             ),
                           ),
                           verticalSpace(height: .75.h),
-                          _infoTile(
-                            context,
-                            icon: Icons.access_time_rounded,
-                            label: context.l10n.update,
-                            value:
-                                vehicle.time ?? context.l10n.notAvailableShort,
-                          ),
+                          if (isExpired || isNoData)
+                            _infoTile(
+                              context,
+                              icon: Icons.info_outline,
+                              label: context.l10n.status,
+                              value: statusLabel,
+                              valueColor: statusColor,
+                              valueStyle:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: (12.2 * textScale).sp,
+                                color: statusColor,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            )
+                          else ...[
+                            _infoTile(
+                              context,
+                              icon: Icons.timer_outlined,
+                              label: context.l10n.status,
+                              value: "${statusLabel.toLowerCase()} ($durationText)",
+                              valueColor: statusColor,
+                              valueStyle:
+                                  AppStyles.semiboldTextStyle(context).copyWith(
+                                fontSize: (12.2 * textScale).sp,
+                                color: statusColor,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            verticalSpace(height: .75.h),
+                            _infoTile(
+                              context,
+                              icon: Icons.access_time_rounded,
+                              label: context.l10n.update,
+                              value: vehicle.time ??
+                                  context.l10n.notAvailableShort,
+                            ),
+                          ],
                           verticalSpace(height: .75.h),
                           SizedBox(
                             width: 60.w,
@@ -457,24 +491,85 @@ class VehicleCard extends StatelessWidget {
   }
 
   String _localizedStatus(BuildContext context, String statusKey) {
-    final l10n = context.l10n;
     switch (statusKey) {
       case 'running':
-        return l10n.vehicleStatusRunning;
+        return "running";
       case 'stopped':
-        return l10n.vehicleStatusStopped;
+        return "stop";
       case 'idle':
-        return l10n.vehicleStatusIdle;
+        return "idle";
       case 'offline':
-        return l10n.vehicleStatusOffline;
+        return "offline";
       case 'nodata':
-        return l10n.vehicleStatusNoData;
+        return "no data";
       case 'expired':
-        return l10n.vehicleStatusExpired;
+        return "expired";
       case 'parked':
-        return l10n.vehicleStatusParked;
+        return "parked";
       default:
-        return l10n.vehicleStatusUnknown;
+        return "unknown";
     }
+  }
+
+  String _formatStatusDuration(BuildContext context) {
+    if (vehicle.activityMetric?.value != null &&
+        vehicle.activityMetric!.value!.isNotEmpty) {
+      return vehicle.activityMetric!.value!.replaceAll('min', 'm');
+    }
+
+    if (vehicle.stopDuration != null && vehicle.stopDuration!.isNotEmpty) {
+      return vehicle.stopDuration!.replaceAll('min', 'm');
+    }
+
+    final ts = vehicle.timestamp ?? vehicle.acktimestamp;
+    DateTime? since;
+
+    if (ts != null && ts > 0) {
+      if (ts >= 100000000000) {
+        since = DateTime.fromMillisecondsSinceEpoch(ts);
+      } else {
+        since = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
+      }
+    } else {
+      final text = vehicle.time?.trim();
+      if (text == null ||
+          text.isEmpty ||
+          text.toLowerCase() == 'not connected' ||
+          text.toLowerCase() == 'expired' ||
+          text.toLowerCase() == 'n/a') {
+        return "";
+      }
+      const formats = [
+        "dd-MM-yyyy hh:mm:ss a",
+        "dd-MM-yyyy HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd hh:mm:ss a",
+      ];
+      for (final f in formats) {
+        try {
+          since = DateFormat(f).parse(text, true).toLocal();
+          break;
+        } catch (_) {}
+      }
+    }
+
+    if (since == null) return "";
+
+    Duration diff = DateTime.now().difference(since);
+    if (diff.isNegative) diff = Duration.zero;
+
+    int totalSeconds = diff.inSeconds;
+    int seconds = totalSeconds % 60;
+    int minutes = diff.inMinutes % 60;
+    int hours = diff.inHours;
+
+    List<String> parts = [];
+    if (hours > 0) parts.add("${hours}h");
+    if (minutes > 0) parts.add("${minutes}m");
+    if (seconds > 0 || (hours == 0 && minutes == 0)) {
+      parts.add("${seconds <= 0 ? 1 : seconds}s");
+    }
+
+    return parts.join(" ");
   }
 }

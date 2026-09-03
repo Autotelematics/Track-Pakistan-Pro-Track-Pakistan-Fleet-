@@ -694,12 +694,9 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                   SizedBox(width: 1.w),
                                                   Expanded(
                                                     child: Text(
-                                                      alert.time
-                                                              ?.toLocal()
-                                                              .toString()
-                                                              .split('.')
-                                                              .first ??
-                                                          l10n.noTime,
+                                                      alert.time != null
+                                                          ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!.toLocal())
+                                                          : l10n.noTime,
                                                       style: AppStyles
                                                               .lightTextStyle(
                                                                   context)

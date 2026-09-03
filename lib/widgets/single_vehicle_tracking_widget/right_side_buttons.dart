@@ -182,12 +182,6 @@ class _RightSideButtonsState extends State<RightSideButtons> {
             verticalSpace(height: .95.h),
             _circle(
               context,
-              Icons.explore_outlined,
-              widget.onResetNorth,
-            ),
-            verticalSpace(height: .95.h),
-            _circle(
-              context,
               provider.rulerMode
                   ? Icons.straighten_rounded
                   : Icons.straighten_outlined,

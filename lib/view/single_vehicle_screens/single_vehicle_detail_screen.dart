@@ -385,6 +385,7 @@ class _SingleVehicleAnalyticsState extends State<SingleVehicleAnalytics>
                     child: VehicleTrackingScreen(
                   deviceId: widget.deviceId,
                   initialVehicleType: widget.initialVehicleType,
+                  isExpired: widget.isExpired,
                 )),
                 KeepAliveWrapper(
                     child: SingleVehicleAnalyticsScreen(

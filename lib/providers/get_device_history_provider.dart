@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:trackerapp/data/models/get_device_history_model.dart';
 import 'package:trackerapp/data/repositories/get_device_history_repository.dart';
 import 'package:trackerapp/utils/error_message.dart';
@@ -114,6 +115,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
   String? _errorMessage;
 
   // ── Map ────────────────────────────────────────────────────────────────────
+  MapType currentMapType = MapType.normal;
+  bool headingUpMode = false;
   final List<Marker> _mapMarkers = [];
   Marker? _carMarker;
   final ValueNotifier<Marker?> carMarkerNotifier = ValueNotifier<Marker?>(null);
@@ -297,8 +300,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
               : 0;
           final parkedDurationSec = diffSec > 0 ? diffSec : 0;
           final parked = ParkedSegment(
-            stoppedAt: pendingStop.label,
-            nextMoveAt: moveStart.label,
+            stoppedAt: formatDateTimeToAMPM(pendingStop.label),
+            nextMoveAt: formatDateTimeToAMPM(moveStart.label),
             duration: _formatDuration(parkedDurationSec),
             durationSeconds: parkedDurationSec,
             anchorRouteIndex: pendingStopRouteIndex,
@@ -341,8 +344,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
           final endItem = _routeList[segEnd];
           final seg = TripSegment(
             tripIndex: tripIdx++,
-            startTime: startItem.rawTime ?? startItem.time ?? '—',
-            endTime: endItem.rawTime ?? endItem.time ?? '—',
+            startTime: formatDateTimeToAMPM(startItem.rawTime ?? startItem.time),
+            endTime: formatDateTimeToAMPM(endItem.rawTime ?? endItem.time),
             isInProgress: false,
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
@@ -392,8 +395,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
           final endItem = _routeList[segEnd];
           final seg = TripSegment(
             tripIndex: tripIdx++,
-            startTime: startItem.rawTime ?? startItem.time ?? '—',
-            endTime: endItem.rawTime ?? endItem.time ?? '—',
+            startTime: formatDateTimeToAMPM(startItem.rawTime ?? startItem.time),
+            endTime: formatDateTimeToAMPM(endItem.rawTime ?? endItem.time),
             isInProgress: true,
             distance: activeTripDistanceKm.toStringAsFixed(2),
             duration: _formatDuration(activeTripDurationSec),
@@ -425,8 +428,8 @@ class DeviceHistoryProvider extends ChangeNotifier {
       final endItem = _routeList[segEnd];
       final seg = TripSegment(
         tripIndex: tripIdx++,
-        startTime: startItem.rawTime ?? startItem.time ?? '—',
-        endTime: endItem.rawTime ?? endItem.time ?? '—',
+        startTime: formatDateTimeToAMPM(startItem.rawTime ?? startItem.time),
+        endTime: formatDateTimeToAMPM(endItem.rawTime ?? endItem.time),
         isInProgress: true,
         distance: activeTripDistanceKm.toStringAsFixed(2),
         duration: _formatDuration(activeTripDurationSec),
@@ -505,7 +508,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
       _alertSegments.add(
         AlertSegment(
           message: message,
-          time: time,
+          time: formatDateTimeToAMPM(time),
           position: point,
           anchorRouteIndex: anchorRouteIndex,
           speed: item.speed,
@@ -625,6 +628,13 @@ class DeviceHistoryProvider extends ChangeNotifier {
       }
     }
     return DateTime.tryParse(text);
+  }
+
+  String formatDateTimeToAMPM(String? raw) {
+    if (raw == null || raw == '—' || raw.isEmpty) return '—';
+    final dt = _parseHistoryDateTime(raw);
+    if (dt == null) return raw;
+    return DateFormat('dd-MM-yyyy hh:mm:ss a').format(dt);
   }
 
   void _appendRepresentativePointFromItems(
@@ -875,7 +885,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     if (_carMarker != null) {
       _carMarker = _carMarker!.copyWith(
         positionParam: nextPosition,
-        rotationParam: _carRotation,
+        rotationParam: headingUpMode ? 0 : _carRotation,
       );
       carMarkerNotifier.value = _carMarker;
       return;
@@ -886,7 +896,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
       position: nextPosition,
       icon: _carIcon!,
       anchor: const Offset(0.5, 0.5),
-      rotation: _carRotation,
+      rotation: headingUpMode ? 0 : _carRotation,
       flat: false,
       zIndexInt: 10,
       infoWindow: InfoWindow(
@@ -970,7 +980,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     );
     final tp = TextPainter(
       text: TextSpan(text: glyph, style: textStyle),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     )..layout();
     tp.paint(
       canvas,
@@ -1175,7 +1185,37 @@ class DeviceHistoryProvider extends ChangeNotifier {
     );
   }
 
+  void toggleMapType() {
+    currentMapType =
+        currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
+    notifyListeners();
+  }
+
+  void toggleHeadingUpMode() {
+    headingUpMode = !headingUpMode;
+    if (_carMarker != null) {
+      _carMarker = _carMarker!.copyWith(
+        rotationParam: headingUpMode ? 0 : _carRotation,
+      );
+      carMarkerNotifier.value = _carMarker;
+    }
+    notifyListeners();
+  }
+
+  void disableHeadingUp() {
+    headingUpMode = false;
+    if (_carMarker != null) {
+      _carMarker = _carMarker!.copyWith(
+        rotationParam: _carRotation,
+      );
+      carMarkerNotifier.value = _carMarker;
+    }
+    notifyListeners();
+  }
+
   void _resetAllData() {
+    currentMapType = MapType.normal;
+    headingUpMode = false;
     _mapMarkers.clear();
     _carMarker = null;
     carMarkerNotifier.value = null;

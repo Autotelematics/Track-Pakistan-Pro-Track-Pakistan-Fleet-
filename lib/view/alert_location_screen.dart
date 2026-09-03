@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
@@ -271,8 +272,9 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                     context,
                     icon: Icons.schedule_rounded,
                     label: 'Time',
-                    value: alert.time?.toLocal().toString().split(".").first ??
-                        "No time",
+                    value: alert.time != null
+                        ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!.toLocal())
+                        : "No time",
                   ),
                   verticalSpace(height: .7.h),
                   _detailTile(

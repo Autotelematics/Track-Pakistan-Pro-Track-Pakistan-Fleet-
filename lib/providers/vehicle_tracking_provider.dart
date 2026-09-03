@@ -56,6 +56,7 @@ class VehicleTrackingProvider extends ChangeNotifier {
   bool enableTraffic = false;
   double currentZoom = 15.5;
   bool followVehicle = true;
+  bool headingUpMode = false;
   bool rulerMode = false;
   final List<LatLng> _rulerPoints = [];
   Position? _userPosition;
@@ -968,6 +969,22 @@ class VehicleTrackingProvider extends ChangeNotifier {
 
   void toggleFollowVehicle() {
     followVehicle = !followVehicle;
+    if (!followVehicle) {
+      headingUpMode = false;
+    }
+    notifyListeners();
+  }
+
+  void disableHeadingUp() {
+    headingUpMode = false;
+    notifyListeners();
+  }
+
+  void toggleHeadingUpMode() {
+    headingUpMode = !headingUpMode;
+    if (headingUpMode) {
+      followVehicle = true;
+    }
     notifyListeners();
   }
 

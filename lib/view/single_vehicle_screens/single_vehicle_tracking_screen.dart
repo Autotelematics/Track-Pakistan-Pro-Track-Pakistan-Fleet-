@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/providers/vehicle_tracking_provider.dart';
 import 'package:trackerapp/utils/animated_marker.dart';
 import 'package:trackerapp/utils/app_localizations_x.dart';
@@ -19,10 +20,12 @@ import 'package:url_launcher/url_launcher.dart';
 class VehicleTrackingScreen extends StatefulWidget {
   final int deviceId;
   final String? initialVehicleType;
+  final bool isExpired;
   const VehicleTrackingScreen({
     super.key,
     required this.deviceId,
     this.initialVehicleType,
+    this.isExpired = false,
   });
   @override
   State<VehicleTrackingScreen> createState() => _VehicleTrackingScreenState();
@@ -71,7 +74,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
   }
 
   Future<void> _animateCameraToLocation(
-      LatLng targetLocation, double zoom) async {
+      LatLng targetLocation, double zoom, {double bearing = 0, double tilt = 0}) async {
     if (_isDisposing) return;
     if (_isCameraAnimating) {
       _pendingCameraTarget = targetLocation;
@@ -82,7 +85,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       _isCameraAnimating = true;
       try {
         CameraPosition cameraPosition =
-            CameraPosition(target: targetLocation, zoom: zoom);
+            CameraPosition(target: targetLocation, zoom: zoom, bearing: bearing, tilt: tilt);
         await mapController!.animateCamera(
           CameraUpdate.newCameraPosition(cameraPosition),
         );
@@ -105,14 +108,14 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                   0.000001 ||
               pendingZoom != _lastCameraZoom;
           if (shouldRunNext) {
-            await _animateCameraToLocation(pendingTarget, pendingZoom);
+            await _animateCameraToLocation(pendingTarget, pendingZoom, bearing: bearing, tilt: tilt);
           }
         }
       }
     }
   }
 
-  bool _shouldFollowCameraUpdate(LatLng target, double zoom) {
+  bool _shouldFollowCameraUpdate(LatLng target, double zoom, {double bearing = 0}) {
     final now = DateTime.now();
     final minFollowIntervalMs = _useFlatVehicleMarker ? 220 : 140;
     final movedEnough = _lastCameraTarget == null ||
@@ -122,7 +125,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
     final intervalPassed = _lastFollowCameraAt == null ||
         now.difference(_lastFollowCameraAt!).inMilliseconds >=
             minFollowIntervalMs;
-    if (!movedEnough || !intervalPassed) return false;
+    if (!movedEnough && !intervalPassed) return false;
     _lastFollowCameraAt = now;
     return true;
   }
@@ -167,7 +170,7 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
       }
       final vehicle = LatLng(prov.latitude, prov.longitude);
       prov.centerOnVehicle();
-      await _animateCameraToLocation(vehicle, prov.currentZoom);
+      await _animateCameraToLocation(vehicle, prov.currentZoom, bearing: prov.headingUpMode ? prov.course : 0, tilt: prov.headingUpMode ? 40 : 0);
       return;
     }
 
@@ -433,8 +436,8 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                 : Marker(
                     markerId: const MarkerId("vehicle"),
                     position: pos,
-                    rotation: prov.course,
-                    flat: _useFlatVehicleMarker,
+                    rotation: prov.headingUpMode ? 0 : prov.course,
+                    flat: prov.headingUpMode ? false : _useFlatVehicleMarker,
                     anchor: const Offset(0.5, 0.5),
                     zIndexInt: 1,
                     icon: markerIcon,
@@ -479,11 +482,14 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                   if (_shouldFollowCameraUpdate(
                     followTarget,
                     prov.currentZoom,
+                    bearing: prov.headingUpMode ? prov.course : 0,
                   )) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _animateCameraToLocation(
                         followTarget,
                         prov.currentZoom,
+                        bearing: prov.headingUpMode ? prov.course : 0,
+                        tilt: 0,
                       );
                     });
                     _lastCameraTarget = followTarget;
@@ -522,12 +528,41 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                     mapWidget,
                     TopBar(
                       status: prov.status,
-                      onResetNorth: () => _resetNorth(
-                        fallbackTarget: pos,
-                        zoom: prov.currentZoom,
-                      ),
+                      isExpired: widget.isExpired,
+                      onResetNorth: () {
+                        prov.disableHeadingUp();
+                        _resetNorth(
+                          fallbackTarget: pos,
+                          zoom: prov.currentZoom,
+                        );
+                      },
                       onLocateUser: () => _locateUserAndMeasure(prov),
                       onOpenDirections: () => _openDirectionsToVehicle(prov),
+                    ),
+                    Positioned(
+                      top: 172,
+                      left: 4.w,
+                      child: _HeadingUpToggle(
+                        isActive: prov.headingUpMode,
+                        onToggle: () {
+                          prov.toggleHeadingUpMode();
+                          if (prov.headingUpMode) {
+                            _animateCameraToLocation(
+                              pos,
+                              prov.currentZoom,
+                              bearing: prov.course,
+                              tilt: 0,
+                            );
+                          } else {
+                            _animateCameraToLocation(
+                              pos,
+                              prov.currentZoom,
+                              bearing: 0,
+                              tilt: 0,
+                            );
+                          }
+                        },
+                      ),
                     ),
                     Positioned(
                       top: waitingBannerTop,
@@ -629,6 +664,10 @@ class _VehicleTrackingScreenState extends State<VehicleTrackingScreen>
                         deviceLatestUpdate: prov.lastUpdate,
                         sensors: prov.sensors,
                         param: prov.param,
+                        isExpired: widget.isExpired,
+                        lastStatusTimestamp: prov.item?.timestamp,
+                        lastAckTimestamp: prov.item?.acktimestamp,
+                        stopDuration: prov.item?.activityMetric?.value ?? prov.item?.stopDuration,
                       ),
                     ),
                   ],
@@ -717,6 +756,54 @@ class _WaitingPacketBanner extends StatefulWidget {
 
   @override
   State<_WaitingPacketBanner> createState() => _WaitingPacketBannerState();
+}
+
+class _HeadingUpToggle extends StatelessWidget {
+  final bool isActive;
+  final VoidCallback onToggle;
+
+  const _HeadingUpToggle({
+    required this.isActive,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final iconScale = trackingIconScale(context);
+    
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? .28 : .14),
+            blurRadius: 14,
+            spreadRadius: 1,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
+      child: Material(
+        color: isActive ? AppColors.green : (isDark ? theme.cardColor.withValues(alpha: .9) : Colors.white.withValues(alpha: .94)),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onToggle,
+          child: SizedBox(
+            height: (4.4 * iconScale).h,
+            width: (4.4 * iconScale).h,
+            child: Icon(
+              isActive ? Icons.explore : Icons.explore_outlined,
+              size: (2.1 * iconScale).h,
+              color: isActive ? Colors.white : (isDark ? Colors.white : Colors.black87),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _WaitingPacketBannerState extends State<_WaitingPacketBanner>

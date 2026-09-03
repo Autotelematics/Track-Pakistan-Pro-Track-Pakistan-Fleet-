@@ -58,6 +58,7 @@ class Item {
   final List<Sensor>? sensors;
   final String? stopDuration;
   final DateTime? movedAt;
+  final ActivityMetric? activityMetric;
   final Param? param;
 
   Item({
@@ -77,6 +78,7 @@ class Item {
     this.sensors,
     this.stopDuration,
     this.movedAt,
+    this.activityMetric,
     this.param,
   });
 
@@ -107,6 +109,9 @@ class Item {
       movedAt: json["moved_at"] != null
           ? DateTime.tryParse(json["moved_at"] as String)
           : null,
+      activityMetric: json["activity_metric"] != null
+          ? ActivityMetric.fromJson(json["activity_metric"] as Map<String, dynamic>)
+          : null,
       param: json["param"] != null && json["param"] is Map<String, dynamic>
           ? Param.fromJson(json["param"] as Map<String, dynamic>)
           : null,
@@ -132,6 +137,7 @@ class Item {
             : null,
         "stop_duration": stopDuration,
         "moved_at": movedAt?.toIso8601String(),
+        "activity_metric": activityMetric?.toJson(),
         "param": param?.toJson(),
       };
 
@@ -425,4 +431,36 @@ class Param {
     }
     return map;
   }
+}
+
+class ActivityMetric {
+  final String? label;
+  final String? value;
+  final String? foot;
+  final String? rawTimestamp;
+  final String? mode;
+
+  ActivityMetric({
+    this.label,
+    this.value,
+    this.foot,
+    this.rawTimestamp,
+    this.mode,
+  });
+
+  factory ActivityMetric.fromJson(Map<String, dynamic> json) => ActivityMetric(
+        label: json["label"] as String?,
+        value: json["value"] as String?,
+        foot: json["foot"] as String?,
+        rawTimestamp: json["raw_timestamp"] as String?,
+        mode: json["mode"] as String?,
+      );
+
+  Map<String, dynamic> toJson() => {
+        "label": label,
+        "value": value,
+        "foot": foot,
+        "raw_timestamp": rawTimestamp,
+        "mode": mode,
+      };
 }

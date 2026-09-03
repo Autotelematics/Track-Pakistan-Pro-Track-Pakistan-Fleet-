@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:trackerapp/app/theme/app_colors.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/app/theme/responsive_scale.dart';
 import 'package:trackerapp/providers/get_device_history_provider.dart';
@@ -528,8 +529,9 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
         final pos = LatLng(provider.carLat, provider.carLng);
         if (!_hasPrimedPlaybackViewport) {
           _hasPrimedPlaybackViewport = true;
-          unawaited(
-              _animatePlaybackCameraTo(pos, zoom: _preferredPlaybackZoom));
+          unawaited(_animatePlaybackCameraTo(pos,
+              zoom: _preferredPlaybackZoom,
+              bearing: provider.headingUpMode ? provider.carRotation : 0));
         }
       }
     } else if (provider.isPlaying &&
@@ -543,9 +545,10 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
           now.difference(_lastPlaybackCameraFollowAt!).inMilliseconds >=
               followIntervalMs;
       if (canMoveCamera) {
-        if (_followPlaybackCamera) {
+        if (_followPlaybackCamera || provider.headingUpMode) {
           _lastPlaybackCameraFollowAt = now;
-          unawaited(_animatePlaybackCameraTo(pos));
+          unawaited(_animatePlaybackCameraTo(pos,
+              bearing: provider.headingUpMode ? provider.carRotation : 0));
         } else {
           unawaited(() async {
             final shouldRecenter = await _isPlaybackCarOutsideSafeViewport(pos);
@@ -563,6 +566,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
   Future<void> _animatePlaybackCameraTo(
     LatLng target, {
     double? zoom,
+    double bearing = 0,
   }) async {
     final controller = _mapController;
     if (controller == null || _isDisposing || !mounted) return;
@@ -570,11 +574,20 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
       if (zoom != null) {
         await controller.animateCamera(
           CameraUpdate.newCameraPosition(
-            CameraPosition(target: target, zoom: zoom),
+            CameraPosition(target: target, zoom: zoom, bearing: bearing),
           ),
         );
       } else {
-        await controller.animateCamera(CameraUpdate.newLatLng(target));
+        final currentZoom = await controller.getZoomLevel();
+        await controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: target,
+              zoom: currentZoom,
+              bearing: bearing,
+            ),
+          ),
+        );
       }
     } catch (_) {}
   }
@@ -724,6 +737,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                                     _hasFilterApplied = true;
                                     selectedFilter = "Custom";
                                   });
+                                  provider.disableHeadingUp();
                                   _fetchHistory();
                                 }
                               },
@@ -771,6 +785,20 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                   top: showCustomPicker ? 28.h : 12.5.h,
                   child: _buildPlaybackFollowControl(),
                 ),
+                if (_hasFilterApplied && provider.routeList.isNotEmpty) ...[
+                  Positioned(
+                    left: 4.w,
+                    top: showCustomPicker ? 28.h : 12.5.h,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildHeadingUpControl(provider),
+                        SizedBox(height: 1.h),
+                        _buildMapTypeControl(provider),
+                      ],
+                    ),
+                  ),
+                ],
 
               // Bottom Sheet
               if (provider.routeList.isNotEmpty && _hasFilterApplied)
@@ -814,7 +842,7 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                 () => EagerGestureRecognizer()),
           },
           myLocationEnabled: true,
-          mapType: _mapType,
+          mapType: provider.currentMapType,
           onMapCreated: (controller) {
             if (_isDisposing) {
               try {
@@ -914,6 +942,116 @@ class _SingleVehicleHistoryScreenState extends State<SingleVehicleHistoryScreen>
                 isEnabled
                     ? Icons.navigation_rounded
                     : Icons.navigation_outlined,
+                size: 2.0.h,
+                color: iconColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeadingUpControl(DeviceHistoryProvider provider) {
+    final theme = Theme.of(context);
+    final isEnabled = provider.headingUpMode;
+    final Color activeColor = AppColors.green;
+    final isDark = theme.brightness == Brightness.dark;
+    final Color bgColor = isEnabled
+        ? activeColor
+        : (isDark
+            ? theme.cardColor.withValues(alpha: .9)
+            : Colors.white.withValues(alpha: .94));
+    final Color iconColor =
+        isEnabled ? Colors.white : theme.colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? .28 : .14),
+              blurRadius: 14,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: bgColor,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              provider.toggleHeadingUpMode();
+              if (provider.headingUpMode) {
+                if (provider.carLat != 0 && provider.carLng != 0) {
+                  _animatePlaybackCameraTo(
+                    LatLng(provider.carLat, provider.carLng),
+                    bearing: provider.carRotation,
+                  );
+                }
+              } else {
+                if (provider.carLat != 0 && provider.carLng != 0) {
+                  _animatePlaybackCameraTo(
+                    LatLng(provider.carLat, provider.carLng),
+                    bearing: 0,
+                  );
+                }
+              }
+            },
+            child: SizedBox(
+              height: 5.1.h,
+              width: 5.1.h,
+              child: Icon(
+                isEnabled ? Icons.explore : Icons.explore_outlined,
+                size: 2.0.h,
+                color: iconColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapTypeControl(DeviceHistoryProvider provider) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final Color bgColor = isDark
+        ? theme.cardColor.withValues(alpha: .9)
+        : Colors.white.withValues(alpha: .94);
+    final Color iconColor = theme.colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? .28 : .14),
+              blurRadius: 14,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: bgColor,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: provider.toggleMapType,
+            child: SizedBox(
+              height: 5.1.h,
+              width: 5.1.h,
+              child: Icon(
+                provider.currentMapType == MapType.normal
+                    ? Icons.map_outlined
+                    : Icons.layers,
                 size: 2.0.h,
                 color: iconColor,
               ),

@@ -11,12 +11,14 @@ import 'package:trackerapp/widgets/single_vehicle_tracking_widget/tracking_scale
 
 class TopBar extends StatelessWidget {
   final String status;
+  final bool isExpired;
   final VoidCallback? onResetNorth;
   final VoidCallback? onLocateUser;
   final VoidCallback? onOpenDirections;
   const TopBar({
     super.key,
     required this.status,
+    this.isExpired = false,
     this.onResetNorth,
     this.onLocateUser,
     this.onOpenDirections,
@@ -47,6 +49,22 @@ class TopBar extends StatelessWidget {
         final String displayStatus = provider.vehicleStatusText;
         final statusColor = provider.ignitionColor;
         final isRunning = provider.status == 'online';
+        final isNoData = lastUpdateText.toLowerCase() == 'not connected';
+
+        String statusLabel = "";
+        final s = provider.status;
+        if (s == 'online') {
+          statusLabel = "running";
+        } else if (s == 'ack') {
+          statusLabel = "stop";
+        } else if (s == 'engine') {
+          statusLabel = "idle";
+        } else {
+          statusLabel = "offline";
+        }
+
+        final durationText = provider.item?.activityMetric?.value ?? provider.item?.stopDuration ?? "";
+        final formattedDuration = durationText.replaceAll('min', 'm');
 
         return Positioned(
           top: topOffset,
@@ -132,24 +150,49 @@ class TopBar extends StatelessWidget {
                                               letterSpacing: .2,
                                             ),
                                           ),
-                                          SizedBox(height: .2.h),
-                                          Row(
-                                            children: [
-                                              Expanded(
+                                          if (isExpired || isNoData)
+                                            Text(
+                                              "${l10n.status}: ${isExpired ? l10n.vehicleStatusExpired : l10n.vehicleStatusNoData}",
+                                              style: TextStyle(
+                                                color: isExpired ? Colors.purple : AppColors.red,
+                                                fontSize: (11.0 * textScale).sp,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            )
+                                          else ...[
+                                            Text(
+                                              l10n.updatedAt(lastUpdateText),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.fade,
+                                              style: TextStyle(
+                                                color: panelSubText,
+                                                fontSize: (10.8 * textScale).sp,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.15,
+                                              ),
+                                            ),
+                                            if (formattedDuration.isNotEmpty)
+                                              Padding(
+                                                padding: EdgeInsets.only(top: .15.h),
                                                 child: Text(
-                                                  l10n.updatedAt(
-                                                      lastUpdateText),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.fade,
+                                                  "${l10n.status}: $statusLabel ($formattedDuration)",
                                                   style: TextStyle(
-                                                    color: panelSubText,
-                                                    fontSize:
-                                                        (10.8 * textScale).sp,
-                                                    fontWeight: FontWeight.w500,
-                                                    height: 1.15,
+                                                    color: isRunning
+                                                        ? AppColors.green
+                                                        : (statusLabel == 'idle'
+                                                            ? Colors.orange
+                                                            : (statusLabel == 'stop'
+                                                                ? AppColors.red
+                                                                : panelSubText)),
+                                                    fontSize: (11.0 * textScale).sp,
+                                                    fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
                                               ),
+                                          ],
+                                          SizedBox(height: .2.h),
+                                          Row(
+                                            children: [
                                               if (provider.enableTraffic) ...[
                                                 SizedBox(width: 1.5.w),
                                                 Container(

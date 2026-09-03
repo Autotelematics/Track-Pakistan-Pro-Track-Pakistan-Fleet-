@@ -7,12 +7,9 @@ class AppUrl {
   static String loginEp = "/login?";
   static String getDashboardEp = "/get_dashboard?";
   static String getAdminStatusEp = "/admin/get_admin_status?user_api_hash=";
-  static String getAdminUserListEp =
-      "/admin/get_admin_user_list?user_api_hash=";
-  static String getAdminUsersWithTokensEp =
-      "/admin/get_admin_users_with_tokens?user_api_hash=";
-  static String setAdminUserStatusEp =
-      "/admin/set_admin_user_status?user_api_hash=";
+  static String getAdminUserListEp = "/admin/get_admin_user_list?user_api_hash=";
+  static String getAdminUsersWithTokensEp = "/admin/get_admin_users_with_tokens?user_api_hash=";
+  static String setAdminUserStatusEp = "/admin/set_admin_user_status?user_api_hash=";
   static String adminLoginAsEp = "/admin/login_as?user_api_hash=";
   static String sendPushNotificationEp = "/send_push_notification?";
   static String getDashboardHistoryEp = "/get_dashboard_history?";
@@ -25,8 +22,7 @@ class AppUrl {
   static String changePasswordEp = "/change_password?user_api_hash=";
   static String getDeviceStatusEp = "/get_status?user_api_hash=";
   static String geofenceEp = "/get_geofences?user_api_hash=";
-  static String changeActiveGeofenceEp =
-      "/change_active_geofence?user_api_hash=";
+  static String changeActiveGeofenceEp = "/change_active_geofence?user_api_hash=";
   static String addDriverUserEp = "/add_user_driver?user_api_hash=";
   static String editDriverUserEp = "/edit_user_driver?user_api_hash=";
   static String deleteDriverUserEp = "/destroy_user_driver?user_api_hash=";
@@ -61,8 +57,7 @@ class AppUrl {
   static String getAlertSettingEp = '/get_alert_setting?user_api_hash=';
   static String syncAlertSettingEp = '/sync_alert_setting?user_api_hash=';
   static String syncAlertActiveEp = '/sync_alert_active?user_api_hash=';
-  static String syncAlertAnnouncementEp =
-      '/sync_alert_announcement?user_api_hash=';
+  static String syncAlertAnnouncementEp = '/sync_alert_announcement?user_api_hash=';
   static String vehiclePerformanceEp = '/vehicle_performance?';
   static String driverPerformanceEp = '/driver_performance?';
   static String submitFcmTokenEp = '/fcm_token';

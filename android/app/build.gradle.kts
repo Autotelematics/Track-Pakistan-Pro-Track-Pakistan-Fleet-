@@ -12,6 +12,15 @@ plugins {
 android {
     compileSdk = 36
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { localProperties.load(it) }
+    }
+
+    val flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+    val flutterVersionName = localProperties.getProperty("flutter.versionName")
+
     ndkVersion = if (extra.has("flutter.ndkVersion")) {
         extra["flutter.ndkVersion"] as String
     } else {
@@ -36,8 +45,8 @@ android {
         applicationId = "com.autotel_fleet.android"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = System.getenv("FLUTTER_VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = System.getenv("FLUTTER_VERSION_NAME") ?: "1.0"
+        versionCode = flutterVersionCode?.toInt() ?: 1
+        versionName = flutterVersionName ?: "1.0"
         multiDexEnabled = true
     }
 

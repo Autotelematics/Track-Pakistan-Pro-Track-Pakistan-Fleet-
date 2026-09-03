@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -634,7 +635,7 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                               verticalSpace(height: 0.35.h),
                                               Text(
                                                 item.time != null
-                                                    ? '${item.time!.day}/${item.time!.month}/${item.time!.year} ${item.time!.hour}:${item.time!.minute.toString().padLeft(2, '0')}'
+                                                    ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(item.time!)
                                                     : l10n.notAvailableShort,
                                                 style: AppStyles.lightTextStyle(
                                                         context)

@@ -58,23 +58,26 @@ class HistoryPlaybackTab extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 4.w),
           children: [
             if (hasPosition && pos != null) ...[
-              Wrap(
-                spacing: 2.w,
-                runSpacing: .8.h,
-                children: [
-                  InfoChip(
-                      icon: Icons.speed,
-                      label: '${pos.speed} km/h',
-                      wide: true),
-                  InfoChip(
-                      icon: Icons.access_alarm,
-                      label: pos.rawTime ?? '—',
-                      wide: true),
-                  InfoChip(
-                      icon: Icons.directions_car,
-                      label: '${pos.distance.toStringAsFixed(2)} km',
-                      wide: true),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    InfoChip(
+                        icon: Icons.speed,
+                        label: '${pos.speed} km/h',
+                        wide: true),
+                    SizedBox(width: 2.w),
+                    InfoChip(
+                        icon: Icons.access_alarm,
+                        label: provider.formatDateTimeToAMPM(pos.rawTime ?? pos.time),
+                        wide: true),
+                    SizedBox(width: 2.w),
+                    InfoChip(
+                        icon: Icons.directions_car,
+                        label: '${pos.distance.toStringAsFixed(2)} km',
+                        wide: true),
+                  ],
+                ),
               ),
               verticalSpace(height: 1.h),
             ],

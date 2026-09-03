@@ -566,7 +566,6 @@ class InfoChip extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
 
     return Container(
-      width: wide ? 28.w : null,
       padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: .55.h),
       decoration: BoxDecoration(
         color: isDark
@@ -580,15 +579,11 @@ class InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 12.5.sp, color: ConstantColor.primaryColor),
           SizedBox(width: 1.w),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppStyles.semiboldTextStyle(context).copyWith(
-                fontSize: 14.0.sp,
-                color: onSurface.withValues(alpha: .86),
-              ),
+          Text(
+            label,
+            style: AppStyles.semiboldTextStyle(context).copyWith(
+              fontSize: 14.0.sp,
+              color: onSurface.withValues(alpha: .86),
             ),
           ),
         ],

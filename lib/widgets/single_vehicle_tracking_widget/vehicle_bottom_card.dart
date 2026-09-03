@@ -19,6 +19,10 @@ class VehicleBottomCard extends StatefulWidget {
   final String deviceLatestUpdate;
   final List<Sensor>? sensors;
   final device_list.Param? param;
+  final bool isExpired;
+  final int? lastStatusTimestamp;
+  final int? lastAckTimestamp;
+  final String? stopDuration;
 
   const VehicleBottomCard({
     super.key,
@@ -31,6 +35,10 @@ class VehicleBottomCard extends StatefulWidget {
     this.sensors,
     this.param,
     required this.deviceId,
+    this.isExpired = false,
+    this.lastStatusTimestamp,
+    this.lastAckTimestamp,
+    this.stopDuration,
   });
 
   @override
@@ -120,6 +128,10 @@ class _VehicleBottomCardState extends State<VehicleBottomCard> {
                 sensors: widget.sensors,
                 param: widget.param,
                 fallbackOdometer: widget.vehicleOdometer,
+                isExpired: widget.isExpired,
+                lastStatusTimestamp: widget.lastStatusTimestamp,
+                lastAckTimestamp: widget.lastAckTimestamp,
+                stopDuration: widget.stopDuration,
               ),
               Divider(
                 height: 1,

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:trackerapp/app/theme/app_colors.dart';
@@ -161,6 +162,10 @@ class VehicleBasicInfo extends StatefulWidget {
   final List<Sensor>? sensors;
   final device_list.Param? param;
   final double fallbackOdometer;
+  final bool isExpired;
+  final int? lastStatusTimestamp;
+  final int? lastAckTimestamp;
+  final String? stopDuration;
 
   const VehicleBasicInfo({
     super.key,
@@ -172,6 +177,10 @@ class VehicleBasicInfo extends StatefulWidget {
     this.sensors,
     this.param,
     required this.fallbackOdometer,
+    this.isExpired = false,
+    this.lastStatusTimestamp,
+    this.lastAckTimestamp,
+    this.stopDuration,
   });
 
   @override
@@ -404,6 +413,68 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
     return widget.fallbackOdometer;
   }
 
+  String _formatStatusDuration() {
+    final l10n = context.l10n;
+    if (widget.isExpired) return l10n.vehicleStatusExpired;
+
+    if (widget.stopDuration != null && widget.stopDuration!.isNotEmpty) {
+      return widget.stopDuration!.replaceAll('min', 'm');
+    }
+
+    final text = widget.deviceLatestUpdate.trim();
+    final lower = text.toLowerCase();
+    if (lower == 'not connected') return l10n.notAvailableShort;
+    if (lower == 'expired' || lower == 'n/a') return l10n.notAvailableShort;
+
+    final ts = widget.lastStatusTimestamp ?? widget.lastAckTimestamp;
+    DateTime? since;
+
+    if (ts != null && ts > 0) {
+      if (ts >= 100000000000) {
+        since = DateTime.fromMillisecondsSinceEpoch(ts);
+      } else {
+        since = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
+      }
+    } else {
+      // Fallback to parsing text
+      const formats = [
+        "dd-MM-yyyy hh:mm:ss a",
+        "dd-MM-yyyy HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd hh:mm:ss a",
+      ];
+      for (final f in formats) {
+        try {
+          since = DateFormat(f).parse(text, true).toLocal();
+          break;
+        } catch (_) {}
+      }
+    }
+
+    if (since == null) return l10n.unknownTime;
+
+    Duration diff = DateTime.now().difference(since);
+    if (diff.isNegative) diff = Duration.zero;
+
+    int totalDays = diff.inDays;
+    final years = totalDays ~/ 365;
+    totalDays %= 365;
+    final months = totalDays ~/ 30;
+    final days = totalDays % 30;
+    final hours = diff.inHours % 24;
+    final minutes = diff.inMinutes % 60;
+
+    final parts = <String>[];
+    if (years > 0) parts.add("${years}y");
+    if (months > 0) parts.add("${months}m");
+    if (days > 0) parts.add("${days}d");
+    if (hours > 0) parts.add("${hours}h");
+    if (minutes > 0) parts.add("${minutes}min");
+
+    if (parts.isEmpty) return "1s";
+    return parts.join(" ");
+  }
+
   Widget _buildOdometerSlots(BuildContext context, double value, bool isDark) {
     final wholePart = value.floor().toString().padLeft(8, '0');
     final digits = <String>[...wholePart.split('')];
@@ -502,6 +573,23 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
     final ignitionColor = ignitionOn == null
         ? (isDark ? Colors.white54 : Colors.grey)
         : (ignitionOn ? AppColors.green : Colors.red);
+
+    String statusPrefix = "";
+    if (widget.isExpired) {
+      statusPrefix = "";
+    } else if (widget.deviceSpeed > 0) {
+      statusPrefix = "Moving Since: ";
+    } else if (ignitionOn == true) {
+      statusPrefix = "Idle Since: ";
+    } else if (ignitionOn == false) {
+      statusPrefix = "Stopped Since: ";
+    } else {
+      statusPrefix = "Offline Since: ";
+    }
+
+    final durationText = _formatStatusDuration();
+    final isNoData =
+        widget.deviceLatestUpdate.toLowerCase() == 'not connected';
 
     return Stack(
       clipBehavior: Clip.none,
@@ -647,18 +735,33 @@ class _VehicleBasicInfoState extends State<VehicleBasicInfo>
                 Icon(Icons.location_on_outlined, size: 2.45.h, color: softIcon),
                 horizontalSpace(width: 2.w),
                 Expanded(
-                  child: Text(
-                    widget.deviceAddress,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppStyles.address(context).copyWith(
-                      fontSize: 13.0.sp,
-                      fontWeight: FontWeight.w500,
-                      height: 1.3,
-                      letterSpacing: 0.08,
-                      color: secondaryText,
-                    ),
-                    textAlign: TextAlign.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.deviceAddress,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyles.address(context).copyWith(
+                          fontSize: 13.0.sp,
+                          fontWeight: FontWeight.w500,
+                          height: 1.3,
+                          letterSpacing: 0.08,
+                          color: secondaryText,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                      verticalSpace(height: 0.4.h),
+                      if (!(widget.isExpired || isNoData))
+                        Text(
+                          context.l10n.updateValue(widget.deviceLatestUpdate),
+                          style: AppStyles.regularTextStyle(context).copyWith(
+                            fontSize: 12.2.sp,
+                            color: secondaryText.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],

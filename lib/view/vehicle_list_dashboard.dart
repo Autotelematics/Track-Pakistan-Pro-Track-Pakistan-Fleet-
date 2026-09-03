@@ -277,7 +277,8 @@ class _NewVehicleListDashBoardState extends State<NewVehicleListDashBoard>
   }
 
   Widget _buildStatusBoxes(
-      GetDevicesListProvider provider, Color onSurface, Color cardColor) {
+      GetDevicesListProvider provider, Color onSurface, Color cardColor)
+  {
     final statuses = [
       _StatusData(
           key: 'all',
