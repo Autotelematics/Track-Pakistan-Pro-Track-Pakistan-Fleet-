@@ -125,9 +125,9 @@ void main() async {
   );
   if (Platform.isIOS) {
     await messaging.setForegroundNotificationPresentationOptions(
-      alert: false,
+      alert: true,
       badge: true,
-      sound: false,
+      sound: true,
     );
   }
 
@@ -149,11 +149,9 @@ void main() async {
 
   await AlertTtsService.instance.init();
   FirebaseMessaging.onMessage.listen((message) async {
-    if (message.notification == null) {
-      await LocalNotificationService.instance.showRemoteMessageNotification(
-        message,
-      );
-    }
+    await LocalNotificationService.instance.showRemoteMessageNotification(
+      message,
+    );
     if (Platform.isAndroid) {
       await AlertTtsService.instance.speakFromRemoteMessage(
         message,
