@@ -457,6 +457,14 @@
   "noHistoryAlertsFound": "No alerts found",
   "playingRouteHighlightedGreen": "Playing - route highlighted green",
   "pausedLabel": "Paused",
+  "selectedTrip": "Trip #{number}",
+  "@selectedTrip": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "showFullRoute": "Show Full Route",
+  "allTrips": "All Trips",
   "totalTrips": "Total Trips",
   "moveTime": "Move Time",
   "fuelLtr": "Fuel (LTR)",

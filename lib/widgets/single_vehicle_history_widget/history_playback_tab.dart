@@ -81,6 +81,93 @@ class HistoryPlaybackTab extends StatelessWidget {
               ),
               verticalSpace(height: 1.h),
             ],
+            if (provider.selectedTripIndex >= 0 &&
+                provider.selectedTrip != null) ...[
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.8.h),
+                decoration: BoxDecoration(
+                  color: ConstantColor.primaryColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10.sp),
+                  border: Border.all(
+                    color: ConstantColor.primaryColor.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.route_outlined,
+                      color: ConstantColor.primaryColor,
+                      size: 18.sp,
+                    ),
+                    horizontalSpace(width: 2.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.selectedTrip(provider.selectedTripIndex + 1),
+                            style: AppStyles.semiboldTextStyle(context).copyWith(
+                              fontSize: 14.0.sp,
+                              color: onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${provider.selectedTrip!.distance} km  •  ${provider.selectedTrip!.duration}',
+                            style: AppStyles.regularTextStyle(context).copyWith(
+                              fontSize: 12.5.sp,
+                              color: onSurface.withValues(alpha: 0.72),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        provider.clearTripSelection();
+                        final bounds = provider.calculateBounds();
+                        if (bounds != null && mapController != null) {
+                          mapController!.animateCamera(
+                            CameraUpdate.newLatLngBounds(bounds, 50),
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 2.5.w, vertical: 0.5.h),
+                        decoration: BoxDecoration(
+                          color: ConstantColor.primaryColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              l10n.showFullRoute,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            horizontalSpace(width: 1.w),
+                            Icon(
+                              Icons.close,
+                              size: 14.sp,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              verticalSpace(height: 1.0.h),
+            ],
             Container(
               padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.9.h),
               decoration: BoxDecoration(
@@ -166,11 +253,13 @@ class HistoryPlaybackTab extends StatelessWidget {
                     ),
                     child: Slider(
                       padding: EdgeInsets.zero,
-                      value: sliderValue.toDouble(),
-                      min: 0,
+                      value: sliderValue
+                          .clamp(provider.sliderValueMin, provider.sliderValueMax)
+                          .toDouble(),
+                      min: provider.sliderValueMin.toDouble(),
                       max: provider.sliderValueMax.toDouble(),
-                      divisions: provider.sliderValueMax > 0
-                          ? provider.sliderValueMax
+                      divisions: (provider.sliderValueMax - provider.sliderValueMin) > 0
+                          ? (provider.sliderValueMax - provider.sliderValueMin)
                           : 1,
                       onChangeStart: (_) {
                         if (provider.isPlaying) {

@@ -41,33 +41,101 @@ class HistoryTripsTab extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      controller: scrollController,
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 0.5.h),
-      itemCount: trips.length,
-      itemBuilder: (context, i) {
-        final trip = trips[i];
-        final isSelected = provider.selectedTripIndex == i;
-        return TripCard(
-          trip: trip,
-          tripNumber: i + 1,
-          isSelected: isSelected,
-          onTap: () {
-            provider.selectTrip(i);
-            final bounds = provider.calculateTripBounds(trip);
-            if (bounds != null && mapController != null) {
-              mapController!
-                  .animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
-            }
-          },
-          onPlay: () {
-            provider.selectTrip(i);
-            provider.seekTo(trip.startRouteIndex);
-            provider.startPlayback();
-            onTripPlay();
-          },
-        );
-      },
+    return Column(
+      children: [
+        if (provider.selectedTripIndex >= 0)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 0.5.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.selectedTrip(provider.selectedTripIndex + 1),
+                  style: AppStyles.semiboldTextStyle(context).copyWith(
+                    fontSize: 14.sp,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () {
+                    provider.clearTripSelection();
+                    final bounds = provider.calculateBounds();
+                    if (bounds != null && mapController != null) {
+                      mapController!.animateCamera(
+                        CameraUpdate.newLatLngBounds(bounds, 50),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    Icons.clear_all,
+                    size: 16.sp,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  label: Text(
+                    l10n.allTrips,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            controller: scrollController,
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 0.5.h),
+            itemCount: trips.length,
+            itemBuilder: (context, i) {
+              final trip = trips[i];
+              final isSelected = provider.selectedTripIndex == i;
+              return TripCard(
+                trip: trip,
+                tripNumber: i + 1,
+                isSelected: isSelected,
+                onTap: () {
+                  if (isSelected) {
+                    provider.clearTripSelection();
+                    final bounds = provider.calculateBounds();
+                    if (bounds != null && mapController != null) {
+                      mapController!.animateCamera(
+                        CameraUpdate.newLatLngBounds(bounds, 50),
+                      );
+                    }
+                  } else {
+                    provider.selectTrip(i);
+                    final bounds = provider.calculateTripBounds(trip);
+                    if (bounds != null && mapController != null) {
+                      mapController!.animateCamera(
+                        CameraUpdate.newLatLngBounds(bounds, 60),
+                      );
+                    }
+                  }
+                },
+                onPlay: () {
+                  provider.selectTrip(i);
+                  final bounds = provider.calculateTripBounds(trip);
+                  if (bounds != null && mapController != null) {
+                    mapController!.animateCamera(
+                      CameraUpdate.newLatLngBounds(bounds, 60),
+                    );
+                  }
+                  provider.startPlayback();
+                  onTripPlay();
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

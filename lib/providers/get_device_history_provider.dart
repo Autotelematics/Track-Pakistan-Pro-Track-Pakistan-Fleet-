@@ -183,7 +183,26 @@ class DeviceHistoryProvider extends ChangeNotifier {
   List<Marker> get staticMapMarkers => _mapMarkers;
   Set<Polyline> get routePolyLine => _routePolyLine;
   int get currentSliderValue => _currentSliderValue;
-  int get sliderValueMax => _sliderValueMax;
+
+  int get sliderValueMin {
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      return _tripSegments[_selectedTripIndex].startRouteIndex;
+    }
+    return 0;
+  }
+
+  int get sliderValueMax {
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      return _tripSegments[_selectedTripIndex].endRouteIndex;
+    }
+    return _routeList.isEmpty ? 0 : _routeList.length - 1;
+  }
+
+  TripSegment? get selectedTrip =>
+      (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length)
+          ? _tripSegments[_selectedTripIndex]
+          : null;
+
   bool get isPlaying => _isPlaying;
   int get selectedPlayBackSpeed => _selectedPlayBackSpeed;
   int get tripCount => _tripCount;
@@ -448,10 +467,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
     if (_routeList.isNotEmpty) {
       await _loadMapIcons();
-      _setCompleteRoutePolyline(isPlaying: false);
-      _setStartAndEndMarkers();
-      _setParkingMarkers();
-      _setEventsMarkers();
+      _refreshMapVisuals();
       _updateCarMarker(0);
     }
   }
@@ -766,14 +782,33 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void _setCompleteRoutePolyline({required bool isPlaying}) {
     _routePolyLine.clear();
     final color = isPlaying ? Colors.green : Colors.deepOrange;
-    if (_polyLatLng.isNotEmpty) {
-      _routePolyLine.add(Polyline(
-        polylineId: const PolylineId('complete_route'),
-        points: _polyLatLng,
-        color: color,
-        width: 4,
-        zIndex: 0,
-      ));
+
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      final seg = _tripSegments[_selectedTripIndex];
+      final start = seg.startRouteIndex.clamp(0, _polyLatLng.isEmpty ? 0 : _polyLatLng.length - 1);
+      final end = (seg.endRouteIndex + 1).clamp(0, _polyLatLng.length);
+      if (start < end && _polyLatLng.isNotEmpty) {
+        final tripPoints = _polyLatLng.sublist(start, end);
+        if (tripPoints.isNotEmpty) {
+          _routePolyLine.add(Polyline(
+            polylineId: PolylineId('trip_route_${_selectedTripIndex}'),
+            points: tripPoints,
+            color: color,
+            width: 4,
+            zIndex: 0,
+          ));
+        }
+      }
+    } else {
+      if (_polyLatLng.isNotEmpty) {
+        _routePolyLine.add(Polyline(
+          polylineId: const PolylineId('complete_route'),
+          points: _polyLatLng,
+          color: color,
+          width: 4,
+          zIndex: 0,
+        ));
+      }
     }
   }
 
@@ -783,59 +818,142 @@ class DeviceHistoryProvider extends ChangeNotifier {
     _mapMarkers.removeWhere((m) =>
         m.markerId == const MarkerId('start') ||
         m.markerId == const MarkerId('end'));
-    final startPos = _startPacketLatLng ??
-        LatLng(_routeList.first.lat, _routeList.first.lng);
-    final endPos =
-        _endPacketLatLng ?? LatLng(_routeList.last.lat, _routeList.last.lng);
 
-    _mapMarkers.add(Marker(
-      markerId: const MarkerId('start'),
-      position: startPos,
-      icon: _startIcon!,
-      anchor: const Offset(0.5, 0.5),
-      zIndexInt: 7,
-    ));
-    _mapMarkers.add(Marker(
-      markerId: const MarkerId('end'),
-      position: endPos,
-      icon: _endIcon!,
-      anchor: const Offset(0.5, 0.5),
-      zIndexInt: 8,
-    ));
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      final seg = _tripSegments[_selectedTripIndex];
+      final startPos = seg.startLatLng ??
+          (seg.startRouteIndex < _routeList.length
+              ? LatLng(_routeList[seg.startRouteIndex].lat,
+                  _routeList[seg.startRouteIndex].lng)
+              : LatLng(_routeList.first.lat, _routeList.first.lng));
+      final endPos = seg.endLatLng ??
+          (seg.endRouteIndex < _routeList.length
+              ? LatLng(_routeList[seg.endRouteIndex].lat,
+                  _routeList[seg.endRouteIndex].lng)
+              : LatLng(_routeList.last.lat, _routeList.last.lng));
+
+      _mapMarkers.add(Marker(
+        markerId: const MarkerId('start'),
+        position: startPos,
+        icon: _startIcon!,
+        anchor: const Offset(0.5, 0.5),
+        zIndexInt: 7,
+      ));
+      _mapMarkers.add(Marker(
+        markerId: const MarkerId('end'),
+        position: endPos,
+        icon: _endIcon!,
+        anchor: const Offset(0.5, 0.5),
+        zIndexInt: 8,
+      ));
+    } else {
+      final startPos = _startPacketLatLng ??
+          LatLng(_routeList.first.lat, _routeList.first.lng);
+      final endPos =
+          _endPacketLatLng ?? LatLng(_routeList.last.lat, _routeList.last.lng);
+
+      _mapMarkers.add(Marker(
+        markerId: const MarkerId('start'),
+        position: startPos,
+        icon: _startIcon!,
+        anchor: const Offset(0.5, 0.5),
+        zIndexInt: 7,
+      ));
+      _mapMarkers.add(Marker(
+        markerId: const MarkerId('end'),
+        position: endPos,
+        icon: _endIcon!,
+        anchor: const Offset(0.5, 0.5),
+        zIndexInt: 8,
+      ));
+    }
   }
 
   void _setParkingMarkers() {
     if (_parkingIcon == null) return;
-    int index = 0;
-    for (var position in _parkedLatLngs) {
-      _mapMarkers.add(Marker(
-        markerId: MarkerId('parking_$index'),
-        position: position,
-        icon: _parkingIcon!,
-        anchor: const Offset(0.5, 0.5),
-        zIndexInt: 5,
-      ));
-      index++;
+    _mapMarkers.removeWhere((m) => m.markerId.value.startsWith('parking_'));
+
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      final seg = _tripSegments[_selectedTripIndex];
+      int index = 0;
+      for (var parked in _parkedSegments) {
+        if (parked.anchorRouteIndex >= seg.startRouteIndex &&
+            parked.anchorRouteIndex <= seg.endRouteIndex) {
+          if (index < _parkedLatLngs.length) {
+            _mapMarkers.add(Marker(
+              markerId: MarkerId('parking_$index'),
+              position: _parkedLatLngs[index],
+              icon: _parkingIcon!,
+              anchor: const Offset(0.5, 0.5),
+              zIndexInt: 5,
+            ));
+          }
+        }
+        index++;
+      }
+    } else {
+      int index = 0;
+      for (var position in _parkedLatLngs) {
+        _mapMarkers.add(Marker(
+          markerId: MarkerId('parking_$index'),
+          position: position,
+          icon: _parkingIcon!,
+          anchor: const Offset(0.5, 0.5),
+          zIndexInt: 5,
+        ));
+        index++;
+      }
     }
   }
 
   void _setEventsMarkers() {
     if (_eventsIcon == null) return;
-    int index = 0;
-    for (var event in _alertSegments) {
-      _mapMarkers.add(Marker(
-        markerId: MarkerId('event_$index'),
-        position: event.position,
-        icon: _eventsIcon!,
-        anchor: const Offset(0.5, 0.5),
-        zIndexInt: 5,
-        infoWindow: InfoWindow(
-          title: event.message,
-          snippet: event.time,
-        ),
-      ));
-      index++;
+    _mapMarkers.removeWhere((m) => m.markerId.value.startsWith('event_'));
+
+    if (_selectedTripIndex >= 0 && _selectedTripIndex < _tripSegments.length) {
+      final seg = _tripSegments[_selectedTripIndex];
+      int index = 0;
+      for (var event in _alertSegments) {
+        if (event.anchorRouteIndex >= seg.startRouteIndex &&
+            event.anchorRouteIndex <= seg.endRouteIndex) {
+          _mapMarkers.add(Marker(
+            markerId: MarkerId('event_$index'),
+            position: event.position,
+            icon: _eventsIcon!,
+            anchor: const Offset(0.5, 0.5),
+            zIndexInt: 5,
+            infoWindow: InfoWindow(
+              title: event.message,
+              snippet: event.time,
+            ),
+          ));
+        }
+        index++;
+      }
+    } else {
+      int index = 0;
+      for (var event in _alertSegments) {
+        _mapMarkers.add(Marker(
+          markerId: MarkerId('event_$index'),
+          position: event.position,
+          icon: _eventsIcon!,
+          anchor: const Offset(0.5, 0.5),
+          zIndexInt: 5,
+          infoWindow: InfoWindow(
+            title: event.message,
+            snippet: event.time,
+          ),
+        ));
+        index++;
+      }
     }
+  }
+
+  void _refreshMapVisuals() {
+    _setCompleteRoutePolyline(isPlaying: _isPlaying);
+    _setStartAndEndMarkers();
+    _setParkingMarkers();
+    _setEventsMarkers();
   }
 
   // ── Car marker (direct update, no animation timer) ────────────────────────
@@ -1011,8 +1129,11 @@ class DeviceHistoryProvider extends ChangeNotifier {
 
   void startPlayback() {
     if (_routeList.isEmpty) return;
-    if (_currentSliderValue >= _sliderValueMax) {
-      _updateCarMarker(0);
+    final minVal = sliderValueMin;
+    final maxVal = sliderValueMax;
+
+    if (_currentSliderValue >= maxVal || _currentSliderValue < minVal) {
+      _updateCarMarker(minVal);
     }
 
     _isPlaying = true;
@@ -1020,7 +1141,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     _segmentFrameTimer?.cancel();
-    _segmentFromIndex = _currentSliderValue.clamp(0, _sliderValueMax);
+    _segmentFromIndex = _currentSliderValue.clamp(minVal, maxVal);
     _playbackSmoothedRotation ??= _carRotation;
     final segmentMs = _currentSegmentDurationMs;
     _segmentStartTime = DateTime.now().subtract(
@@ -1032,7 +1153,7 @@ class DeviceHistoryProvider extends ChangeNotifier {
     // Smoothly interpolate between route points to avoid visible marker jumps.
     _segmentFrameTimer = Timer.periodic(const Duration(milliseconds: 36), (_) {
       if (!_isPlaying || _routeList.length < 2) return;
-      if (_segmentFromIndex >= _sliderValueMax) {
+      if (_segmentFromIndex >= maxVal) {
         pausePlayback();
         return;
       }
@@ -1072,6 +1193,10 @@ class DeviceHistoryProvider extends ChangeNotifier {
         _segmentFromIndex = _currentSliderValue;
         _segmentProgress = 0.0;
         _segmentStartTime = DateTime.now();
+
+        if (_currentSliderValue >= maxVal) {
+          pausePlayback();
+        }
       }
     });
   }
@@ -1086,24 +1211,28 @@ class DeviceHistoryProvider extends ChangeNotifier {
   void stopPlayback() {
     _isPlaying = false;
     _segmentFrameTimer?.cancel();
-    _currentSliderValue = 0;
+    final resetVal = sliderValueMin;
+    _currentSliderValue = resetVal;
     playbackSliderNotifier.value = _currentSliderValue;
-    _segmentFromIndex = 0;
+    _segmentFromIndex = resetVal;
     _segmentProgress = 0.0;
     _segmentStartTime = null;
     _playbackSmoothedRotation = null;
     _setCompleteRoutePolyline(isPlaying: false);
-    _updateCarMarker(0);
+    _updateCarMarker(resetVal);
   }
 
   void seekTo(int value) {
-    if (value < 0 || value > _sliderValueMax) return;
-    _segmentFromIndex = value.clamp(0, _sliderValueMax);
-    playbackSliderNotifier.value = value.clamp(0, _sliderValueMax);
+    final minVal = sliderValueMin;
+    final maxVal = sliderValueMax;
+    final clamped = value.clamp(minVal, maxVal);
+    if (_routeList.isEmpty) return;
+    _segmentFromIndex = clamped;
+    playbackSliderNotifier.value = clamped;
     _segmentProgress = 0.0;
     _segmentStartTime = null;
     _playbackSmoothedRotation = null;
-    _updateCarMarker(value);
+    _updateCarMarker(clamped);
   }
 
   void changePlaybackSpeed() {
@@ -1131,15 +1260,32 @@ class DeviceHistoryProvider extends ChangeNotifier {
   /// Jump playback to the start of a specific trip
   void selectTrip(int tripIndex) {
     if (tripIndex < 0 || tripIndex >= _tripSegments.length) return;
+    if (_isPlaying) pausePlayback();
     _selectedTripIndex = tripIndex;
     final seg = _tripSegments[tripIndex];
+    _refreshMapVisuals();
     seekTo(seg.startRouteIndex);
     notifyListeners();
   }
 
   void clearTripSelection() {
+    if (_selectedTripIndex == -1) return;
+    if (_isPlaying) pausePlayback();
     _selectedTripIndex = -1;
+    _refreshMapVisuals();
+    if (_routeList.isNotEmpty) {
+      _currentSliderValue = _currentSliderValue.clamp(0, _routeList.length - 1);
+      playbackSliderNotifier.value = _currentSliderValue;
+    }
     notifyListeners();
+  }
+
+  void toggleTripSelection(int tripIndex) {
+    if (_selectedTripIndex == tripIndex) {
+      clearTripSelection();
+    } else {
+      selectTrip(tripIndex);
+    }
   }
 
   // ── Bounds ─────────────────────────────────────────────────────────────────

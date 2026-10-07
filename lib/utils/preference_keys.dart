@@ -35,3 +35,4 @@ const adminOriginalAuthTokenKey = "adminOriginalAuthToken";
 const adminOriginalUserIdKey = "adminOriginalUserId";
 const adminOriginalUserEmailKey = "adminOriginalUserEmail";
 const adminOriginalUserTypeKey = "adminOriginalUserType";
+const lastHandledNotificationKey = "lastHandledNotificationKey";

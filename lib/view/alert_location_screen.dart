@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter/services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
+import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,24 +20,44 @@ class AlertLocationScreen extends StatefulWidget {
 }
 
 class _AlertLocationScreenState extends State<AlertLocationScreen> {
-  final MapController _mapController = MapController();
-  static const double _defaultZoom = 15.5;
-  double _currentZoom = _defaultZoom;
+  GoogleMapController? _mapController;
+  static const double _defaultZoom = 16.0;
+  String? _googleMapStyle;
+  Brightness? _appliedMapBrightness;
 
-  void _zoomBy(double delta) {
-    final nextZoom = (_currentZoom + delta).clamp(3.0, 19.0).toDouble();
-    setState(() => _currentZoom = nextZoom);
-    _mapController.move(
-      LatLng(widget.alert.latitude, widget.alert.longitude),
-      nextZoom,
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (_appliedMapBrightness != brightness) {
+      unawaited(_applyMapStyleForTheme());
+    }
+  }
+
+  Future<void> _applyMapStyleForTheme() async {
+    final brightness = Theme.of(context).brightness;
+    String? nextStyle;
+    if (brightness == Brightness.dark) {
+      try {
+        nextStyle = await rootBundle.loadString('assets/map_styles/google_dark.json');
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    setState(() {
+      _googleMapStyle = nextStyle;
+      _appliedMapBrightness = brightness;
+    });
   }
 
   void _recenter() {
-    setState(() => _currentZoom = _defaultZoom);
-    _mapController.move(
-      LatLng(widget.alert.latitude, widget.alert.longitude),
-      _defaultZoom,
+    if (_mapController == null) return;
+    _mapController!.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(widget.alert.latitude, widget.alert.longitude),
+          zoom: _defaultZoom,
+        ),
+      ),
     );
   }
 
@@ -52,8 +74,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
     final softRed = isDark ? const Color(0xFFFCA5A5) : const Color(0xFFEF4444);
-    final softRedBg =
-        isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2);
+    final softRedBg = isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2);
     final alert = widget.alert;
     final point = LatLng(alert.latitude, alert.longitude);
 
@@ -70,132 +91,98 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
+          GoogleMap(
+            style: _googleMapStyle,
+            initialCameraPosition: CameraPosition(
+              target: point,
+              zoom: _defaultZoom,
+            ),
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapType: MapType.normal,
+            onMapCreated: (controller) {
+              _mapController = controller;
+              controller.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(target: point, zoom: _defaultZoom),
+                ),
+              );
+            },
+            markers: {
+              Marker(
+                markerId: const MarkerId('alert_marker'),
+                position: point,
+                infoWindow: InfoWindow(
+                  title: alert.deviceName,
+                  snippet: alert.message,
+                ),
               ),
-              child: Stack(
-                children: [
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: point,
-                      initialZoom: _defaultZoom,
-                      onPositionChanged: (position, _) {
-                        final z = position.zoom;
-                        if (z != null && z != _currentZoom) {
-                          setState(() => _currentZoom = z);
-                        }
-                      },
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.trackerapp.mobile',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: point,
-                            width: 48,
-                            height: 48,
-                            child: Icon(
-                              Icons.location_pin,
-                              size: 46,
-                              color: Colors.redAccent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    right: 3.w,
-                    top: 2.h,
-                    child: Column(
-                      children: [
-                        _mapControlButton(
-                          icon: Icons.add_rounded,
-                          onTap: () => _zoomBy(1),
-                        ),
-                        SizedBox(height: .8.h),
-                        _mapControlButton(
-                          icon: Icons.remove_rounded,
-                          onTap: () => _zoomBy(-1),
-                        ),
-                        SizedBox(height: .8.h),
-                        _mapControlButton(
-                          icon: Icons.my_location_rounded,
-                          onTap: _recenter,
-                        ),
-                        SizedBox(height: .8.h),
-                        _mapControlButton(
-                          icon: Icons.open_in_new_rounded,
-                          onTap: _openInGoogleMaps,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            },
+          ),
+          Positioned(
+            right: 4.w,
+            top: 2.h,
+            child: Column(
+              children: [
+                _mapControlButton(
+                  icon: Icons.my_location_rounded,
+                  onTap: _recenter,
+                ),
+                SizedBox(height: .8.h),
+                _mapControlButton(
+                  icon: Icons.open_in_new_rounded,
+                  onTap: _openInGoogleMaps,
+                ),
+              ],
             ),
           ),
-          SafeArea(
-            top: false,
-            minimum: EdgeInsets.fromLTRB(4.w, 1.4.h, 4.w, 1.2.h),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.7.h),
+              padding: EdgeInsets.fromLTRB(4.w, 1.8.h, 4.w, 2.4.h),
               decoration: BoxDecoration(
-                gradient: isDark
-                    ? LinearGradient(
-                        colors: [
-                          theme.cardColor,
-                          theme.colorScheme.surface.withValues(alpha: 0.97),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : LinearGradient(
-                        colors: [
-                          Colors.white,
-                          const Color(0xFFF8FAFF),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                borderRadius: BorderRadius.circular(20),
+                color: theme.cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 border: Border.all(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.black.withValues(alpha: 0.05),
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.35)
-                        : Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
                   ),
                 ],
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 10.w,
+                      height: 0.45.h,
+                      decoration: BoxDecoration(
+                        color: onSurface.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  verticalSpace(height: 1.2.h),
                   Row(
                     children: [
                       Container(
                         width: 10.w,
                         height: 10.w,
                         decoration: BoxDecoration(
-                          color:
-                              softRedBg.withValues(alpha: isDark ? 0.5 : 0.9),
+                          color: softRedBg.withValues(alpha: isDark ? 0.5 : 0.9),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: softRed.withValues(alpha: .35),
@@ -214,11 +201,9 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                           children: [
                             Text(
                               'ALERT',
-                              style: AppStyles.semiboldTextStyle(
-                                context,
-                              ).copyWith(
+                              style: AppStyles.semiboldTextStyle(context).copyWith(
                                 color: softRed,
-                                fontSize: 16.8.sp,
+                                fontSize: 15.8.sp,
                                 letterSpacing: .4,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -227,9 +212,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                               alert.deviceName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppStyles.semiboldTextStyle(
-                                context,
-                              ).copyWith(
+                              style: AppStyles.semiboldTextStyle(context).copyWith(
                                 color: onSurface,
                                 fontSize: 14.8.sp,
                               ),
@@ -242,8 +225,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                   verticalSpace(height: 1.0.h),
                   Container(
                     width: double.infinity,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.h),
+                    padding: EdgeInsets.symmetric(horizontal: 3.2.w, vertical: 1.h),
                     decoration: BoxDecoration(
                       color: softRedBg.withValues(alpha: isDark ? .22 : .55),
                       borderRadius: BorderRadius.circular(12),
@@ -281,8 +263,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                     context,
                     icon: Icons.place_rounded,
                     label: 'Location',
-                    value:
-                        '${alert.latitude.toStringAsFixed(6)}, ${alert.longitude.toStringAsFixed(6)}',
+                    value: '${alert.latitude.toStringAsFixed(6)}, ${alert.longitude.toStringAsFixed(6)}',
                   ),
                   if (alert.address.trim().isNotEmpty) ...[
                     verticalSpace(height: .7.h),

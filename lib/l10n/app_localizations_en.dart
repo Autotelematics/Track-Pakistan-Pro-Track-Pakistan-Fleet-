@@ -1208,6 +1208,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pausedLabel => 'Paused';
 
   @override
+  String selectedTrip(Object number) {
+    return 'Trip #$number';
+  }
+
+  @override
+  String get showFullRoute => 'Show Full Route';
+
+  @override
+  String get allTrips => 'All Trips';
+
+  @override
   String get totalTrips => 'Total Trips';
 
   @override

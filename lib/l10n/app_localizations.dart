@@ -2332,6 +2332,24 @@ abstract class AppLocalizations {
   /// **'Paused'**
   String get pausedLabel;
 
+  /// No description provided for @selectedTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip #{number}'**
+  String selectedTrip(Object number);
+
+  /// No description provided for @showFullRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Full Route'**
+  String get showFullRoute;
+
+  /// No description provided for @allTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'All Trips'**
+  String get allTrips;
+
   /// No description provided for @totalTrips.
   ///
   /// In en, this message translates to:

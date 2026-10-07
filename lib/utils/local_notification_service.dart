@@ -113,6 +113,9 @@ class LocalNotificationService {
     if (!MySharedPreferences.getBool(isLoggedInKey)) return;
     if (payload == null || payload.trim().isEmpty) return;
 
+    final lastHandled = MySharedPreferences.getString(lastHandledNotificationKey);
+    if (lastHandled == payload) return;
+
     if (payload.startsWith("reminder:")) {
       final idText = payload.replaceFirst("reminder:", "");
       final parsed = int.tryParse(idText);
@@ -138,6 +141,10 @@ class LocalNotificationService {
 
   void registerRemoteMessageTap(RemoteMessage message) {
     if (!MySharedPreferences.getBool(isLoggedInKey)) return;
+    final messageId = message.messageId ?? message.data.toString();
+    final lastHandled = MySharedPreferences.getString(lastHandledNotificationKey);
+    if (lastHandled == messageId) return;
+
     final payloadMap = _extractRemoteAlertPayload(message);
     if (payloadMap == null) return;
     _pendingAlertItem = Item.fromJson(payloadMap);
@@ -280,6 +287,11 @@ class LocalNotificationService {
     }
     final tappedAlert = _pendingAlertItem;
     if (tappedAlert == null) return;
+
+    final identifier = tappedAlert.id > 0
+        ? 'alert_${tappedAlert.id}'
+        : '${tappedAlert.type}_${tappedAlert.time}_${tappedAlert.message}';
+    await MySharedPreferences.setString(lastHandledNotificationKey, identifier);
 
     final navContext = _navigatorKey?.currentContext;
     if (navContext == null) return;

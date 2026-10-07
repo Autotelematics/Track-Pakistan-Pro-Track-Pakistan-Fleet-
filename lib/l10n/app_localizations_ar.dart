@@ -1202,6 +1202,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pausedLabel => 'متوقف مؤقتًا';
 
   @override
+  String selectedTrip(Object number) {
+    return 'الرحلة رقم $number';
+  }
+
+  @override
+  String get showFullRoute => 'عرض المسار الكامل';
+
+  @override
+  String get allTrips => 'جميع الرحلات';
+
+  @override
   String get totalTrips => 'إجمالي الرحلات';
 
   @override

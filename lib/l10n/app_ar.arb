@@ -454,6 +454,14 @@
   "noHistoryAlertsFound": "لم يتم العثور على تنبيهات",
   "playingRouteHighlightedGreen": "جارٍ التشغيل - المسار مميز باللون الأخضر",
   "pausedLabel": "متوقف مؤقتًا",
+  "selectedTrip": "الرحلة رقم {number}",
+  "@selectedTrip": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "showFullRoute": "عرض المسار الكامل",
+  "allTrips": "جميع الرحلات",
   "totalTrips": "إجمالي الرحلات",
   "moveTime": "وقت الحركة",
   "fuelLtr": "الوقود (LTR)",

@@ -454,6 +454,14 @@
   "noHistoryAlertsFound": "کوئی الرٹ نہیں ملا",
   "playingRouteHighlightedGreen": "چل رہا ہے - روٹ سبز رنگ میں نمایاں ہے",
   "pausedLabel": "روکا گیا",
+  "selectedTrip": "ٹرپ نمبر {number}",
+  "@selectedTrip": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "showFullRoute": "مکمل روٹ دکھائیں",
+  "allTrips": "تمام ٹرپس",
   "totalTrips": "کل ٹرپس",
   "moveTime": "موو ٹائم",
   "fuelLtr": "فیول (LTR)",

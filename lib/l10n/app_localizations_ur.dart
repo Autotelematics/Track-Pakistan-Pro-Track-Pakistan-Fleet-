@@ -1208,6 +1208,17 @@ class AppLocalizationsUr extends AppLocalizations {
   String get pausedLabel => 'روکا گیا';
 
   @override
+  String selectedTrip(Object number) {
+    return 'ٹرپ نمبر $number';
+  }
+
+  @override
+  String get showFullRoute => 'مکمل روٹ دکھائیں';
+
+  @override
+  String get allTrips => 'تمام ٹرپس';
+
+  @override
   String get totalTrips => 'کل ٹرپس';
 
   @override
