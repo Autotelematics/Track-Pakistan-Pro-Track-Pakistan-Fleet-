@@ -166,7 +166,7 @@ class Item {
   factory Item.fromJson(Map<String, dynamic> json) => Item(
     id: json["id"] ?? 0,
     type: json["type"] ?? "", // Use string directly
-    time: json["time"] != null ? DateTime.tryParse(json["time"]) : null,
+    time: _parseAlertTime(json["time"]),
     message: json["message"] ?? "",
     address: json["address"] ?? "",
     course: json["course"] ?? 0,
@@ -194,4 +194,16 @@ class Item {
     "device_name": deviceName, // Output as string
     "device_id": deviceId,
   };
+}
+
+DateTime? _parseAlertTime(dynamic raw) {
+  if (raw == null) return null;
+  final text = raw.toString().trim();
+  if (text.isEmpty) return null;
+  String iso = text.replaceAll(' ', 'T');
+  if (!iso.endsWith('Z') && !iso.contains(RegExp(r'[+\-]\d{2}:\d{2}$'))) {
+    iso = '${iso}Z';
+  }
+  final parsed = DateTime.tryParse(iso);
+  return parsed?.toLocal();
 }

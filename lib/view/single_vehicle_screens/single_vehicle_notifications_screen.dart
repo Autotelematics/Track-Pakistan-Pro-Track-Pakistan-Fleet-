@@ -561,13 +561,9 @@ class _SingleVehicleAlertScreenState extends State<SingleVehicleAlertScreen>
                                             );
                                             return;
                                           }
-                                          Navigator.push(
+                                          AlertLocationScreen.open(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  AlertLocationScreen(
-                                                      alert: item),
-                                            ),
+                                            item,
                                           );
                                         }
                                       },

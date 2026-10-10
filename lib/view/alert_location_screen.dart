@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
-import 'package:trackerapp/utils/app_localizations_x.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,6 +13,22 @@ class AlertLocationScreen extends StatefulWidget {
   final Item alert;
 
   const AlertLocationScreen({super.key, required this.alert});
+
+  static void open(BuildContext context, Item alert) {
+    final navigator = Navigator.of(context);
+    navigator.popUntil((route) {
+      if (route.settings.name == 'AlertLocationScreen') {
+        return false;
+      }
+      return true;
+    });
+    navigator.push(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: 'AlertLocationScreen'),
+        builder: (_) => AlertLocationScreen(alert: alert),
+      ),
+    );
+  }
 
   @override
   State<AlertLocationScreen> createState() => _AlertLocationScreenState();
@@ -255,7 +270,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                     icon: Icons.schedule_rounded,
                     label: 'Time',
                     value: alert.time != null
-                        ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!.toLocal())
+                        ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!)
                         : "No time",
                   ),
                   verticalSpace(height: .7.h),

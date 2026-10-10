@@ -593,14 +593,9 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                             );
                                             return;
                                           }
-                                          Navigator.push(
+                                          AlertLocationScreen.open(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  AlertLocationScreen(
-                                                alert: alert,
-                                              ),
-                                            ),
+                                            alert,
                                           );
                                         }
                                       },
@@ -695,7 +690,7 @@ class _NewNotificationScreenState extends State<NewNotificationScreen>
                                                   Expanded(
                                                     child: Text(
                                                       alert.time != null
-                                                          ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!.toLocal())
+                                                          ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!)
                                                           : l10n.noTime,
                                                       style: AppStyles
                                                               .lightTextStyle(

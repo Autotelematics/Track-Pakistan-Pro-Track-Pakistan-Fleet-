@@ -121,7 +121,8 @@ class AlertTtsService {
     required bool isBackground,
     Duration? delay,
   }) async {
-    final normalized = text.trim();
+    final formatted = formatVehicleRegistrationNumbers(text);
+    final normalized = formatted.trim();
     if (normalized.isEmpty) return;
 
     await MySharedPreferences.reload();
@@ -174,4 +175,15 @@ class AlertTtsService {
     if (body.isNotEmpty) return body;
     return (data["body"] ?? data["message"] ?? "").toString().trim();
   }
+}
+
+String formatVehicleRegistrationNumbers(String text) {
+  if (text.isEmpty) return text;
+  final regExp = RegExp(r'\b([A-Za-z]{1,4}[-\s]?[0-9]{1,4}|[0-9]{1,4}[-\s]?[A-Za-z]{1,4})\b');
+  return text.replaceAllMapped(regExp, (match) {
+    final matchedStr = match.group(0) ?? '';
+    final chars = matchedStr.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').split('');
+    if (chars.isEmpty) return matchedStr;
+    return chars.map((c) => c.toUpperCase()).join(' ');
+  });
 }

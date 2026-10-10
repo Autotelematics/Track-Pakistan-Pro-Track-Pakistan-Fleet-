@@ -317,8 +317,16 @@ class LocalNotificationService {
       return;
     }
 
-    Navigator.of(navContext, rootNavigator: true).push(
+    final rootNavigator = Navigator.of(navContext, rootNavigator: true);
+    rootNavigator.popUntil((route) {
+      if (route.settings.name == 'AlertLocationScreen') {
+        return false;
+      }
+      return true;
+    });
+    rootNavigator.push(
       MaterialPageRoute(
+        settings: const RouteSettings(name: 'AlertLocationScreen'),
         builder: (_) => AlertLocationScreen(alert: alert),
       ),
     );
