@@ -49,20 +49,28 @@ final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
 GlobalKey<ScaffoldMessengerState>();
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
-Future<FirebaseApp> _ensureFirebaseInitialized() async {
+Future<FirebaseApp?> _ensureFirebaseInitialized() async {
   if (Firebase.apps.isNotEmpty) {
     return Firebase.app();
   }
   try {
-    // Use native Firebase config files:
-    // - android/app/google-services.json
-    // - ios/Runner/GoogleService-Info.plist
-    return await Firebase.initializeApp();
-  } on FirebaseException catch (e) {
-    if (e.code == 'duplicate-app') {
-      return Firebase.app();
+    if (Platform.isIOS) {
+      return await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: 'AIzaSyA0p80FOcP-h7i9ZecRnOHNtuXa_Oe37lQ',
+          appId: '1:564804113447:ios:3bebe36214982df2292a02',
+          messagingSenderId: '564804113447',
+          projectId: 'worldautotel-8b93c',
+          storageBucket: 'worldautotel-8b93c.firebasestorage.app',
+          iosBundleId: 'com.autotelfleet.trackerapp',
+        ),
+      );
+    } else {
+      return await Firebase.initializeApp();
     }
-    rethrow;
+  } catch (e) {
+    debugPrint("Firebase.initializeApp() warning: $e");
+    return null;
   }
 }
 
@@ -72,7 +80,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   DartPluginRegistrant.ensureInitialized();
   await MySharedPreferences.init();
   await LocalNotificationService.instance.init(requestPermissions: false);
-  await _ensureFirebaseInitialized();
+  try {
+    await _ensureFirebaseInitialized();
+  } catch (_) {}
   final hasVisibleNotification =
       (message.notification?.title ?? '')
           .trim()
@@ -113,74 +123,78 @@ void main() async {
   await LocalNotificationService.instance.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // Firebase Initialization
-  await _ensureFirebaseInitialized();
-  final fcmTokenRepository = FcmTokenRepository();
-  final messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-    announcement: true,
-  );
-  if (Platform.isIOS) {
-    await messaging.setForegroundNotificationPresentationOptions(
+  // Firebase Initialization (Safe fallback)
+  try {
+    await _ensureFirebaseInitialized();
+    final fcmTokenRepository = FcmTokenRepository();
+    final messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
+      announcement: true,
     );
-  }
+    if (Platform.isIOS) {
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
 
-  try {
-    await fcmTokenRepository.syncCurrentDeviceToken(force: true);
-  } catch (e) {
-    debugPrint("FCM token sync failed at startup: $e");
-  }
-
-  messaging.onTokenRefresh.listen((token) async {
-    debugPrint("FCM token refreshed: $token");
-    await fcmTokenRepository.rememberLatestToken(token);
     try {
-      await fcmTokenRepository.syncToken(token);
+      await fcmTokenRepository.syncCurrentDeviceToken(force: true);
     } catch (e) {
-      debugPrint("FCM token refresh sync failed: $e");
+      debugPrint("FCM token sync failed at startup: $e");
     }
-  });
 
-  await AlertTtsService.instance.init();
-  FirebaseMessaging.onMessage.listen((message) async {
-    await LocalNotificationService.instance.showRemoteMessageNotification(
-      message,
-    );
-    if (Platform.isAndroid) {
-      await AlertTtsService.instance.speakFromRemoteMessage(
+    messaging.onTokenRefresh.listen((token) async {
+      debugPrint("FCM token refreshed: $token");
+      await fcmTokenRepository.rememberLatestToken(token);
+      try {
+        await fcmTokenRepository.syncToken(token);
+      } catch (e) {
+        debugPrint("FCM token refresh sync failed: $e");
+      }
+    });
+
+    await AlertTtsService.instance.init();
+    FirebaseMessaging.onMessage.listen((message) async {
+      await LocalNotificationService.instance.showRemoteMessageNotification(
         message,
-        isBackground: false,
-        delay: const Duration(milliseconds: 700),
       );
+      if (Platform.isAndroid) {
+        await AlertTtsService.instance.speakFromRemoteMessage(
+          message,
+          isBackground: false,
+          delay: const Duration(milliseconds: 700),
+        );
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      if (Platform.isAndroid) {
+        await AlertTtsService.instance.speakFromRemoteMessage(
+          message,
+          isBackground: false,
+          delay: Duration.zero,
+        );
+      }
+      LocalNotificationService.instance.registerRemoteMessageTap(message);
+      await LocalNotificationService.instance.processPendingNotificationTap();
+    });
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      if (Platform.isAndroid) {
+        await AlertTtsService.instance.speakFromRemoteMessage(
+          initialMessage,
+          isBackground: false,
+          delay: Duration.zero,
+        );
+      }
+      LocalNotificationService.instance.registerRemoteMessageTap(initialMessage);
     }
-  });
-  FirebaseMessaging.onMessageOpenedApp.listen((message) async {
-    if (Platform.isAndroid) {
-      await AlertTtsService.instance.speakFromRemoteMessage(
-        message,
-        isBackground: false,
-        delay: Duration.zero,
-      );
-    }
-    LocalNotificationService.instance.registerRemoteMessageTap(message);
-    await LocalNotificationService.instance.processPendingNotificationTap();
-  });
-  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage != null) {
-    if (Platform.isAndroid) {
-      await AlertTtsService.instance.speakFromRemoteMessage(
-        initialMessage,
-        isBackground: false,
-        delay: Duration.zero,
-      );
-    }
-    LocalNotificationService.instance.registerRemoteMessageTap(initialMessage);
+  } catch (e) {
+    debugPrint("Firebase setup bypassed/failed: $e");
   }
 
   // Load Theme
