@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:trackerapp/app/theme/app_styles.dart';
 import 'package:trackerapp/data/models/get_alerts_list_model.dart';
+import 'package:trackerapp/data/repositories/alerts_repository.dart';
+import 'package:trackerapp/utils/preference_keys.dart';
+import 'package:trackerapp/utils/shared_preference.dart';
 import 'package:trackerapp/widgets/get_vertical_space.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -39,6 +42,87 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
   static const double _defaultZoom = 16.0;
   String? _googleMapStyle;
   Brightness? _appliedMapBrightness;
+  DateTime? _apiMatchedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAndMatchAlertTime();
+  }
+
+  Future<void> _fetchAndMatchAlertTime() async {
+    final token = MySharedPreferences.getString(authTokenKey).trim();
+    if (token.isEmpty) return;
+
+    try {
+      final repository = AlertsRepository();
+      GetAlertsModel? alertsModel = await repository.getAlerts(
+        page: 1,
+        userApiHashKey: token,
+        deviceId: widget.alert.deviceId > 0 ? '${widget.alert.deviceId}' : null,
+      );
+
+      if ((alertsModel?.items ?? []).isEmpty) {
+        alertsModel = await repository.getAlerts(
+          page: 1,
+          userApiHashKey: token,
+        );
+      }
+
+      final items = alertsModel?.items ?? [];
+      Item? matchedItem;
+
+      if (widget.alert.id > 0) {
+        for (final item in items) {
+          if (item.id == widget.alert.id) {
+            matchedItem = item;
+            break;
+          }
+        }
+      }
+
+      if (matchedItem == null && widget.alert.id > 0) {
+        matchedItem = await repository.getAlertById(
+          alertId: widget.alert.id,
+          userApiHashKey: token,
+        );
+      }
+
+      if (matchedItem == null && items.isNotEmpty) {
+        for (final item in items) {
+          final sameDevice = widget.alert.deviceId == 0 || item.deviceId == widget.alert.deviceId;
+          final sameType = widget.alert.type.isEmpty ||
+              item.type.toLowerCase().trim() == widget.alert.type.toLowerCase().trim();
+          final sameMessage = widget.alert.message.isEmpty ||
+              item.message.toLowerCase().trim() == widget.alert.message.toLowerCase().trim();
+
+          if (sameDevice && (sameType || sameMessage)) {
+            matchedItem = item;
+            break;
+          }
+        }
+      }
+
+      if (matchedItem == null && items.isNotEmpty && widget.alert.deviceId > 0) {
+        for (final item in items) {
+          if (item.deviceId == widget.alert.deviceId) {
+            matchedItem = item;
+            break;
+          }
+        }
+      }
+
+      if (!mounted) return;
+
+      if (matchedItem != null && matchedItem.time != null) {
+        setState(() {
+          _apiMatchedTime = matchedItem!.time;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error matching alert time from API: $e');
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -91,6 +175,7 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
     final softRed = isDark ? const Color(0xFFFCA5A5) : const Color(0xFFEF4444);
     final softRedBg = isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2);
     final alert = widget.alert;
+    final displayTime = _apiMatchedTime ?? alert.time;
     final point = LatLng(alert.latitude, alert.longitude);
 
     return Scaffold(
@@ -269,8 +354,8 @@ class _AlertLocationScreenState extends State<AlertLocationScreen> {
                     context,
                     icon: Icons.schedule_rounded,
                     label: 'Time',
-                    value: alert.time != null
-                        ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(alert.time!)
+                    value: displayTime != null
+                        ? DateFormat('dd-MM-yyyy hh:mm:ss a').format(displayTime)
                         : "No time",
                   ),
                   verticalSpace(height: .7.h),

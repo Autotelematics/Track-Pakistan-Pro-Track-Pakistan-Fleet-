@@ -5,7 +5,7 @@ description: A new Flutter project.
 publish_to: 'none'
 
 # App version (format: major.minor.patch+build)
-version: 1.0.3+40
+version: 1.0.5+42
 
 # Dart SDK version constraints
 environment:

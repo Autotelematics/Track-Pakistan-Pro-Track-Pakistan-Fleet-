@@ -200,10 +200,41 @@ DateTime? _parseAlertTime(dynamic raw) {
   if (raw == null) return null;
   final text = raw.toString().trim();
   if (text.isEmpty) return null;
-  String iso = text.replaceAll(' ', 'T');
-  if (!iso.endsWith('Z') && !iso.contains(RegExp(r'[+\-]\d{2}:\d{2}$'))) {
-    iso = '${iso}Z';
+
+  final hasTimezone = text.endsWith('Z') ||
+      text.endsWith('z') ||
+      RegExp(r'[+\-]\d{2}:?\d{2}$').hasMatch(text);
+
+  if (hasTimezone) {
+    final parsed = DateTime.tryParse(text.replaceAll(' ', 'T'));
+    return parsed?.toLocal();
   }
-  final parsed = DateTime.tryParse(iso);
-  return parsed?.toLocal();
+
+  final regExp = RegExp(
+    r'^(\d{4})[-/](\d{1,2})[-/](\d{1,2})[T\s](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?',
+  );
+  final match = regExp.firstMatch(text);
+  if (match != null) {
+    final year = int.parse(match.group(1)!);
+    final month = int.parse(match.group(2)!);
+    final day = int.parse(match.group(3)!);
+    final hour = int.parse(match.group(4)!);
+    final minute = int.parse(match.group(5)!);
+    final second = match.group(6) != null ? int.parse(match.group(6)!) : 0;
+    return DateTime(year, month, day, hour, minute, second);
+  }
+
+  final fallback = DateTime.tryParse(text);
+  if (fallback != null) {
+    return DateTime(
+      fallback.year,
+      fallback.month,
+      fallback.day,
+      fallback.hour,
+      fallback.minute,
+      fallback.second,
+    );
+  }
+
+  return null;
 }

@@ -79,6 +79,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   await MySharedPreferences.init();
+  await MySharedPreferences.reload();
+  if (!MySharedPreferences.getBool(isLoggedInKey)) {
+    return;
+  }
   await LocalNotificationService.instance.init(requestPermissions: false);
   try {
     await _ensureFirebaseInitialized();
@@ -102,7 +106,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (!hasVisibleNotification && !hasUsableData) {
     return;
   }
-  if (Platform.isAndroid) {
+  // If message.notification != null, Android OS / FCM SDK displays native notification automatically.
+  // Only call showRemoteMessageNotification if message.notification == null (data-only payload) to prevent duplicate background notifications.
+  if (Platform.isAndroid && message.notification == null) {
     await LocalNotificationService.instance.showRemoteMessageNotification(
       message,
     );
@@ -136,7 +142,7 @@ void main() async {
     );
     if (Platform.isIOS) {
       await messaging.setForegroundNotificationPresentationOptions(
-        alert: true,
+        alert: false, // Let LocalNotificationService handle foreground popup on iOS to avoid double banner
         badge: true,
         sound: true,
       );
@@ -160,6 +166,10 @@ void main() async {
 
     await AlertTtsService.instance.init();
     FirebaseMessaging.onMessage.listen((message) async {
+      await MySharedPreferences.reload();
+      if (!MySharedPreferences.getBool(isLoggedInKey)) {
+        return;
+      }
       await LocalNotificationService.instance.showRemoteMessageNotification(
         message,
       );

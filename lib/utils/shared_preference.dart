@@ -54,6 +54,7 @@ class MySharedPreferences {
   }
 
   static Future<void> logout() async {
+    await _preferences.setBool(isLoggedInKey, false);
     await _preferences.remove(isLoggedInKey);
     await _preferences.remove(authTokenKey);
     await _preferences.remove(userIdKey);

@@ -528,13 +528,9 @@ class LocalNotificationService {
 
   Future<void> cancelAllReminderNotifications() async {
     await init();
-    final pending = await _plugin.pendingNotificationRequests();
-    for (final req in pending) {
-      final payload = req.payload ?? '';
-      if (payload.startsWith('reminder:')) {
-        await _plugin.cancel(id: req.id);
-      }
-    }
+    try {
+      await _plugin.cancelAll();
+    } catch (_) {}
     _pendingReminderId = null;
     _pendingAlertItem = null;
     for (final timer in _foregroundTtsTimers.values) {
@@ -543,7 +539,87 @@ class LocalNotificationService {
     _foregroundTtsTimers.clear();
   }
 
+  static Future<bool> isDuplicateRemoteMessagePersistent(
+    RemoteMessage message, {
+    String namespace = 'popup',
+    int timeWindowSeconds = 15,
+  }) async {
+  await MySharedPreferences.reload();
+
+  final data = message.data;
+  int readInt(List<String> keys) {
+    for (final k in keys) {
+      final v = data[k];
+      if (v != null) {
+        final p = int.tryParse(v.toString().trim());
+        if (p != null) return p;
+      }
+    }
+    return 0;
+  }
+
+  String readText(List<String> keys) {
+    for (final k in keys) {
+      final v = data[k]?.toString().trim() ?? '';
+      if (v.isNotEmpty) return v;
+    }
+    return '';
+  }
+
+  final msgId = message.messageId?.trim() ?? '';
+  final alertId = readInt(['alert_id', 'id', 'notification_id']);
+  final deviceId = readInt(['device_id']);
+  final type = readText(['type', 'alert_type', 'notification_type', 'event_type']);
+  final text = readText(['message', 'body', 'alert_message', 'detail']);
+  final timeStr = readText(['time', 'alert_time', 'created_at']);
+  final notifTitle = (message.notification?.title ?? '').trim();
+  final notifBody = (message.notification?.body ?? '').trim();
+
+  String rawKey;
+  if (msgId.isNotEmpty) {
+    rawKey = 'msg_$msgId';
+  } else if (alertId > 0) {
+    rawKey = 'alert_$alertId';
+  } else if (deviceId > 0 && (type.isNotEmpty || text.isNotEmpty)) {
+    rawKey = 'dev_${deviceId}_${type}_${timeStr}_$text';
+  } else {
+    rawKey = 'raw_${notifTitle}_${notifBody}_${type}_${timeStr}_$text';
+  }
+
+  final storageKey = 'processed_fcm_keys_$namespace';
+  final rawJson = MySharedPreferences.getString(storageKey);
+  Map<String, int> history = {};
+  if (rawJson.isNotEmpty) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is Map<String, dynamic>) {
+        history = decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+      }
+    } catch (_) {}
+  }
+
+  final nowMs = DateTime.now().millisecondsSinceEpoch;
+  history.removeWhere((_, timeMs) => (nowMs - timeMs) > (timeWindowSeconds * 1000));
+
+  if (history.containsKey(rawKey)) {
+    return true;
+  }
+
+  history[rawKey] = nowMs;
+  await MySharedPreferences.setString(storageKey, jsonEncode(history));
+  return false;
+}
+
   Future<void> showRemoteMessageNotification(RemoteMessage message) async {
+    await MySharedPreferences.reload();
+    if (!MySharedPreferences.getBool(isLoggedInKey)) {
+      return;
+    }
+
+    if (await isDuplicateRemoteMessagePersistent(message, namespace: 'popup')) {
+      return;
+    }
+
     await init();
 
     final title = (message.notification?.title ?? '').trim();
@@ -564,9 +640,15 @@ class LocalNotificationService {
     final payload =
     payloadMap == null ? null : 'alert:${jsonEncode(payloadMap)}';
 
-    // Updated: show now uses named parameters
+    int notificationId;
+    if (payloadMap != null && (payloadMap['id'] as int? ?? 0) > 0) {
+      notificationId = payloadMap['id'] as int;
+    } else {
+      notificationId = DateTime.now().millisecondsSinceEpoch.remainder(1 << 31);
+    }
+
     await _plugin.show(
-      id: DateTime.now().millisecondsSinceEpoch.remainder(1 << 31),
+      id: notificationId,
       title: resolvedTitle,
       body: resolvedBody,
       notificationDetails: _remoteAlertDetails(iosSound: iosSound),

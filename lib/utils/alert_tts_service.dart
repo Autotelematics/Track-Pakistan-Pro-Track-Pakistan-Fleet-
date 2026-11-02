@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:trackerapp/utils/local_notification_service.dart';
 import 'package:trackerapp/utils/preference_keys.dart';
 import 'package:trackerapp/utils/shared_preference.dart';
 
@@ -16,6 +17,7 @@ class AlertTtsService {
   bool _ttsAvailable = true;
   DateTime? _lastInitFailureAt;
   bool _handlersBound = false;
+
 
   Future<void> init() async {
     if (_initialized) return;
@@ -102,6 +104,14 @@ class AlertTtsService {
     Duration? delay,
   }) async {
     await MySharedPreferences.reload();
+    if (!MySharedPreferences.getBool(isLoggedInKey)) return;
+
+    if (await LocalNotificationService.isDuplicateRemoteMessagePersistent(
+      message,
+      namespace: 'tts',
+    )) {
+      return;
+    }
     final enabled = MySharedPreferences.getBool(playAlertsAnnouncementKey);
     final text = _extractMessageText(message);
     if (!enabled) return;
@@ -126,6 +136,7 @@ class AlertTtsService {
     if (normalized.isEmpty) return;
 
     await MySharedPreferences.reload();
+    if (!MySharedPreferences.getBool(isLoggedInKey)) return;
     final enabled = MySharedPreferences.getBool(playAlertsAnnouncementKey);
     if (!enabled) return;
 

@@ -172,6 +172,12 @@ class FcmTokenRepository {
   }
 
   Future<void> deleteToken(String token) async {
+    try {
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (e) {
+      debugPrint('FirebaseMessaging deleteToken warning: $e');
+    }
+
     final fcmToken = token.trim();
     final userApiHash = MySharedPreferences.getString(authTokenKey).trim();
     if (fcmToken.isEmpty || userApiHash.isEmpty) return;
