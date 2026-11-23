@@ -27,7 +27,7 @@ android {
         "29.0.13599879"
     }
 
-    namespace = "com.autotel_fleet.android"
+    namespace = "com.trackpakistanfleet.android"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.autotel_fleet.android"
+        applicationId = "com.trackpakistanfleet.android"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutterVersionCode?.toInt() ?: 1
@@ -50,28 +50,23 @@ android {
         multiDexEnabled = true
     }
 
-    // Load keystore
+    // Load keystore (optional): if key.properties exists, use the release key;
+    // otherwise fall back to the debug key so test APKs still build.
     val keystoreProperties = Properties()
     val keystorePropertiesFile = rootProject.file("key.properties")
+    val hasReleaseKeystore = keystorePropertiesFile.exists()
 
-    if (keystorePropertiesFile.exists()) {
+    if (hasReleaseKeystore) {
         keystoreProperties.load(FileInputStream(keystorePropertiesFile))
     }
 
     signingConfigs {
-        create("release") {
-            val keystorePropertiesFile = rootProject.file("key.properties")
-
-            if (keystorePropertiesFile.exists()) {
-                val properties = Properties()
-                properties.load(FileInputStream(keystorePropertiesFile))
-
-                storeFile = file(properties["storeFile"] as String)
-                keyAlias = properties["keyAlias"] as String
-                keyPassword = properties["keyPassword"] as String
-                storePassword = properties["storePassword"] as String
-            } else {
-                throw GradleException("key.properties not found")
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storePassword = keystoreProperties["storePassword"] as String
             }
         }
     }
@@ -86,7 +81,12 @@ android {
                 "proguard-rules.pro"
             )
 
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                // Testing only: signed with the debug key (cannot be uploaded to Play Store)
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 1), (() async {
+    Timer(const Duration(seconds: 2), (() async {
       if (!mounted) return;
       var isLogin = MySharedPreferences.getBool(isLoggedInKey);
       if (isLogin) {
@@ -50,8 +50,8 @@ class _SplashScreenState extends State<SplashScreen> {
     return const Scaffold(
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(50.0),
-          child: Image(image: AssetImage("assets/images/splashsceen.png")),
+          padding: EdgeInsets.all(65.0),
+          child: Image(image: AssetImage("assets/images/company_logo.png")),
         ),
       ),
     );

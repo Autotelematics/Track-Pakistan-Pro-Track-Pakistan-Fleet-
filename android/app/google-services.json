@@ -1,116 +1,21 @@
 {
   "project_info": {
-    "project_number": "564804113447",
-    "project_id": "worldautotel-8b93c",
-    "storage_bucket": "worldautotel-8b93c.firebasestorage.app"
+    "project_number": "779709336806",
+    "project_id": "track-pakistan",
+    "storage_bucket": "track-pakistan.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:eac88cbf6313b3e0292a02",
+        "mobilesdk_app_id": "1:779709336806:android:67dbee8c3e61149e817f27",
         "android_client_info": {
-          "package_name": "com.autotel_fleet.android"
+          "package_name": "com.trackpakistanfleet.android"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:8ab5148038996997292a02",
-        "android_client_info": {
-          "package_name": "com.autotel_lite.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:ce2b61e28613f3b3292a02",
-        "android_client_info": {
-          "package_name": "com.autotel_platform.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:4191cd2ac7261527292a02",
-        "android_client_info": {
-          "package_name": "com.bestcartracker.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:35736083af31f034292a02",
-        "android_client_info": {
-          "package_name": "com.global_tracking.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:564804113447:android:57860fd55d3a27bc292a02",
-        "android_client_info": {
-          "package_name": "com.platinumtrack.android"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDsoKVhWqFPvmZVz8dFp5Ru7OlmbYwURWU"
+          "current_key": "AIzaSyDmFKeifuea5eDPK1r15EVXwVM1ghOEsWM"
         }
       ],
       "services": {

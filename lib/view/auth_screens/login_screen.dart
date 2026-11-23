@@ -67,10 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
               body: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(
-                    "assets/images/bg_login.png",
-                    fit: BoxFit.cover,
-                  ),
+                  // Image.asset(
+                  //   "assets/images/bg_login.png",
+                  //   fit: BoxFit.cover,
+                  // ),
                   Positioned(
                     top: -10.h,
                     left: -18.w,
@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           SizedBox(height: 3.h),
                                           CustomButton(
                                             text: "Sign In",
-                                            textColor: AppColors.black,
+                                            textColor: AppColors.white,
                                             backgroundColor: primaryColor,
                                             borderRadius: 14,
                                             height: 5.8.h,
@@ -361,7 +361,7 @@ class _BrandHero extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                "Autotel Fleet",
+                "Track Pakistan Pro",
                 textAlign: TextAlign.center,
                 style: AppStyles.boldTextStyle(context).copyWith(
                   color: onSurface,
@@ -422,9 +422,9 @@ class _BrandHero extends StatelessWidget {
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.all(3.w),
+            padding: EdgeInsets.all(5.w),
             child: Image.asset(
-              "assets/images/logo1.png",
+              "assets/images/company_logo.png",
               fit: BoxFit.contain,
             ),
           ),

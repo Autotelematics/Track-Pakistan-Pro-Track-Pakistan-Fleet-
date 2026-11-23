@@ -1,4 +1,4 @@
-package com.autotel_fleet.android;
+package com.trackpakistanfleet.android;
 
 import io.flutter.embedding.android.FlutterActivity;
 

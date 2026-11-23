@@ -57,12 +57,12 @@ Future<FirebaseApp?> _ensureFirebaseInitialized() async {
     if (Platform.isIOS) {
       return await Firebase.initializeApp(
         options: const FirebaseOptions(
-          apiKey: 'AIzaSyA0p80FOcP-h7i9ZecRnOHNtuXa_Oe37lQ',
-          appId: '1:564804113447:ios:3bebe36214982df2292a02',
-          messagingSenderId: '564804113447',
-          projectId: 'worldautotel-8b93c',
-          storageBucket: 'worldautotel-8b93c.firebasestorage.app',
-          iosBundleId: 'com.autotelfleet.trackerapp',
+          apiKey: 'AIzaSyBAJhHiuC4AV3GBFfaD946mSUq9Yp-XpvU',
+          appId: '1:779709336806:ios:3b3b83bd3188f2ed817f27',
+          messagingSenderId: '779709336806',
+          projectId: 'track-pakistan',
+          storageBucket: 'track-pakistan.firebasestorage.app',
+          iosBundleId: 'com.trackpakistanfleet.ios',
         ),
       );
     } else {

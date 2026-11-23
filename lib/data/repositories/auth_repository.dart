@@ -68,10 +68,10 @@ class AuthRepository {
         final normalized = value
             .map((e) => e.toString().trim().toLowerCase())
             .where((e) => e.isNotEmpty);
-        return normalized.contains("autotel_fleet");
+        return normalized.contains("trackpakistanfleet");
       }
       if (value is String) {
-        return value.trim().toLowerCase() == "autotel_fleet";
+        return value.trim().toLowerCase() == "trackpakistanfleet";
       }
       return false;
     }
