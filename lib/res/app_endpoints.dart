@@ -1,7 +1,7 @@
 class AppUrl {
   ///BaseUrl
-  static var baseURL = 'https://world.autotel.pk/api';
-  static var baseImgURL = 'https://world.autotel.pk/';
+  static var baseURL = 'https://web.trackpakistan.com/api';
+  static var baseImgURL = 'https://web.trackpakistan.com/';
 
   ///Apis EndPoints
   static String loginEp = "/login?";

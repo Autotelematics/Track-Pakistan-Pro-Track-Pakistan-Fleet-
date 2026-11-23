@@ -576,7 +576,7 @@ class _DropdownBoxWithCount extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        // color: backgroundColor,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12.px),
         boxShadow: [
           BoxShadow(
